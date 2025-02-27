@@ -15,12 +15,12 @@ function App() {
   }, []);
 
 return(
-  <>
+  <div className='container mx-auto p-4'>
     <h1>Lista de personas</h1>
     <ul>
     {personas.map((persona) => (<li key={persona.id}>{persona.nombre}</li>))}
     </ul>
-  </>
+  </div>
 );
 }
 
