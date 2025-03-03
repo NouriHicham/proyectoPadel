@@ -6,6 +6,8 @@ import LoginPage from './pages/login';
 // import { Header } from './components/header';
 import Home from './pages/home';
 import RegisterPage from './pages/register';
+import PartidosPage from './pages/partidos';
+import PartidoDetalles from './pages/partidoDetalles';
 
 function App() {
   const [personas, setPersonas] = useState([]);
@@ -25,6 +27,8 @@ return(
       <Route path='/' element={<Home/>}/>
       <Route path='/login' element={<LoginPage/>}/>
       <Route path='/register' element={<RegisterPage/>}/>
+      <Route path='/partidos' element={<PartidosPage/>}/>
+      <Route path='/partidos/:id' element={<PartidoDetalles/>}/>
     </Routes>
   </>
 );

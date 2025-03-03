@@ -1,4 +1,3 @@
-import React from "react"
 import { Home, Calendar, Users2, User, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Link } from "react-router-dom"
@@ -10,19 +9,19 @@ export function MainNav({ className, ...props }) {
         <Home className="h-4 w-4 lg:hidden" />
         <span className="hidden lg:block">Inicio</span>
       </Link>
-      <Link to="/matches" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+      <Link to="/partidos" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
         <Calendar className="h-4 w-4 lg:hidden" />
         <span className="hidden lg:block">Partidos</span>
       </Link>
-      <Link to="/team" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+      <Link to="/equipo" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
         <Users2 className="h-4 w-4 lg:hidden" />
         <span className="hidden lg:block">Equipo</span>
       </Link>
-      <Link to="/profile" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+      <Link to="/perfil" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
         <User className="h-4 w-4 lg:hidden" />
         <span className="hidden lg:block">Perfil</span>
       </Link>
-      <Link to="/settings" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+      <Link to="/configuracion" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
         <Settings className="h-4 w-4 lg:hidden" />
         <span className="hidden lg:block">Configuración</span>
       </Link>
