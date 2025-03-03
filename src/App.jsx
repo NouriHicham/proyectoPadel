@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import {leerPersonas} from './supabase/supabase'
 import { Route, Routes } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
+import LoginPage from './pages/login';
 import { Header } from './components/header';
+import Home from './pages/home';
 
 function App() {
   const [personas, setPersonas] = useState([]);
@@ -25,11 +26,9 @@ return(
   //   </ul>
   // </div>
   <>
-    <div className="min-h-screen flex flex-col">
-        <Header />
-    </div>
     <Routes>
-      <Route path='/' element={<LoginPage/>}/>
+      <Route path='/' element={<Home/>}/>
+      <Route path='/login' element={<LoginPage/>}/>
     </Routes>
   </>
 );
