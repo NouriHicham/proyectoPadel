@@ -3,8 +3,9 @@ import './App.css'
 import {leerPersonas} from './supabase/supabase'
 import { Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/login';
-import { Header } from './components/header';
+// import { Header } from './components/header';
 import Home from './pages/home';
+import RegisterPage from './pages/register';
 
 function App() {
   const [personas, setPersonas] = useState([]);
@@ -19,16 +20,11 @@ function App() {
   }, []);
 
 return(
-  // <div className='container mx-auto p-4'>
-  //   <h1>Lista de personas</h1>
-  //   <ul>
-  //   {personas.map((persona) => (<li key={persona.id}>{persona.nombre}</li>))}
-  //   </ul>
-  // </div>
   <>
     <Routes>
       <Route path='/' element={<Home/>}/>
       <Route path='/login' element={<LoginPage/>}/>
+      <Route path='/register' element={<RegisterPage/>}/>
     </Routes>
   </>
 );
