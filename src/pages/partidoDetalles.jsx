@@ -5,13 +5,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, MessageSquare, ThumbsUp } from "lucide-react";
-// import Link from "next/link"
+import {
+  Calendar,
+  CheckCircle2Icon,
+  Clock,
+  MapPin,
+  XCircleIcon,
+} from "lucide-react";
 
 export default function PartidoDetalles() {
   const { id } = useParams();
 
-  
+  const haFinalizado = true;
+  const isAdmin = true;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -22,8 +29,9 @@ export default function PartidoDetalles() {
             <h1 className="text-3xl font-bold">Convocatoria #{id}</h1>
             <p className="text-muted-foreground">Partido Amistoso</p>
           </div>
-          <Button className="w-full md:w-auto" size="lg">
-            Unirme a la convocatoria
+          <Button className="w-full md:w-auto " size="lg">
+            {/* Unirme a la convocatoria */}
+            Confirmar disponibilidad
           </Button>
         </div>
 
@@ -54,7 +62,7 @@ export default function PartidoDetalles() {
                   <div className="flex items-center gap-3">
                     <MapPin className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <p className="font-medium">Ubicación</p>
+                      <p className="font-medium">Ubicación/Sede</p>
                       <p className="text-muted-foreground">
                         Club Deportivo Central
                       </p>
@@ -64,223 +72,210 @@ export default function PartidoDetalles() {
               </CardContent>
             </Card>
 
-            <Tabs defaultValue="courts">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="courts">Pistas</TabsTrigger>
-                {/* <TabsTrigger value="comments">Comentarios</TabsTrigger> */}
-                <TabsTrigger value="results">Resultados</TabsTrigger>
-              </TabsList>
-              <TabsContent value="courts" className="space-y-4">
-                {/* Solo mostrar información pistas si el partido ha acabado */}
-                {[1, 2, 3].map((court) => (
-                  <Card key={court}>
-                    <CardHeader>
-                      <CardTitle>Pista {court}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between text-sm text-muted-foreground">
-                          {/* <span>Tipo: Cristal</span> */}
-                          <span>4 jugadores necesarios</span>
-                        </div>
-                        <div className="grid gap-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-4">
-                              <h4 className="text-sm font-medium">Pareja 1</h4>
-                              {[1, 2].map((player) => (
-                                <div
-                                  key={`court-${court}-team1-${player}`}
-                                  className="flex items-center justify-between"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <Avatar>
-                                      <AvatarImage
-                                        src={`/placeholder.svg?text=${player}`}
-                                      />
-                                      <AvatarFallback>J{player}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="font-medium">
-                                        Jugador {player}
-                                      </p>
-                                      <p className="text-sm text-muted-foreground">
-                                        Nivel: Intermedio
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <Link to={`/team/${player}`}>
-                                    <Button variant="ghost" size="sm">
-                                      Ver perfil
-                                    </Button>
-                                  </Link>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="space-y-4">
-                              <h4 className="text-sm font-medium">Pareja 2</h4>
-                              {[3, 4].map((player) => (
-                                <div
-                                  key={`court-${court}-team2-${player}`}
-                                  className="flex items-center justify-between"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <Avatar>
-                                      <AvatarImage
-                                        src={`/placeholder.svg?text=${player}`}
-                                      />
-                                      <AvatarFallback>J{player}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="font-medium">
-                                        Jugador {player}
-                                      </p>
-                                      <p className="text-sm text-muted-foreground">
-                                        Nivel: Intermedio
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <Link to={`/team/${player}`}>
-                                    <Button variant="ghost" size="sm">
-                                      Ver perfil
-                                    </Button>
-                                  </Link>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          <Button variant="outline" className="w-full">
-                            Unirme a esta pista
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </TabsContent>
-              {/* <TabsContent value="comments">
-                <Card>
-                  <CardContent className="p-4 space-y-4">
-                    {[1, 2, 3].map((comment) => (
-                      <div
-                        key={comment}
-                        className="flex gap-3 pb-4 border-b last:border-0"
-                      >
-                        <Avatar>
-                          <AvatarImage
-                            src={`/placeholder.svg?text=${comment}`}
-                          />
-                          <AvatarFallback>U{comment}</AvatarFallback>
-                        </Avatar>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">
-                              Usuario {comment}
-                            </span>
-                            <span className="text-sm text-muted-foreground">
-                              hace 2h
-                            </span>
-                          </div>
-                          <p>¡Me apunto a la pista 1! 🎾</p>
-                          <div className="flex items-center gap-4 text-sm">
-                            <button className="flex items-center gap-1 text-muted-foreground hover:text-primary">
-                              <ThumbsUp className="h-4 w-4" />
-                              <span>2</span>
-                            </button>
-                            <button className="flex items-center gap-1 text-muted-foreground hover:text-primary">
-                              <MessageSquare className="h-4 w-4" />
-                              <span>Responder</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    <div className="flex items-center gap-2 mt-4">
-                      <Avatar>
-                        <AvatarImage src="/placeholder.svg?text=ME" />
-                        <AvatarFallback>ME</AvatarFallback>
-                      </Avatar>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-muted-foreground"
-                      >
-                        Escribe un comentario...
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent> */}
-              <TabsContent value="results">
-                <div className="space-y-4">
+            {haFinalizado ? (
+              <Tabs defaultValue="courts">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="courts" className={"cursor-pointer"}>
+                    Pistas
+                  </TabsTrigger>
+                  <TabsTrigger value="results" className={"cursor-pointer"}>
+                    Resultados
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="courts" className="space-y-4">
+                  {/* Solo mostrar información pistas si el partido ha acabado*/}
                   {[1, 2, 3].map((court) => (
-                    <Card key={`results-${court}`}>
+                    <Card key={court}>
                       <CardHeader>
-                        <CardTitle>Resultados Pista {court}</CardTitle>
+                        <CardTitle>Pista {court}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="flex justify-between items-center p-4 bg-muted rounded-lg">
-                          <div className="text-center flex-1">
-                            <p className="font-medium">Pareja 1</p>
-                            <div className="flex items-center justify-center gap-2 mt-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarFallback>P1</AvatarFallback>
-                              </Avatar>
-                              <Avatar className="h-8 w-8">
-                                <AvatarFallback>P2</AvatarFallback>
-                              </Avatar>
-                            </div>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between text-sm text-muted-foreground">
+                            {/* <span>Tipo: Cristal</span> */}
+                            <span>4 jugadores necesarios</span>
                           </div>
-                          <div className="text-center px-4">
-                            <div className="text-2xl font-bold">6-4, 6-3</div>
-                            <p className="text-sm text-muted-foreground">
-                              Victoria
-                            </p>
-                          </div>
-                          <div className="text-center flex-1">
-                            <p className="font-medium">Pareja 2</p>
-                            <div className="flex items-center justify-center gap-2 mt-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarFallback>P3</AvatarFallback>
-                              </Avatar>
-                              <Avatar className="h-8 w-8">
-                                <AvatarFallback>P4</AvatarFallback>
-                              </Avatar>
+                          <div className="grid gap-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-4">
+                                <h4 className="text-sm font-medium">
+                                  Pareja 1
+                                </h4>
+                                {[1, 2].map((player) => (
+                                  <div
+                                    key={`court-${court}-team1-${player}`}
+                                    className="flex items-center justify-between"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <Avatar>
+                                        <AvatarImage
+                                          src={`/placeholder.svg?text=${player}`}
+                                        />
+                                        <AvatarFallback>
+                                          J{player}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <p className="font-medium">
+                                          Jugador {player}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                          Nivel: Intermedio
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <Link to={`/team/${player}`}>
+                                      <Button variant="ghost" size="sm">
+                                        Ver perfil
+                                      </Button>
+                                    </Link>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="space-y-4">
+                                <h4 className="text-sm font-medium">
+                                  Pareja 2
+                                </h4>
+                                {[3, 4].map((player) => (
+                                  <div
+                                    key={`court-${court}-team2-${player}`}
+                                    className="flex items-center justify-between"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <Avatar>
+                                        <AvatarImage
+                                          src={`/placeholder.svg?text=${player}`}
+                                        />
+                                        <AvatarFallback>
+                                          J{player}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <p className="font-medium">
+                                          Jugador {player}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                          Nivel: Intermedio
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <Link to={`/team/${player}`}>
+                                      <Button variant="ghost" size="sm">
+                                        Ver perfil
+                                      </Button>
+                                    </Link>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
                   ))}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
+                </TabsContent>
 
-          {/* <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Información Adicional</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-medium mb-2">Nivel recomendado</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Intermedio - Avanzado
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-medium mb-2">Precio por persona</h3>
-                  <p className="text-sm text-muted-foreground">8€</p>
-                </div>
-                <div>
-                  <h3 className="font-medium mb-2">Notas</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Traer pelotas nuevas. Posibilidad de tercer set en caso de
-                    empate.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div> */}
+                <TabsContent value="results">
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((court) => (
+                      <Card key={`results-${court}`}>
+                        <CardHeader>
+                          <CardTitle>Resultados Pista {court}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex justify-between items-center p-4 bg-muted rounded-lg">
+                            <div className="text-center flex-1">
+                              <p className="font-medium">Pareja 1</p>
+                              <div className="flex items-center justify-center gap-2 mt-2">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback>P1</AvatarFallback>
+                                </Avatar>
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback>P2</AvatarFallback>
+                                </Avatar>
+                              </div>
+                            </div>
+                            <div className="text-center px-4">
+                              <div className="text-2xl font-bold">6-4, 6-3</div>
+                              <p className="text-sm text-muted-foreground">
+                                Victoria
+                              </p>
+                            </div>
+                            <div className="text-center flex-1">
+                              <p className="font-medium">Pareja 2</p>
+                              <div className="flex items-center justify-center gap-2 mt-2">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback>P3</AvatarFallback>
+                                </Avatar>
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback>P4</AvatarFallback>
+                                </Avatar>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <p className="text-center mb-5">
+                El resumen del partido estará disponible cuando la jornada
+                finalice.
+              </p>
+            )}
+          </div>
+          {/* Mostrar usuarios disponibles si el usuario es admin y el partido aun no ha comenzado*/}
+          {isAdmin && !haFinalizado && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Jugadores Disponibles</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {[1, 2, 3, 4, 5, 6].map((player) => (
+                    <div
+                      key={player}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-5">
+                        <Avatar className={""}>
+                          <AvatarImage
+                            src={`/placeholder.svg?text=${player}`}
+                          />
+                          <AvatarFallback>J{player}</AvatarFallback>
+                        </Avatar>
+
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <p className="font-medium">Jugador {player}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Nivel: Intermedio
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <Link to={`/team/${player}`}>
+                          <Button variant="secondary" size="sm">
+                            Ver perfil
+                          </Button>
+                        </Link>
+                        <button className="cursor-pointer">
+                          <CheckCircle2Icon size={28} color="#166534" />
+                        </button>
+                        <button className="cursor-pointer">
+                          <XCircleIcon size={28} color="#991b1b" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </main>
 
