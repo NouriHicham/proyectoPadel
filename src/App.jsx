@@ -9,6 +9,7 @@ import RegisterPage from './pages/register';
 import PartidosPage from './pages/partidos';
 import PartidoDetalles from './pages/partidoDetalles';
 import EquipoPage from './pages/equipo';
+import JugadorDetalles from './pages/jugadorDetalles';
 
 function App() {
   const [personas, setPersonas] = useState([]);
@@ -31,6 +32,7 @@ return(
       <Route path='/partidos' element={<PartidosPage/>}/>
       <Route path='/partidos/:id' element={<PartidoDetalles/>}/>  
       <Route path='/equipo' element={<EquipoPage/>}/>
+      <Route path='/equipo/jugador/:id' element={<JugadorDetalles/>}/>
     </Routes>
   </>
 );

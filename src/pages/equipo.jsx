@@ -46,7 +46,7 @@ export default function EquipoPage() {
                       </div>
                     </div>
                     <div className="mt-3">
-                      <Link to={`/team/${player}`}>
+                      <Link to={`/equipo/jugador/${player}`}>
                         <Button variant="outline" size="sm" className="w-full">
                           Ver perfil
                         </Button>

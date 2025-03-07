@@ -16,7 +16,7 @@ import {
 export default function PartidoDetalles() {
   const { id } = useParams();
 
-  const haFinalizado = true;
+  const haFinalizado = false;
   const isAdmin = true;
 
   return (
@@ -124,7 +124,7 @@ export default function PartidoDetalles() {
                                         </p>
                                       </div>
                                     </div>
-                                    <Link to={`/team/${player}`}>
+                                    <Link to={`/equipo/jugador/${player}`}>
                                       <Button variant="ghost" size="sm">
                                         Ver perfil
                                       </Button>
@@ -159,7 +159,7 @@ export default function PartidoDetalles() {
                                         </p>
                                       </div>
                                     </div>
-                                    <Link to={`/team/${player}`}>
+                                    <Link to={`/equipo/jugador/${player}`}>
                                       <Button variant="ghost" size="sm">
                                         Ver perfil
                                       </Button>
@@ -258,7 +258,7 @@ export default function PartidoDetalles() {
                       </div>
 
                       <div className="flex items-center gap-1">
-                        <Link to={`/team/${player}`}>
+                        <Link to={`/equipo/jugador/${player}`}>
                           <Button variant="secondary" size="sm">
                             Ver perfil
                           </Button>
