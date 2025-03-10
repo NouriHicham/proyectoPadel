@@ -10,7 +10,12 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+
+  //hay que guardar la informacion de la tabla personas
+  if (!user) {
+    localStorage.setItem("user", JSON.stringify(user));
+  }
 
   useEffect(() => {
     const session = supabase.auth.getSession();
