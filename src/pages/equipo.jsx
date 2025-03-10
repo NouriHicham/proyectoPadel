@@ -1,17 +1,10 @@
+import { useEffect, useState } from 'react'
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {Mail, Phone, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import {Dialog,DialogContent, DialogDescription,DialogFooter,DialogHeader,DialogTitle,DialogTrigger} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -23,10 +16,10 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { leerPersonas } from "@/supabase/supabase";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -46,6 +39,18 @@ const formSchema = z.object({
 
 export default function EquipoPage() {
   const [open, setOpen] = useState(false);
+  const [personas, setPersonas] = useState([]); // array de personas pre-cargadas
+
+  useEffect(() => {
+    const fetchPersonas = async () => {
+      const data = await leerPersonas();
+      setPersonas(data);
+    };
+
+    fetchPersonas();
+  }, []);
+
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {},
@@ -183,8 +188,8 @@ export default function EquipoPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((player) => (
-            <Card key={player}>
+          {personas.map((player) => (
+            <Card key={player.id}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-4">
                   <Avatar>
@@ -192,22 +197,22 @@ export default function EquipoPage() {
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <h3 className="font-semibold">Jugador {player}</h3>
+                    <h3 className="font-semibold">{player.nombre} {player.apellido}</h3>
                     <p className="text-sm text-muted-foreground">
                       Nivel: Intermedio
                     </p>
                     <div className="mt-2 space-y-1">
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Phone className="h-4 w-4 mr-2" />
-                        +34 6xx xxx xxx
+                        +34 {player.telefono}
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Mail className="h-4 w-4 mr-2" />
-                        jugador{player}@email.com
+                        {player.email}
                       </div>
                     </div>
                     <div className="mt-3">
-                      <Link to={`/equipo/jugador/${player}`}>
+                      <Link to={`/equipo/jugador/${player.id}`}>
                         <Button variant="outline" size="sm" className="w-full">
                           Ver perfil
                         </Button>

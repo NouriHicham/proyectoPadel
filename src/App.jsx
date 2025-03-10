@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import {leerPersonas} from './supabase/supabase'
 import { Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/login';
 // import { Header } from './components/header';
@@ -12,16 +11,6 @@ import EquipoPage from './pages/equipo';
 import JugadorDetalles from './pages/jugadorDetalles';
 
 function App() {
-  const [personas, setPersonas] = useState([]);
-
-  useEffect(() => {
-    const fetchPersonas = async () => {
-      const data = await leerPersonas();
-      setPersonas(data);
-    };
-
-    fetchPersonas();
-  }, []);
 
 return(
   <>
