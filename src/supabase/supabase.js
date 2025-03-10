@@ -7,7 +7,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 //función para leer perfiles
 export const leerPersonas = async ()=>{
    try {
-     let { data: personas, error } = await supabase
+     let { data, error } = await supabase
    .from('personas')
    .select('*')
 
@@ -15,8 +15,8 @@ export const leerPersonas = async ()=>{
       throw error;
    }
 
-   console.log('personas', personas);
-   return personas;
+   console.log('personas', data);
+   return data;
 
    } catch (error) {
      console.error('Error al leer personas:', error);
