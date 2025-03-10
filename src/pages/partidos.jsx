@@ -22,7 +22,7 @@ export default function PartidosPage() {
         <div className="space-y-4">
           {/* Próximos partidos */}
           <h2 className="text-xl font-semibold mb-4">Próximos Partidos</h2>
-          <div className="grid gap-4">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
             {[1, 2].map((match) => (
               <Card key={`upcoming-${match}`}>
                 <CardContent className="p-4">

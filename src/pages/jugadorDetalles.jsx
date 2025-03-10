@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Phone} from "lucide-react";
 export default function JugadorDetalles() {
+  // Al cargar pagina, hacer fetch de los datos del usuario, con el id pasado por url 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
