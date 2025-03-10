@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { CalendarIcon, Clock } from "lucide-react"
+import { CalendarIcon, Clock, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -59,7 +59,9 @@ export function CreateMatchDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Nueva Convocatoria</Button>
+        <Button>
+          <Plus/>
+          Nueva Convocatoria</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
