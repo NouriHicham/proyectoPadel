@@ -3,7 +3,7 @@ import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import {useState } from "react";
+import {useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 export function LoginForm({ className, ...props }) {
@@ -11,19 +11,25 @@ export function LoginForm({ className, ...props }) {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const { login } = useAuth();
+  const { login, user } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     console.log(email, password);
 
-    const { error } = await login(email, password);
+    const { data, error } = await login(email, password);
     if (error) {
       console.error("Error de inicio de sesión:", error.message);
     } else {
-      navigate("/");
+      console.log("Sesion iniciada:", data);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   return (
     <form

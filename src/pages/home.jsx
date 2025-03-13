@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, Trophy, Users2 } from "lucide-react"
 
 export default function Home(){
+  console.log("user: ", JSON.parse(localStorage.getItem("user")).persona);
    return (
       <>
 

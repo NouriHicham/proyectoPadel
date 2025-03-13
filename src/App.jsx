@@ -26,6 +26,7 @@ function App() {
           <Route path="/partidos/:id" element={<PartidoDetalles />} />
           <Route path="/equipo" element={<EquipoPage />} />
           <Route path="/equipo/jugador/:id" element={<JugadorDetalles />} />
+          <Route path="*" element={<div> 404 | Not Found Page</div>} />
         </Route>
       </Routes>
     </>

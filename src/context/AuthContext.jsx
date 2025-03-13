@@ -12,28 +12,60 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
 
-  //hay que guardar la informacion de la tabla personas
-  if (!user) {
-    localStorage.setItem("user", JSON.stringify(user));
-  }
+  // Función para guardar el usuario en localStorage
+  const saveUserToLocalStorage = (userData) => {
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+  };
 
   useEffect(() => {
-    const session = supabase.auth.getSession();
-    setUser(session?.user ?? null);
+    const getUserData = async (session) => {
+      if (session?.user) {
+        const { data, error } = await supabase
+          .from("personas")
+          .select("*")
+          .eq("user_id", session.user.id)
 
+        if (error) {
+          console.error("Error obteniendo datos de personas:", error);
+        } else {
+          const userData = { ...session.user, persona: data };
+          saveUserToLocalStorage(userData);
+        }
+      } else {
+        localStorage.removeItem("user");
+        setUser(null);
+      }
+    };
+
+    // Obtener sesión inicial
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      getUserData(session);
+    });
+
+    // escuchar cambios en la sesión de autenticación
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      getUserData(session);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = (email, password) =>
-    supabase.auth.signInWithPassword({ email, password });
+  const login = async (email, password) => {
+    const {data, error} = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      return { error: error.message };
+    }
+    return { data };
+  }
 
-  const signOut = () => supabase.auth.signOut();
+  const signOut = async() => {
+    supabase.auth.signOut();
+    localStorage.removeItem("user");
+    setUser(null);
+  }
 
   const registrar = async (email, password, name, surname, phone) => {
     // Registrar usuario en auth.users
