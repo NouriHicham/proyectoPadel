@@ -12,15 +12,18 @@ import JugadorDetalles from "./pages/jugadorDetalles";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import Perfil from './pages/perfil';
 
+/* 
+  En ProtectedRoutes anidamos las rutas que nos interesa que el usuario no pueda 
+  acceder si antes no se ha logueado 
+*/
 function App() {
-
   return (
     <>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Rutas protegidas*/}
+ 
         <Route element={<ProtectedRoutes />}>
           <Route path="/" element={<Home />} />
           <Route path="/partidos" element={<PartidosPage />} />
