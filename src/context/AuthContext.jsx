@@ -1,24 +1,20 @@
 import { createContext, useState, useContext, useEffect } from "react";
-// import { supabase } from "supabase"; // Asegúrate de importar tu cliente de Supabase
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = "https://ndzzdinmqmhmexyaorac.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kenpkaW5tcW1obWV4eWFvcmFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA0MTgwNjAsImV4cCI6MjA1NTk5NDA2MH0.YoV4jqtmRrXq-ZHLxMWgHKGRIVwYNz7KRVhnkYOxYIs";
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from "@/supabase/supabase";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  // estado del usuario, que si existe se obtiene el usuario
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
 
-  // Función para guardar el usuario en localStorage
+  // Función para guardar el usuario en localStorage y actualizar el estado del usuario
   const saveUserToLocalStorage = (userData) => {
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   };
 
   useEffect(() => {
+    // Obtener datos de personas al iniciar sesión
     const getUserData = async (session) => {
       if (session?.user) {
         const { data, error } = await supabase
@@ -29,7 +25,7 @@ export const AuthProvider = ({ children }) => {
         if (error) {
           console.error("Error obteniendo datos de personas:", error);
         } else {
-          const userData = { ...session.user, persona: data };
+          const userData = { persona: data };
           saveUserToLocalStorage(userData);
         }
       } else {
