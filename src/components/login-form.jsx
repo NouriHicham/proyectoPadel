@@ -27,7 +27,7 @@ export function LoginForm({ className, ...props }) {
 
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/equipos");
     }
   }, [user, navigate]);
 
