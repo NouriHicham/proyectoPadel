@@ -89,7 +89,6 @@ export const AuthProvider = ({ children }) => {
   
     return { data: personaData };
   };
-  
 
   return (
     <AuthContext.Provider value={{ user, login, signOut, registrar }}>
