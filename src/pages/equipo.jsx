@@ -1,10 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {Mail, Phone, Plus } from "lucide-react";
+import { Mail, Phone, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import {Dialog,DialogContent, DialogDescription,DialogFooter,DialogHeader,DialogTitle,DialogTrigger} from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,6 +25,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
+
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { leerPersonas } from "@/supabase/supabase";
@@ -31,14 +49,15 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Por favor, introduce un email válido.",
   }),
-  phone: z.string().min(9, { 
+  phone: z.string().min(9, {
     message: "Por favor, introduce un número de teléfono válido.",
   }),
-  avatar: z.string().optional() 
+  avatar: z.string().optional(),
 });
 
 export default function EquipoPage() {
   const [open, setOpen] = useState(false);
+  const [open2, setOpen2] = useState(false);
   const [personas, setPersonas] = useState([]); // array de personas pre-cargadas
 
   useEffect(() => {
@@ -49,7 +68,6 @@ export default function EquipoPage() {
 
     fetchPersonas();
   }, []);
-
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -70,6 +88,40 @@ export default function EquipoPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-3xl font-bold">Equipo</h1>
           <div className="flex items-center gap-4 w-full sm:w-auto">
+            {/* Modal para invitar a jugador */}
+            <Dialog open={open2} onOpenChange={setOpen2}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Invitar a Jugador
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Invitar a Jugador</DialogTitle>
+                  <DialogDescription>
+                  </DialogDescription>
+                </DialogHeader>
+
+                <Select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Fruits</SelectLabel>
+                      <SelectItem value="apple">Apple</SelectItem>
+                      <SelectItem value="banana">Banana</SelectItem>
+                      <SelectItem value="blueberry">Blueberry</SelectItem>
+                      <SelectItem value="grapes">Grapes</SelectItem>
+                      <SelectItem value="pineapple">Pineapple</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <Button>Invitar</Button>
+              </DialogContent>
+            </Dialog>
+            {/* Modal para añadir jugador de forma manual */}
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -127,7 +179,11 @@ export default function EquipoPage() {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="Email" type="email" {...field} />
+                            <Input
+                              placeholder="Email"
+                              type="email"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -197,7 +253,9 @@ export default function EquipoPage() {
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <h3 className="font-semibold">{player.nombre} {player.apellido}</h3>
+                    <h3 className="font-semibold">
+                      {player.nombre} {player.apellido}
+                    </h3>
                     <p className="text-sm text-muted-foreground">
                       Nivel: Intermedio
                     </p>

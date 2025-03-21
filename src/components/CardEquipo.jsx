@@ -10,8 +10,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Users, Calendar, ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { useNavigate } from "react-router-dom";
 
 export default function CardEquipo({ equipo }) {
+  const navigate = useNavigate()
+  const handleSeleccionEquipo = () => {
+    navigate("/")
+  }
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3">
@@ -69,6 +74,7 @@ export default function CardEquipo({ equipo }) {
         <Button
           variant="ghost"
           className="ml-auto h-8 w-full justify-between px-2"
+          onClick={handleSeleccionEquipo}
         >
           Seleccionar este equipo
           <ArrowRight className="h-4 w-4" />
