@@ -68,3 +68,22 @@ export async function eliminarEquipo(equipoId) {
     return false
   }
 }
+//función para leer perfiles
+export const leerPersonas = async ()=>{
+  try {
+    let { data, error } = await supabase
+  .from('personas')
+  .select('*')
+
+  if (error) {
+     throw error;
+  }
+
+  console.log('personas', data);
+  return data;
+
+  } catch (error) {
+    console.error('Error al leer personas:', error);
+    return [];
+  }
+}

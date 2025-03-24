@@ -37,7 +37,8 @@ import {
 } from "@/components/ui/select";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { leerPersonas } from "@/supabase/supabase";
+import { leerPersonas } from "@/lib/database";
+// import { leerPersonas } from "@/supabase/supabase";
 
 const formSchema = z.object({
   name: z.string().min(2, {

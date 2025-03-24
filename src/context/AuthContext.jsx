@@ -71,6 +71,7 @@ export const AuthProvider = ({ children }) => {
       console.error("Error inesperado al cerrar sesión:", err);
     } finally {
       // Limpiar el estado local independientemente del resultado
+      await supabase.auth.refreshSession(); // refrescar sesión por si el signout falla
       localStorage.removeItem("user");
       localStorage.removeItem("personaGuardada");
       setUser(null);
