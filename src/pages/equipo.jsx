@@ -38,6 +38,7 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { leerPersonas } from "@/lib/database";
+import { useAuth } from "@/context/AuthContext";
 // import { leerPersonas } from "@/supabase/supabase";
 
 const formSchema = z.object({
@@ -60,10 +61,11 @@ export default function EquipoPage() {
   const [open, setOpen] = useState(false);
   const [open2, setOpen2] = useState(false);
   const [personas, setPersonas] = useState([]); // array de personas pre-cargadas
-
+  const {equipoPersona} = useAuth()
+  
   useEffect(() => {
     const fetchPersonas = async () => {
-      const data = await leerPersonas();
+      const data = await leerPersonas(equipoPersona?.equipo_id);
       setPersonas(data);
     };
 
@@ -81,6 +83,7 @@ export default function EquipoPage() {
     form.reset();
   }
 
+  // console.log(equipoPersona)
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

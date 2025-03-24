@@ -4,51 +4,51 @@ import { supabase } from "@/supabase/supabase";
 export async function getEquiposUsuario(userId) {
   try {
     const { data, error } = await supabase
-      .from('equipos_personas')
-      .select('*, equipos(capitan_id, subcapitan_id)')
-      .eq('persona_id', userId)
+      .from("equipos_personas")
+      .select("*, equipos(capitan_id, subcapitan_id)")
+      .eq("persona_id", userId);
 
-    if (error) throw error
+    if (error) throw error;
 
-    return data
+    return data;
   } catch (error) {
-    console.error('Error al obtener equipos:', error.message)
-    return []
+    console.error("Error al obtener equipos:", error.message);
+    return [];
   }
 }
 
 // Función para crear un nuevo equipo
 export async function crearEquipo(equipo) {
-   try {
-      const { data, error } = await supabase
-         .from('equipos')
-         .insert([equipo])
-         .single()
+  try {
+    const { data, error } = await supabase
+      .from("equipos")
+      .insert([equipo])
+      .single();
 
-      if (error) throw error
+    if (error) throw error;
 
-      return data
-   } catch (error) {
-      console.error('Error al crear equipo:', error.message)
-      return null
-   }
+    return data;
+  } catch (error) {
+    console.error("Error al crear equipo:", error.message);
+    return null;
+  }
 }
 
 // Función para actualizar un equipo
 export async function actualizarEquipo(equipoId, actualizaciones) {
   try {
     const { data, error } = await supabase
-      .from('equipos')
+      .from("equipos")
       .update(actualizaciones)
-      .eq('id', equipoId)
-      .single()
+      .eq("id", equipoId)
+      .single();
 
-    if (error) throw error
+    if (error) throw error;
 
-    return data
+    return data;
   } catch (error) {
-    console.error('Error al actualizar equipo:', error.message)
-    return null
+    console.error("Error al actualizar equipo:", error.message);
+    return null;
   }
 }
 
@@ -56,34 +56,39 @@ export async function actualizarEquipo(equipoId, actualizaciones) {
 export async function eliminarEquipo(equipoId) {
   try {
     const { error } = await supabase
-      .from('equipos')
+      .from("equipos")
       .delete()
-      .eq('id', equipoId)
+      .eq("id", equipoId);
 
-    if (error) throw error
+    if (error) throw error;
 
-    return true
+    return true;
   } catch (error) {
-    console.error('Error al eliminar equipo:', error.message)
-    return false
+    console.error("Error al eliminar equipo:", error.message);
+    return false;
   }
 }
-//función para leer perfiles
-export const leerPersonas = async ()=>{
+//función para leer personas de un equipo
+export const leerPersonas = async (equipoId) => {
   try {
     let { data, error } = await supabase
-  .from('personas')
-  .select('*')
+      .from("equipos_personas")
+      .select(
+        `
+      *,
+      personas (*)
+    `
+      )
+      .eq("equipo_id", equipoId);
 
-  if (error) {
-     throw error;
-  }
+    if (error) {
+      throw error;
+    }
 
-  console.log('personas', data);
-  return data;
-
+    console.log("personas", data);
+    return data;
   } catch (error) {
-    console.error('Error al leer personas:', error);
+    console.error("Error al leer personas:", error);
     return [];
   }
-}
+};
