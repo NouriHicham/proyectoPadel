@@ -13,6 +13,8 @@ import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
 
 export default function CardEquipo({ equipo }) {
+  const user = JSON.parse(localStorage.getItem('user'));
+
   const navigate = useNavigate()
   const handleSeleccionEquipo = () => {
     navigate("/")
@@ -42,7 +44,9 @@ export default function CardEquipo({ equipo }) {
                 {equipo?.members || ""} miembros
               </span>
             </div>
-            <Badge variant="outline">{equipo?.role || "Miembro"}</Badge>
+            <Badge variant="outline">
+              {user.persona[0].id == equipo?.equipos.capitan_id ? 'Capitan' : user.persona[0].id == equipo?.equipos.subcapitan_id ? 'Subcapitan' : 'Jugador'} 
+            </Badge>
           </div>
 
           <div className="space-y-3">

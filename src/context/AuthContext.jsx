@@ -21,7 +21,6 @@ export const AuthProvider = ({ children }) => {
           .from("personas")
           .select("*")
           .eq("user_id", session.user.id)
-
         if (error) {
           console.error("Error obteniendo datos de personas:", error);
         } else {

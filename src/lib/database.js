@@ -5,7 +5,7 @@ export async function getEquiposUsuario(userId) {
   try {
     const { data, error } = await supabase
       .from('equipos_personas')
-      .select('*')
+      .select('*, equipos(capitan_id, subcapitan_id)')
       .eq('persona_id', userId)
 
     if (error) throw error

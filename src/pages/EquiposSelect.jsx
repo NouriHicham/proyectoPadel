@@ -4,7 +4,6 @@ import { getEquiposUsuario } from '@/lib/database';
 
 export default function EquiposSelect() {
   const [equipos, setEquipos] = useState([]);
-  const [loading, setLoading] = useState([true]);
 
   useEffect(() => {
     async function fetchEquipos() {
@@ -14,17 +13,12 @@ export default function EquiposSelect() {
         const equiposData = await getEquiposUsuario(user.persona[0].id);
         setEquipos(equiposData);
       }
-      setLoading(false);
     }
 
     fetchEquipos();
   }, []);
 
   console.log(equipos);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="container mx-auto min-h-screen flex flex-col justify-center">
