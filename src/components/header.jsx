@@ -31,13 +31,13 @@ export function Header() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuItem asChild>
-              <a href="/perfil">Mi Perfil</a>
+              <Link to="/perfil">Mi Perfil</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <a href="/equipos">Cambiar equipo</a>
+              <Link to="/equipos">Cambiar equipo</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <a href="/configuracion">Configuración</a>
+              <Link to="/configuracion">Configuración</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <a onClick={signOut} className="text-base hover:bg-transparent hover:text-primary">Cerrar Sesión</a>

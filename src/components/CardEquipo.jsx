@@ -17,6 +17,7 @@ export default function CardEquipo({ equipo }) {
   const user = JSON.parse(localStorage.getItem('user'));
   const {setEquipoPersona} = useAuth()
   const navigate = useNavigate()
+
   const handleSeleccionEquipo = () => {
     setEquipoPersona(equipo)
     navigate("/")
