@@ -83,6 +83,7 @@ export default function EquipoPage() {
     form.reset();
   }
 
+  console.log(personas)
   // console.log(equipoPersona)
   return (
     <div className="min-h-screen flex flex-col">
@@ -258,19 +259,19 @@ export default function EquipoPage() {
                   </Avatar>
                   <div className="flex-1">
                     <h3 className="font-semibold">
-                      {player.nombre} {player.apellido}
+                      {player.personas.nombre}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    {/* <p className="text-sm text-muted-foreground">
                       Nivel: Intermedio
-                    </p>
+                    </p> */}
                     <div className="mt-2 space-y-1">
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Phone className="h-4 w-4 mr-2" />
-                        +34 {player.telefono}
+                        +34 {player.personas.telefono}
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Mail className="h-4 w-4 mr-2" />
-                        {player.email}
+                        {player.personas.email}
                       </div>
                     </div>
                     <div className="mt-3">
