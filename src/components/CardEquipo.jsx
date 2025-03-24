@@ -11,16 +11,19 @@ import { Users, Calendar, ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CardEquipo({ equipo }) {
   const user = JSON.parse(localStorage.getItem('user'));
-
+  const {setEquipoPersona} = useAuth()
   const navigate = useNavigate()
   const handleSeleccionEquipo = () => {
+    setEquipoPersona(equipo)
     navigate("/")
   }
+
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden w-full">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-4">
           <Avatar className={`h-12 w-12 ${equipo?.avatarColor || "Equipo"}`}>
