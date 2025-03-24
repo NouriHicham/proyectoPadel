@@ -17,6 +17,21 @@ export async function getEquiposUsuario(userId) {
   }
 }
 
+export async function getEquipos(id){
+  try {
+    const { data, error } = await supabase
+       .from('equipos')
+       .select('*')
+       .eq('id', id)
+
+     if (error) throw error
+     return data
+    } catch (error) {
+    console.error('Error al obtener equipo:', error.message)
+    return null
+    }
+}
+
 // Función para crear un nuevo equipo
 export async function crearEquipo(equipo) {
    try {
