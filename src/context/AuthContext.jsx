@@ -5,7 +5,12 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   // estado del usuario, que si existe se obtiene el usuario
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+  const [user, setUser] = useState(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null);
+  
+  const [equipoPersona, setEquipoPersona] = useState(() => {
+    const personaGuardada = localStorage.getItem('personaGuardada');
+    return personaGuardada ? JSON.parse(personaGuardada) : null;
+  });
 
   // Función para guardar el usuario en localStorage y actualizar el estado del usuario
   const saveUserToLocalStorage = (userData) => {
@@ -57,11 +62,22 @@ export const AuthProvider = ({ children }) => {
     return { data };
   }
 
-  const signOut = async() => {
-    supabase.auth.signOut();
-    localStorage.removeItem("user");
-    setUser(null);
-  }
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.warn("Error al cerrar sesión:", error.message);
+      }
+    } catch (err) {
+      console.error("Error inesperado al cerrar sesión:", err);
+    } finally {
+      // Limpiar el estado local independientemente del resultado
+      localStorage.removeItem("user");
+      localStorage.removeItem("personaGuardada");
+      setUser(null);
+    }
+  };
+  
 
   const registrar = async (email, password, name, surname, phone) => {
     // Registrar usuario en auth.users
@@ -90,8 +106,12 @@ export const AuthProvider = ({ children }) => {
     return { data: personaData };
   };
 
+  useEffect(() => {
+    localStorage.setItem('personaGuardada', JSON.stringify(equipoPersona))
+  }, [equipoPersona])
+
   return (
-    <AuthContext.Provider value={{ user, login, signOut, registrar }}>
+    <AuthContext.Provider value={{ user, login, signOut, registrar, equipoPersona, setEquipoPersona}}>
       {children}
     </AuthContext.Provider>
   );
