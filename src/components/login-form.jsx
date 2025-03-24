@@ -15,7 +15,6 @@ export function LoginForm({ className, ...props }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log(email, password);
 
     const { data, error } = await login(email, password);
     if (error) {

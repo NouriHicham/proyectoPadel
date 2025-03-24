@@ -1,9 +1,29 @@
 import { Header } from "@/components/header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { getEquipos } from "@/lib/database";
 import { Calendar, Trophy, Users2 } from "lucide-react"
+import { useEffect, useState } from "react";
 
 export default function Home(){
-  console.log("user: ", JSON.parse(localStorage.getItem("user")).persona);
+  const persona = JSON.parse(localStorage.getItem("user")).persona;
+  const savedInfo = JSON.parse(localStorage.getItem("personaGuardada"))
+  const [equipo, setEquipo] = useState(null);
+
+  useEffect(() => {
+    async function fetchEquipo(){
+      try {
+        const equipoData = await getEquipos(savedInfo.equipo_id);
+        setEquipo(equipoData);
+      } catch (error) {
+        console.error("Error al obtener el equipo:", error);
+      }
+    }
+
+    fetchEquipo();
+  }, [savedInfo.equipo_id]);
+
+  console.log(equipo)
+
    return (
       <>
 
