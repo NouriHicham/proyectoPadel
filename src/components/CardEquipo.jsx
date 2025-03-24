@@ -18,7 +18,7 @@ export default function CardEquipo({ equipo }) {
     navigate("/")
   }
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden w-full">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-4">
           <Avatar className={`h-12 w-12 ${equipo?.avatarColor || "Equipo"}`}>

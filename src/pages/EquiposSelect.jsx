@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import CardEquipo from "@/components/CardEquipo";
 import { getEquiposUsuario } from '@/lib/database';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 export default function EquiposSelect() {
   const [equipos, setEquipos] = useState([]);
+  const {signOut} = useAuth()
   const [loading, setLoading] = useState([true]);
 
   useEffect(() => {
@@ -27,7 +30,8 @@ export default function EquiposSelect() {
   }
 
   return (
-    <div className="container mx-auto min-h-screen flex flex-col justify-center">
+    <div className="container relative mx-auto min-h-screen flex flex-col justify-center items-center">
+      <Button className="absolute right-4 top-10" onClick={signOut}>Cerrar Sesión</Button>
       <div className="text-center mb-4">
         <h1 className="text-4xl font-semibold">Mis equipos</h1>
         <p>Visualiza los equipos a los que perteneces</p>
