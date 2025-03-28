@@ -6,10 +6,47 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, Phone} from "lucide-react";
+import { getPerfilUsuario } from "@/lib/database";
+import { Mail, Phone } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 export default function JugadorDetalles() {
-  // Al cargar pagina, hacer fetch de los datos del usuario, con el id pasado por url 
+  // Al cargar pagina, hacer fetch de los datos del usuario, con el id pasado por url
+  const { id } = useParams();
+
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const [data] = await getPerfilUsuario(id);
+        setUserData(data);
+      } catch (error) {
+        console.error("Error al obtener los datos del usuario:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [id]);
+
+  // Por si queremos mostrar un cargando
+  if (!userData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        {/* <p>Cargando...</p> */}
+        <div className="lex flex-col space-y-3">
+          <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -25,7 +62,9 @@ export default function JugadorDetalles() {
                     <AvatarFallback>JP</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h1 className="text-2xl font-bold">Juan Pérez</h1>
+                    <h1 className="text-2xl font-bold">
+                      {userData?.nombre + " " + userData?.apellido}
+                    </h1>
                     <p className="text-muted-foreground">Miembro desde 2025</p>
                   </div>
                   <Button variant="outline">Editar perfil</Button>
@@ -40,11 +79,11 @@ export default function JugadorDetalles() {
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Phone className="h-5 w-5 text-muted-foreground" />
-                  <span>+34 6xx xxx xxx</span>
+                  <span>+34 {userData?.telefono}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="h-5 w-5 text-muted-foreground" />
-                  <span>juan@email.com</span>
+                  <span>{userData?.email}</span>
                 </div>
               </CardContent>
             </Card>
@@ -116,8 +155,12 @@ export default function JugadorDetalles() {
         </div>
         <Tabs defaultValue="history" className={"mt-5"}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="history" className={"cursor-pointer"}>Historial</TabsTrigger>
-            <TabsTrigger value="partners" className={"cursor-pointer"}>Compañeros</TabsTrigger>
+            <TabsTrigger value="history" className={"cursor-pointer"}>
+              Historial
+            </TabsTrigger>
+            <TabsTrigger value="partners" className={"cursor-pointer"}>
+              Compañeros
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="history">
             <Card>

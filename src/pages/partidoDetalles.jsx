@@ -16,6 +16,7 @@ import {
 export default function PartidoDetalles() {
   const { id } = useParams();
 
+  // const haFinalizado = true;
   const haFinalizado = false;
   const isAdmin = true;
 
