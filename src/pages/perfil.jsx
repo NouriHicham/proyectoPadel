@@ -7,6 +7,7 @@ import { Header } from "@/components/header"
 
 export default function Perfil() {
   // This would typically come from your authentication system
+  const user = JSON.parse(localStorage.getItem('user')).persona[0];
   const userData = {
     name: "Alex Johnson",
     email: "alex.johnson@example.com",
@@ -17,6 +18,8 @@ export default function Perfil() {
     website: "alexjohnson.dev",
     bio: "Product designer and developer with a passion for creating intuitive user experiences. I enjoy working on projects that make a positive impact on people's lives.",
   }
+
+  console.log(user);
 
   return (
    <div className="min-h-screen flex flex-col">
@@ -30,14 +33,9 @@ export default function Perfil() {
             <CardContent className="pt-6 flex flex-col items-center text-center">
               <Avatar className="h-32 w-32 mb-4">
                 <AvatarImage src={userData.avatar} alt={userData.name} />
-                <AvatarFallback>
-                  {userData.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
+                <AvatarFallback>{user.nombre}</AvatarFallback>
               </Avatar>
-              <h2 className="text-xl font-bold">{userData.name}</h2>
+              <h2 className="text-xl font-bold">{user.nombre} {user.apellido}</h2>
               <p className="text-sm text-muted-foreground mb-4">{userData.bio}</p>
               <Button className="w-full">Edit Profile</Button>
             </CardContent>
@@ -76,7 +74,7 @@ export default function Perfil() {
                   <div className="text-sm font-medium text-muted-foreground">Full Name</div>
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    <span>{userData.name}</span>
+                    <span>{user.nombre} {user.apellido}</span>
                   </div>
                 </div>
 
@@ -84,7 +82,7 @@ export default function Perfil() {
                   <div className="text-sm font-medium text-muted-foreground">Email</div>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>{userData.email}</span>
+                    <span>{user.email}</span>
                   </div>
                 </div>
 
@@ -100,20 +98,8 @@ export default function Perfil() {
                   <div className="text-sm font-medium text-muted-foreground">Phone</div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>{userData.phone}</span>
+                    <span>+34 {user.telefono}</span>
                   </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-1">
-                <div className="text-sm font-medium text-muted-foreground">Website</div>
-                <div className="flex items-center gap-2">
-                  <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                  <a href={`https://${userData.website}`} className="text-primary hover:underline">
-                    {userData.website}
-                  </a>
                 </div>
               </div>
             </CardContent>
