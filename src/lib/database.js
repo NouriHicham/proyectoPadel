@@ -17,19 +17,19 @@ export async function getEquiposUsuario(userId) {
   }
 }
 
-export async function getEquipos(id){
+export async function getEquipos(id) {
   try {
     const { data, error } = await supabase
-       .from('equipos')
-       .select('*')
-       .eq('id', id)
+      .from("equipos")
+      .select("*")
+      .eq("id", id);
 
-     if (error) throw error
-     return data
-    } catch (error) {
-    console.error('Error al obtener equipo:', error.message)
-    return null
-    }
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error al obtener equipo:", error.message);
+    return null;
+  }
 }
 
 // contar los miembros de un equipo
@@ -152,6 +152,35 @@ export const leerPersonas = async (equipoId) => {
     `
       )
       .eq("equipo_id", equipoId);
+
+    if (error) {
+      throw error;
+    }
+
+    console.log("personas", data);
+    return data;
+  } catch (error) {
+    console.error("Error al leer personas:", error);
+    return [];
+  }
+};
+
+export const getPerfilUsuario = async (id) => {
+  try {
+    // select * from personas where id = (select persona_id from equipos_personas WHERE id = id)
+    const { data, error } = await supabase
+      .from("equipos_personas")
+      .select("persona_id")
+      .eq("id", id)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          return supabase
+            .from("personas")
+            .select("*")
+            .eq("id", data.persona_id);
+        }
+      });
 
     if (error) {
       throw error;
