@@ -32,6 +32,63 @@ export async function getEquipos(id){
     }
 }
 
+// contar los miembros de un equipo
+export async function getMiembrosEquipo(equipo_id) {
+  try {
+    const { count, error } = await supabase
+      .from('equipos_personas')
+      .select('*', { count: 'exact' }) // Solo cuenta, sin traer datos
+      .eq('equipo_id', equipo_id);
+
+    if (error) throw error;
+    return count;
+  } catch (error) {
+    console.error('Error al contar miembros del equipo:', error.message);
+    return 0;
+  }
+}
+
+// funcion para obtener los ultimos tres partidos jugados
+ export async function getUltimosPartidosJugados(equipo_id) {
+  try {
+    const { data, error } = await supabase
+      .from('partidos')
+      .select('*')
+      .or(`equipo1_id.eq.${equipo_id},equipo2_id.eq.${equipo_id}`)
+      .eq('estado', 'finalizado')
+      .order('fecha', { ascending: false })
+      .limit(3);
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error('Error al obtener los últimos partidos:', error.message);
+    return [];
+  }
+}
+
+// funcion para obtener el siguiente partido a jugar
+export async function getUltimoPartidoaJugar(equipo_id) {
+  try {
+    const { data, error } = await supabase
+      .from('partidos')
+      .select('*, sedes(nombre)')
+      .or(`equipo1_id.eq.${equipo_id},equipo2_id.eq.${equipo_id}`)
+      .eq('estado', 'programado')
+      .order('fecha', { ascending: false })
+      .limit(1);
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error('Error al obtener los últimos partidos:', error.message);
+    return [];
+  }
+}
+
+
 // Función para crear un nuevo equipo
 export async function crearEquipo(equipo) {
   try {
