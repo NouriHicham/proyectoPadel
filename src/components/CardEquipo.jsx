@@ -14,33 +14,38 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import { aceptarInvitacion } from "@/lib/database";
+import { cn } from "@/lib/utils";
 
 export default function CardEquipo({ equipo, invitation = false }) {
-  const user = JSON.parse(localStorage.getItem('user'));
-  const {setEquipoPersona} = useAuth()
-  const navigate = useNavigate()
-  const personaId = JSON.parse(localStorage.getItem('personaGuardada')).persona_id;
+  const user = JSON.parse(localStorage.getItem("user"));
+  const { setEquipoPersona, equipoPersona } = useAuth();
+  const navigate = useNavigate();
+  const personaId = JSON.parse(
+    localStorage.getItem("personaGuardada")
+  )?.persona_id;
   const equipoId = equipo?.equipo_id;
 
   const handleSeleccionEquipo = () => {
     if (!invitation) {
-      setEquipoPersona(equipo)
-      navigate("/")
-    }else{
+      setEquipoPersona(equipo);
+      navigate("/");
+    } else {
       // Si es una invitación, setear la invitacion como 'aceptada' y guardar en local storage este equipo y navegar a /
-      
-      
     }
-  }
+  };
 
   const handleAceptar = async () => {
     try {
+      console.log(personaId, equipoId);
       const data = await aceptarInvitacion(personaId, equipoId);
-      navigate("/equipos")
+      navigate("/equipos");
     } catch (error) {
       console.error("Error al aceptar la invitacion:", error);
     }
   };
+
+  console.log("equipo: ", equipo);
+  console.log(": ", equipoPersona);
 
   return (
     <Card className="overflow-hidden w-full">
@@ -68,7 +73,11 @@ export default function CardEquipo({ equipo, invitation = false }) {
               </span>
             </div>
             <Badge variant="outline">
-              {user.persona[0].id == equipo?.equipos.capitan_id ? 'Capitan' : user.persona[0].id == equipo?.equipos.subcapitan_id ? 'Subcapitan' : 'Jugador'} 
+              {user.persona[0].id == equipo?.equipos.capitan_id
+                ? "Capitan"
+                : user.persona[0].id == equipo?.equipos.subcapitan_id
+                ? "Subcapitan"
+                : "Jugador"}
             </Badge>
           </div>
 
@@ -81,11 +90,12 @@ export default function CardEquipo({ equipo, invitation = false }) {
             </div>
           </div>
           <Button
-          variant="ghost"
-          className="ml-auto h-8 w-full justify-between px-2">
-          Detalles
-          <Info className="h-4 w-4"/>
-        </Button>
+            variant="ghost"
+            className="ml-auto h-8 w-full justify-between px-2"
+          >
+            Detalles
+            <Info className="h-4 w-4" />
+          </Button>
           {/* <div className="flex items-center justify-between">
             <div className="flex -space-x-2">
               Miembros
@@ -100,29 +110,29 @@ export default function CardEquipo({ equipo, invitation = false }) {
         </div>
       </CardContent>
       <CardFooter className="border-t bg-muted/50 px-6 py-3">
-      {invitation ? (
-        <>
-        <Button
-          variant=""
-          className="ml-auto h-8 w-full justify-between px-2"
-          onClick={handleAceptar}
-        >
-          Unirme al equipo
-          <Check className="h-4 w-4"></Check>
-        </Button>
-      </>
-      ) : (
-        <Button
-          variant=""
-          className="ml-auto h-8 w-full justify-between px-2"
-          onClick={handleSeleccionEquipo}
-        >
-          Seleccionar este equipo
-          <ArrowRight className="h-4 w-4" />
-        </Button>
-      )}
-        
-        
+        {invitation ? (
+          <Button
+            variant=""
+            className="ml-auto h-8 w-full justify-between px-2 hover:bg-gray-100 transition-colors"
+            onClick={handleAceptar}
+          >
+            <span>Unirme al equipo</span>
+            <Check className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            variant=""
+            className={cn(
+              "ml-auto h-8 w-full justify-between px-2 hover:bg-gray-100 transition-colors",
+              equipoPersona?.equipo_id == equipo?.equipo_id && "bg-green-700"
+            )}
+            onClick={handleSeleccionEquipo}
+          >
+            
+            <span>{equipoPersona?.equipo_id == equipo?.equipo_id  ? "Equipo Seleccionado" : "Seleccionar este equipo"}</span>
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

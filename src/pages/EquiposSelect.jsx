@@ -4,10 +4,13 @@ import { getEquiposUsuario } from "@/lib/database";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function EquiposSelect() {
   const [equipos, setEquipos] = useState([]);
-  const { signOut } = useAuth();
+  const { signOut, equipoPersona} = useAuth();
+  const navigate = useNavigate()
 
   useEffect(() => {
     async function fetchEquipos() {
@@ -29,6 +32,11 @@ export default function EquiposSelect() {
       <Button className="absolute right-4 top-10" onClick={signOut}>
         Cerrar Sesión
       </Button>
+      {equipoPersona && (
+        <Button className="fixed right-3 bottom-5 rounded-full" onClick={() => navigate("/")}>
+          <Home className=""/>
+        </Button>
+      )}
       <div className="text-center">
         <h1 className="text-4xl font-semibold">Mis equipos</h1>
         <p>Visualiza los equipos a los que perteneces o tus invitaciones</p>
