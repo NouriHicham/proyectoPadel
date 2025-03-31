@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Users, Calendar, ArrowRight, Check, Info } from "lucide-react";
+import { Users, Calendar, ArrowRight, Check, Info, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -17,12 +17,10 @@ import { aceptarInvitacion } from "@/lib/database";
 import { cn } from "@/lib/utils";
 
 export default function CardEquipo({ equipo, invitation = false }) {
-  const user = JSON.parse(localStorage.getItem("user"));
-  const { setEquipoPersona, equipoPersona } = useAuth();
-  const navigate = useNavigate();
-  const personaId = JSON.parse(
-    localStorage.getItem("personaGuardada")
-  )?.persona_id;
+  const user = JSON.parse(localStorage.getItem('user'));
+  const {setEquipoPersona, equipoPersona} = useAuth()
+  const navigate = useNavigate()
+  const personaId = JSON.parse(localStorage.getItem('user')).persona[0]?.id;
   const equipoId = equipo?.equipo_id;
 
   const handleSeleccionEquipo = () => {
@@ -34,11 +32,15 @@ export default function CardEquipo({ equipo, invitation = false }) {
     }
   };
 
-  const handleAceptar = async () => {
+  const handleAceptar = async (aceptar) => {
     try {
-      console.log(personaId, equipoId);
-      const data = await aceptarInvitacion(personaId, equipoId);
-      navigate("/equipos");
+      if (aceptar) {
+        const data = await aceptarInvitacion(personaId, equipoId, 'aceptado');
+      } else {
+        const data = await aceptarInvitacion(personaId, equipoId, 'rechazado');
+      }
+      
+      location.reload;
     } catch (error) {
       console.error("Error al aceptar la invitacion:", error);
     }
@@ -133,6 +135,37 @@ export default function CardEquipo({ equipo, invitation = false }) {
             <ArrowRight className="h-4 w-4" />
           </Button>
         )}
+      {invitation ? (
+        <>
+        <Button
+          variant=""
+          className="ml-auto h-8 w-1/2 justify-between px-2"
+          onClick={handleAceptar(true)}
+        >
+          Unirme al equipo
+          <Check className="h-4 w-4"></Check>
+        </Button>
+        <Button
+          variant="ghost"
+          className="ml-auto h-8 w-1/2 justify-between px-2"
+          onClick={handleAceptar(false)}
+        >
+          Rechazar la invitación
+          <X className="h-4 w-4"/>
+        </Button>
+      </>
+      ) : (
+        <Button
+          variant=""
+          className="ml-auto h-8 w-full justify-between px-2"
+          onClick={handleSeleccionEquipo}
+        >
+          Seleccionar este equipo
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+      )}
+        
+        
       </CardFooter>
     </Card>
   );

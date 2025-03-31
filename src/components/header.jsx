@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 
 export function Header() {
   const {signOut} = useAuth()
+  const user = JSON.parse(localStorage.getItem('user')).persona[0];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -24,9 +25,9 @@ export function Header() {
             <button className="flex items-center gap-2 rounded-xl p-1 text-sm font-medium hover:bg-accent hover:text-accent-foreground hover:cursor-pointer">
               <Avatar className="h-8 w-8">
                 <AvatarImage src="/placeholder.svg?height=32&width=32" alt="@usuario" />
-                <AvatarFallback>UN</AvatarFallback>
+                <AvatarFallback>{user.nombre.charAt(0)}</AvatarFallback>
               </Avatar>
-              <span>Usuario123</span>
+              <span>{user.nombre} {user.apellido}</span>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
