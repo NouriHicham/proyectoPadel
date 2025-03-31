@@ -248,11 +248,11 @@ export const invitarPersona = async (personaId, equipoId) => {
   }
 }
 
-export const aceptarInvitacion = async (personaId, equipoId) => {
+export const aceptarInvitacion = async (personaId, equipoId, aceptado) => {
   try {
     const { data, error } = await supabase
       .from('equipos_personas')
-      .update({ estado: 'aceptado' })
+      .update({ estado: aceptado })
       .eq('persona_id', personaId)
       .eq('equipo_id', equipoId);
       if (error) throw error;

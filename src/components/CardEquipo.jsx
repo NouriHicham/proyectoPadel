@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Users, Calendar, ArrowRight, Check, Info } from "lucide-react";
+import { Users, Calendar, ArrowRight, Check, Info, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -33,10 +33,14 @@ export default function CardEquipo({ equipo, invitation = false }) {
     }
   }
 
-  const handleAceptar = async () => {
+  const handleAceptar = async (aceptar) => {
     try {
-      console.log (personaId, equipoId);
-      const data = await aceptarInvitacion(personaId, equipoId);
+      if (aceptar) {
+        const data = await aceptarInvitacion(personaId, equipoId, 'aceptado');
+      } else {
+        const data = await aceptarInvitacion(personaId, equipoId, 'rechazado');
+      }
+      
       location.reload;
     } catch (error) {
       console.error("Error al aceptar la invitacion:", error);
@@ -105,11 +109,19 @@ export default function CardEquipo({ equipo, invitation = false }) {
         <>
         <Button
           variant=""
-          className="ml-auto h-8 w-full justify-between px-2"
-          onClick={handleAceptar}
+          className="ml-auto h-8 w-1/2 justify-between px-2"
+          onClick={handleAceptar(true)}
         >
           Unirme al equipo
           <Check className="h-4 w-4"></Check>
+        </Button>
+        <Button
+          variant="ghost"
+          className="ml-auto h-8 w-1/2 justify-between px-2"
+          onClick={handleAceptar(false)}
+        >
+          Rechazar la invitación
+          <X className="h-4 w-4"/>
         </Button>
       </>
       ) : (
