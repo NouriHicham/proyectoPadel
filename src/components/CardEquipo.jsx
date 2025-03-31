@@ -19,7 +19,7 @@ export default function CardEquipo({ equipo, invitation = false }) {
   const user = JSON.parse(localStorage.getItem('user'));
   const {setEquipoPersona} = useAuth()
   const navigate = useNavigate()
-  const personaId = JSON.parse(localStorage.getItem('personaGuardada')).persona_id;
+  const personaId = JSON.parse(localStorage.getItem('user')).persona[0]?.id;
   const equipoId = equipo?.equipo_id;
 
   const handleSeleccionEquipo = () => {
@@ -35,8 +35,9 @@ export default function CardEquipo({ equipo, invitation = false }) {
 
   const handleAceptar = async () => {
     try {
+      console.log (personaId, equipoId);
       const data = await aceptarInvitacion(personaId, equipoId);
-      navigate("/equipos")
+      location.reload;
     } catch (error) {
       console.error("Error al aceptar la invitacion:", error);
     }
