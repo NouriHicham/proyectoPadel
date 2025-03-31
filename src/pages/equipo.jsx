@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, Phone, Plus } from "lucide-react";
+import { Mail, Phone, Plus, UserX } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Dialog,
@@ -36,9 +36,13 @@ import {
 } from "@/components/ui/select";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { invitarPersona, jugadoresDiferenteEquipo, leerPersonas } from "@/lib/database";
+import {
+  invitarPersona,
+  jugadoresDiferenteEquipo,
+  leerPersonas,
+} from "@/lib/database";
 import { useAuth } from "@/context/AuthContext";
-// import { leerPersonas } from "@/supabase/supabase";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -62,7 +66,11 @@ export default function EquipoPage() {
   const [personas, setPersonas] = useState([]); // array de personas pre-cargadas
   const { equipoPersona } = useAuth();
   const [personaId, setPersonaId] = useState(null);
-  const equipoId = JSON.parse(localStorage.getItem('personaGuardada')).equipo_id;
+  const [defaultTab, setDefaultTab] = useState("jugadores");
+
+  const equipoId = JSON.parse(
+    localStorage.getItem("personaGuardada")
+  ).equipo_id;
 
   const [listaJugadores, setListaJugadores] = useState([]); // array de jugadores pre-cargados
 
@@ -96,7 +104,7 @@ export default function EquipoPage() {
 
   const handleInvitar = async () => {
     try {
-      if(personaId == null) {
+      if (personaId == null) {
         alert("Debes seleccionar una persona");
         return;
       }
@@ -108,8 +116,9 @@ export default function EquipoPage() {
     }
   };
 
-  // console.log(personas);
+  console.log(personas);
   // console.log(equipoPersona)
+  // console.log(defaultTab)
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -118,6 +127,20 @@ export default function EquipoPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-3xl font-bold">Equipo</h1>
           <div className="flex items-center gap-4 w-full sm:w-auto">
+            <Tabs
+              defaultValue="jugadores"
+              className="mr-2"
+              onValueChange={(value) => setDefaultTab(value)}
+            >
+              <TabsList>
+                <TabsTrigger value="jugadores" className={"cursor-pointer"}>
+                  Jugadores
+                </TabsTrigger>
+                <TabsTrigger value="invitaciones" className={"cursor-pointer"}>
+                  Invitaciones
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             {/* Modal para invitar a jugador */}
             <Dialog open={open2} onOpenChange={setOpen2}>
               <DialogTrigger asChild>
@@ -132,7 +155,9 @@ export default function EquipoPage() {
                   <DialogDescription></DialogDescription>
                 </DialogHeader>
 
-                <Select onValueChange={(value) => setPersonaId(parseInt(value))}>
+                <Select
+                  onValueChange={(value) => setPersonaId(parseInt(value))}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecciona un jugador" />
                   </SelectTrigger>
@@ -141,7 +166,8 @@ export default function EquipoPage() {
                       {listaJugadores.map((jugador) => (
                         <SelectItem
                           key={jugador.id}
-                          value={jugador.id.toString()}>
+                          value={jugador.id.toString()}
+                        >
                           {`${jugador.nombre} ${jugador.apellido}`}
                         </SelectItem>
                       ))}
@@ -272,43 +298,133 @@ export default function EquipoPage() {
             </Dialog>
           </div>
         </div>
-
+        {/* Interesa que solo el admin pueda ver el siguiente contenido.  */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {personas.map((player) => (
-            <Card key={player.id}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  <Avatar>
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{player.personas.nombre}</h3>
-                    {/* <p className="text-sm text-muted-foreground">
-                      Nivel: Intermedio
-                    </p> */}
-                    <div className="mt-2 space-y-1">
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Phone className="h-4 w-4 mr-2" />
-                        +34 {player.personas.telefono}
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Mail className="h-4 w-4 mr-2" />
-                        {player.personas.email}
+          {defaultTab === "jugadores" ? (
+            personas
+              .filter((persona) => persona.estado === "aceptado")
+              .map((player) => (
+                <Card
+                  key={player.id}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      <Avatar>
+                        <AvatarImage
+                          src={
+                            player.personas.foto ||
+                            "https://github.com/shadcn.png"
+                          }
+                        />
+                        <AvatarFallback>
+                          {player.personas.nombre.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h3 className="font-semibold">
+                          {player.personas.nombre}
+                        </h3>
+
+                        <div className="mt-2 space-y-2">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Phone className="h-4 w-4 mr-2 opacity-70" />
+                            {player.personas.telefono
+                              ? `+34 ${player.personas.telefono}`
+                              : "No registrado"}
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Mail className="h-4 w-4 mr-2 opacity-70" />
+                            {player.personas.email}
+                          </div>
+                        </div>
+
+                        <div className="mt-4 space-y-2">
+                          <Link to={`/equipo/jugador/${player.id}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                            >
+                              Ver perfil
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                    <div className="mt-3">
-                      <Link to={`/equipo/jugador/${player.id}`}>
-                        <Button variant="outline" size="sm" className="w-full">
-                          Ver perfil
-                        </Button>
-                      </Link>
+                  </CardContent>
+                </Card>
+              ))
+          ) : personas.filter((persona) => persona.estado === "invitado").length > 0 ? (personas
+              .filter((persona) => persona.estado === "invitado")
+              .map((player) => (
+                <Card
+                  key={player.id}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      <Avatar>
+                        <AvatarImage
+                          src={
+                            player.personas.foto ||
+                            "https://github.com/shadcn.png"
+                          }
+                        />
+                        <AvatarFallback>
+                          {player.personas.nombre.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h3 className="font-semibold">
+                          {player.personas.nombre}
+                        </h3>
+
+                        <div className="mt-2 space-y-2">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Phone className="h-4 w-4 mr-2 opacity-70" />
+                            {player.personas.telefono
+                              ? `+34 ${player.personas.telefono}`
+                              : "No registrado"}
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Mail className="h-4 w-4 mr-2 opacity-70" />
+                            {player.personas.email}
+                          </div>
+                        </div>
+
+                        <div className="mt-4 space-y-2">
+                          <Link to={`/equipo/jugador/${player.id}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                            >
+                              Ver perfil
+                            </Button>
+                          </Link>
+                          <Button
+                            size="sm"
+                            className="w-full mt-2 "
+                          >
+                            Aceptar solicitud
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  </CardContent>
+                </Card>
+              ))
+          ) : (
+            <div className="col-span-full py-12 text-center">
+              <div className="mx-auto flex flex-col items-center justify-center text-muted-foreground">
+                <UserX className="h-12 w-12 mb-4 opacity-50" />
+                <h3 className="text-lg font-medium">
+                  No hay invitaciones pendientes
+                </h3>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

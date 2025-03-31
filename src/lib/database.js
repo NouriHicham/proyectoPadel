@@ -219,6 +219,7 @@ export const jugadoresDiferenteEquipo = async (equipoId) => {
         personas (*)
       `)
       .neq('equipo_id', equipoId)
+      .eq('estado', 'aceptado')
       .not('persona_id', 'in', `(${excludedIds.join(',')})`);
 
     if (error) throw error;
