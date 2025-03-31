@@ -21,7 +21,7 @@ export default function EquiposSelect() {
     fetchEquipos();
   }, []);
 
-  console.log(equipos);
+  console.log('equipos: ', equipos);
 
   return (
     <div className="container relative mx-auto min-h-screen flex flex-col justify-center items-center">

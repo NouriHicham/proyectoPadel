@@ -136,3 +136,39 @@ export const getPerfilUsuario = async (id) => {
     return [];
   }
 };
+
+
+
+// Mostrar los demás jugadores, para poder invitarlos
+// --> ejemplo consulta sql: SELECT * from equipos_personas ep join personas p on (ep.persona_id = p.id) where equipo_id != 12 and persona_id not in (SELECT persona_id from equipos_personas where equipo_id = 12) 
+export const jugadoresDiferenteEquipo = async (equipoId) => {
+  try {
+    // Primero obtenemos los persona_id del equipo que queremos excluir
+    const { data: excludedPersonas } = await supabase
+      .from('equipos_personas')
+      .select('persona_id')
+      .eq('equipo_id', equipoId);
+    
+    // Extraemos solo los IDs
+    const excludedIds = excludedPersonas.map(p => p.persona_id);
+
+    // Luego hacemos la consulta principal
+    let { data, error } = await supabase
+      .from('equipos_personas')
+      .select(`
+        *,
+        personas (*)
+      `)
+      .neq('equipo_id', equipoId)
+      .not('persona_id', 'in', `(${excludedIds.join(',')})`);
+
+    if (error) throw error;
+
+    console.log("personas encontradas:", data);
+    return data;
+  } catch (error) {
+    console.error("Error al leer personas:", error);
+    return [];
+  }
+};
+

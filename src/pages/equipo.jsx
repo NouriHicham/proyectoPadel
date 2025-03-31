@@ -31,13 +31,12 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { leerPersonas } from "@/lib/database";
+import { jugadoresDiferenteEquipo, leerPersonas } from "@/lib/database";
 import { useAuth } from "@/context/AuthContext";
 // import { leerPersonas } from "@/supabase/supabase";
 
@@ -61,15 +60,25 @@ export default function EquipoPage() {
   const [open, setOpen] = useState(false);
   const [open2, setOpen2] = useState(false);
   const [personas, setPersonas] = useState([]); // array de personas pre-cargadas
-  const {equipoPersona} = useAuth()
-  
+  const { equipoPersona } = useAuth();
+
+  const [listaJugadores, setListaJugadores] = useState([]); // array de jugadores pre-cargados
+
   useEffect(() => {
     const fetchPersonas = async () => {
       const data = await leerPersonas(equipoPersona?.equipo_id);
       setPersonas(data);
     };
 
+    const diferentesJugadores = async () => {
+      const data = await jugadoresDiferenteEquipo(equipoPersona?.equipo_id);
+      const personasArray = data.map((item) => item.personas);
+      setListaJugadores(personasArray);
+      console.log("Diferentes jugadores", personasArray);
+    };
+
     fetchPersonas();
+    diferentesJugadores();
   }, []);
 
   const form = useForm({
@@ -83,7 +92,7 @@ export default function EquipoPage() {
     form.reset();
   }
 
-  console.log(personas)
+  // console.log(personas);
   // console.log(equipoPersona)
   return (
     <div className="min-h-screen flex flex-col">
@@ -104,22 +113,23 @@ export default function EquipoPage() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Invitar a Jugador</DialogTitle>
-                  <DialogDescription>
-                  </DialogDescription>
+                  <DialogDescription></DialogDescription>
                 </DialogHeader>
 
                 <Select>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select" />
+                    <SelectValue placeholder="Selecciona un jugador" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectLabel>Fruits</SelectLabel>
-                      <SelectItem value="apple">Apple</SelectItem>
-                      <SelectItem value="banana">Banana</SelectItem>
-                      <SelectItem value="blueberry">Blueberry</SelectItem>
-                      <SelectItem value="grapes">Grapes</SelectItem>
-                      <SelectItem value="pineapple">Pineapple</SelectItem>
+                      {listaJugadores.map((jugador) => (
+                        <SelectItem
+                          key={jugador.id}
+                          value={jugador.id.toString()} 
+                        >
+                          {`${jugador.nombre} ${jugador.apellido}`}
+                        </SelectItem>
+                      ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -258,9 +268,7 @@ export default function EquipoPage() {
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <h3 className="font-semibold">
-                      {player.personas.nombre}
-                    </h3>
+                    <h3 className="font-semibold">{player.personas.nombre}</h3>
                     {/* <p className="text-sm text-muted-foreground">
                       Nivel: Intermedio
                     </p> */}
