@@ -13,14 +13,20 @@ import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
-export default function CardEquipo({ equipo }) {
+export default function CardEquipo({ equipo, invitation = false }) {
   const user = JSON.parse(localStorage.getItem('user'));
   const {setEquipoPersona} = useAuth()
   const navigate = useNavigate()
 
   const handleSeleccionEquipo = () => {
-    setEquipoPersona(equipo)
-    navigate("/")
+    if (!invitation) {
+      setEquipoPersona(equipo)
+      navigate("/")
+    }else{
+      // Si es una invitación, setear la invitacion como 'aceptada' y guardar en local storage este equipo y navegar a /
+
+      
+    }
   }
 
   return (
@@ -29,7 +35,7 @@ export default function CardEquipo({ equipo }) {
         <div className="flex items-center gap-4">
           <Avatar className={`h-12 w-12 ${equipo?.avatarColor || "Equipo"}`}>
             {/* Iniciales del equipo */}
-            <AvatarFallback>{"ED"}</AvatarFallback>
+            <AvatarFallback>{equipo?.equipo_id}</AvatarFallback>
           </Avatar>
           <div className="space-y-1">
             <CardTitle>{equipo?.name || "Equipo"}</CardTitle>
@@ -60,9 +66,6 @@ export default function CardEquipo({ equipo }) {
                 Próximo partido: {equipo?.nextMeeting || ""}
               </span>
             </div>
-            {/* <div className="text-sm text-muted-foreground">
-              Actividad reciente: {equipo?.recentActivity || ""}
-            </div> */}
           </div>
 
           <div className="flex items-center justify-between">
@@ -80,11 +83,11 @@ export default function CardEquipo({ equipo }) {
       </CardContent>
       <CardFooter className="border-t bg-muted/50 px-6 py-3">
         <Button
-          variant="ghost"
+          variant=""
           className="ml-auto h-8 w-full justify-between px-2"
           onClick={handleSeleccionEquipo}
         >
-          Seleccionar este equipo
+          {invitation ? "Unirme al equipo" : "Seleccionar este equipo"}
           <ArrowRight className="h-4 w-4" />
         </Button>
         {/* <Button

@@ -92,6 +92,7 @@ export default function EquipoPage() {
     form.reset();
   }
 
+  console.log();
   // console.log(personas);
   // console.log(equipoPersona)
   return (
@@ -116,7 +117,7 @@ export default function EquipoPage() {
                   <DialogDescription></DialogDescription>
                 </DialogHeader>
 
-                <Select>
+                <Select onValueChange={(value) => console.log(value)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecciona un jugador" />
                   </SelectTrigger>
@@ -125,7 +126,7 @@ export default function EquipoPage() {
                       {listaJugadores.map((jugador) => (
                         <SelectItem
                           key={jugador.id}
-                          value={jugador.id.toString()} 
+                          value={jugador.id.toString()}
                         >
                           {`${jugador.nombre} ${jugador.apellido}`}
                         </SelectItem>
