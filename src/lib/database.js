@@ -1,4 +1,5 @@
 import { supabase } from "@/supabase/supabase";
+import { addYears } from "date-fns";
 
 // Función para obtener los equipos de un usuario
 export async function getEquiposUsuario(userId) {
@@ -38,7 +39,8 @@ export async function getMiembrosEquipo(equipo_id) {
     const { count, error } = await supabase
       .from('equipos_personas')
       .select('*', { count: 'exact' }) // Solo cuenta, sin traer datos
-      .eq('equipo_id', equipo_id);
+      .eq('equipo_id', equipo_id)
+      .eq('estado', 'aceptado');
 
     if (error) throw error;
     return count;
@@ -229,3 +231,18 @@ export const jugadoresDiferenteEquipo = async (equipoId) => {
   }
 };
 
+export const invitarPersona = async (personaId, equipoId) => {
+  try {
+    const { data, error } = await supabase
+      .from('equipos_personas')
+      .upsert([{ 
+        equipo_id: equipoId, 
+        persona_id: personaId, 
+        estado: 'invitado' 
+      }]);
+      if (error) throw error;
+
+  } catch (error) {
+    console.error("Error al invitar a la persona:", error.message);
+  }
+}
