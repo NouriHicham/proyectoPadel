@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/select";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { jugadoresDiferenteEquipo, leerPersonas } from "@/lib/database";
+import { invitarPersona, jugadoresDiferenteEquipo, leerPersonas } from "@/lib/database";
 import { useAuth } from "@/context/AuthContext";
 // import { leerPersonas } from "@/supabase/supabase";
 
@@ -61,6 +61,8 @@ export default function EquipoPage() {
   const [open2, setOpen2] = useState(false);
   const [personas, setPersonas] = useState([]); // array de personas pre-cargadas
   const { equipoPersona } = useAuth();
+  const [personaId, setPersonaId] = useState(null);
+  const equipoId = JSON.parse(localStorage.getItem('personaGuardada')).equipo_id;
 
   const [listaJugadores, setListaJugadores] = useState([]); // array de jugadores pre-cargados
 
@@ -92,6 +94,20 @@ export default function EquipoPage() {
     form.reset();
   }
 
+  const handleInvitar = async () => {
+    try {
+      if(personaId == null) {
+        alert("Debes seleccionar una persona");
+        return;
+      }
+
+      await invitarPersona(personaId, equipoId);
+      setOpen2(false);
+    } catch (error) {
+      console.error("Error al invitar a la persona:", error);
+    }
+  };
+
   // console.log(personas);
   // console.log(equipoPersona)
   return (
@@ -116,7 +132,7 @@ export default function EquipoPage() {
                   <DialogDescription></DialogDescription>
                 </DialogHeader>
 
-                <Select>
+                <Select onValueChange={(value) => setPersonaId(parseInt(value))}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecciona un jugador" />
                   </SelectTrigger>
@@ -125,15 +141,14 @@ export default function EquipoPage() {
                       {listaJugadores.map((jugador) => (
                         <SelectItem
                           key={jugador.id}
-                          value={jugador.id.toString()} 
-                        >
+                          value={jugador.id.toString()}>
                           {`${jugador.nombre} ${jugador.apellido}`}
                         </SelectItem>
                       ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
-                <Button>Invitar</Button>
+                <Button onClick={handleInvitar}>Invitar</Button>
               </DialogContent>
             </Dialog>
             {/* Modal para añadir jugador de forma manual */}
