@@ -246,3 +246,17 @@ export const invitarPersona = async (personaId, equipoId) => {
     console.error("Error al invitar a la persona:", error.message);
   }
 }
+
+export const aceptarInvitacion = async (personaId, equipoId) => {
+  try {
+    const { data, error } = await supabase
+      .from('equipos_personas')
+      .update({ estado: 'aceptado' })
+      .eq('persona_id', personaId)
+      .eq('equipo_id', equipoId);
+      if (error) throw error;
+      return data;
+  } catch (error) {
+    console.error("Error al aceptar la invitación:", error.message);
+  }
+}
