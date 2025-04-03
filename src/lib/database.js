@@ -219,9 +219,8 @@ export const obtenerEquiposDiferentes = async (personaId) => {
 
     if (error) {
       console.error(error);
-    } else {
-      console.log(data);
-    }
+    } 
+    return data
   } catch (error) {
     console.error("Error al obtener los equipos: ", error.message);
   }

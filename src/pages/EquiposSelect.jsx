@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import CardEquipo from "@/components/CardEquipo";
-import { getEquiposUsuario } from "@/lib/database";
+import { getEquiposUsuario, obtenerEquiposDiferentes } from "@/lib/database";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,12 +19,17 @@ export default function EquiposSelect() {
       if (user !== null) {
         const equiposData = await getEquiposUsuario(user.persona[0].id);
         setEquipos(equiposData);
+
+        // Guardar los equipos diferentes en el state también (prueba)
+        const difEquiposData = await obtenerEquiposDiferentes(equipoPersona?.persona_id)
+        setEquipos((prevEquipos) => [...prevEquipos, difEquiposData])
       }
     }
 
     fetchEquipos();
   }, []);
 
+  console.log('equipos: ', equipos)
 
   return (
     <div className="container relative mx-auto min-h-screen flex flex-col justify-center items-center">
@@ -74,6 +79,7 @@ export default function EquiposSelect() {
         <TabsContent value="requests">
           {/* Pestaña para solicitar unión a equipo */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Filtrar por persona id */}
             {(equipos.filter((equipo) => equipo.estado == "pendiente")).map((equipo) => (
               <CardEquipo key={equipo.id} equipo={equipo} invitation={true} />
             ))}
