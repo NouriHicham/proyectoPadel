@@ -75,6 +75,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("user");
       localStorage.removeItem("personaGuardada");
       setUser(null);
+      setEquipoPersona(null)
     }
   };
   

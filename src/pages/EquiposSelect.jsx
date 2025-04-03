@@ -25,7 +25,6 @@ export default function EquiposSelect() {
     fetchEquipos();
   }, []);
 
-  console.log("equipos: ", equipos);
 
   return (
     <div className="container relative mx-auto min-h-screen flex flex-col justify-center items-center">
@@ -72,15 +71,15 @@ export default function EquiposSelect() {
 
           </div>
         </TabsContent>
-        {/* <TabsContent value="requests">
-          Pestaña para solicitar unión a equipo
+        <TabsContent value="requests">
+          {/* Pestaña para solicitar unión a equipo */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {(equipos.filter((equipo) => equipo.estado !== "")).map((equipo) => (
+            {(equipos.filter((equipo) => equipo.estado == "pendiente")).map((equipo) => (
               <CardEquipo key={equipo.id} equipo={equipo} invitation={true} />
             ))}
 
           </div>
-        </TabsContent> */}
+        </TabsContent>
       </Tabs>
     </div>
   );

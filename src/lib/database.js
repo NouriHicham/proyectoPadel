@@ -37,35 +37,35 @@ export async function getEquipos(id) {
 export async function getMiembrosEquipo(equipo_id) {
   try {
     const { count, error } = await supabase
-      .from('equipos_personas')
-      .select('*', { count: 'exact' }) // Solo cuenta, sin traer datos
-      .eq('equipo_id', equipo_id)
-      .eq('estado', 'aceptado');
+      .from("equipos_personas")
+      .select("*", { count: "exact" }) // Solo cuenta, sin traer datos
+      .eq("equipo_id", equipo_id)
+      .eq("estado", "aceptado");
 
     if (error) throw error;
     return count;
   } catch (error) {
-    console.error('Error al contar miembros del equipo:', error.message);
+    console.error("Error al contar miembros del equipo:", error.message);
     return 0;
   }
 }
 
 // funcion para obtener los ultimos tres partidos jugados
- export async function getUltimosPartidosJugados(equipo_id) {
+export async function getUltimosPartidosJugados(equipo_id) {
   try {
     const { data, error } = await supabase
-      .from('partidos')
-      .select('*')
+      .from("partidos")
+      .select("*")
       .or(`equipo1_id.eq.${equipo_id},equipo2_id.eq.${equipo_id}`)
-      .eq('estado', 'finalizado')
-      .order('fecha', { ascending: false })
+      .eq("estado", "finalizado")
+      .order("fecha", { ascending: false })
       .limit(3);
 
     if (error) throw error;
 
     return data;
   } catch (error) {
-    console.error('Error al obtener los últimos partidos:', error.message);
+    console.error("Error al obtener los últimos partidos:", error.message);
     return [];
   }
 }
@@ -74,22 +74,21 @@ export async function getMiembrosEquipo(equipo_id) {
 export async function getUltimoPartidoaJugar(equipo_id) {
   try {
     const { data, error } = await supabase
-      .from('partidos')
-      .select('*, sedes(nombre)')
+      .from("partidos")
+      .select("*, sedes(nombre)")
       .or(`equipo1_id.eq.${equipo_id},equipo2_id.eq.${equipo_id}`)
-      .eq('estado', 'programado')
-      .order('fecha', { ascending: false })
+      .eq("estado", "programado")
+      .order("fecha", { ascending: false })
       .limit(1);
 
     if (error) throw error;
 
     return data;
   } catch (error) {
-    console.error('Error al obtener los últimos partidos:', error.message);
+    console.error("Error al obtener los últimos partidos:", error.message);
     return [];
   }
 }
-
 
 // Función para crear un nuevo equipo
 export async function crearEquipo(equipo) {
@@ -196,31 +195,31 @@ export const getPerfilUsuario = async (id) => {
   }
 };
 
-
-
 // Mostrar los demás jugadores, para poder invitarlos
-// --> ejemplo consulta sql: SELECT * from equipos_personas ep join personas p on (ep.persona_id = p.id) where equipo_id != 12 and persona_id not in (SELECT persona_id from equipos_personas where equipo_id = 12) 
+// --> ejemplo consulta sql: SELECT * from equipos_personas ep join personas p on (ep.persona_id = p.id) where equipo_id != 12 and persona_id not in (SELECT persona_id from equipos_personas where equipo_id = 12)
 export const jugadoresDiferenteEquipo = async (equipoId) => {
   try {
     // Primero obtenemos los persona_id del equipo que queremos excluir
     const { data: excludedPersonas } = await supabase
-      .from('equipos_personas')
-      .select('persona_id')
-      .eq('equipo_id', equipoId);
-    
+      .from("equipos_personas")
+      .select("persona_id")
+      .eq("equipo_id", equipoId);
+
     // Extraemos solo los IDs
-    const excludedIds = excludedPersonas.map(p => p.persona_id);
+    const excludedIds = excludedPersonas.map((p) => p.persona_id);
 
     // Luego hacemos la consulta principal
     let { data, error } = await supabase
-      .from('equipos_personas')
-      .select(`
+      .from("equipos_personas")
+      .select(
+        `
         *,
         personas (*)
-      `)
-      .neq('equipo_id', equipoId)
-      .eq('estado', 'aceptado')
-      .not('persona_id', 'in', `(${excludedIds.join(',')})`);
+      `
+      )
+      .neq("equipo_id", equipoId)
+      .eq("estado", "aceptado")
+      .not("persona_id", "in", `(${excludedIds.join(",")})`);
 
     if (error) throw error;
 
@@ -234,30 +233,38 @@ export const jugadoresDiferenteEquipo = async (equipoId) => {
 
 export const invitarPersona = async (personaId, equipoId) => {
   try {
-    const { data, error } = await supabase
-      .from('equipos_personas')
-      .upsert([{ 
-        equipo_id: equipoId, 
-        persona_id: personaId, 
-        estado: 'invitado' 
-      }]);
-      if (error) throw error;
-
+    const { data, error } = await supabase.from("equipos_personas").upsert([
+      {
+        equipo_id: equipoId,
+        persona_id: personaId,
+        estado: "invitado",
+      },
+    ]);
+    if (error) throw error;
   } catch (error) {
     console.error("Error al invitar a la persona:", error.message);
   }
-}
+};
 
 export const aceptarInvitacion = async (personaId, equipoId, aceptado) => {
   try {
     const { data, error } = await supabase
-      .from('equipos_personas')
+      .from("equipos_personas")
       .update({ estado: aceptado })
-      .eq('persona_id', personaId)
-      .eq('equipo_id', equipoId);
-      if (error) throw error;
-      return data;
+      .eq("persona_id", personaId)
+      .eq("equipo_id", equipoId);
+    if (error) throw error;
+    return data;
   } catch (error) {
     console.error("Error al aceptar la invitación:", error.message);
   }
-}
+};
+
+// Obtener equipos a los que puedo solicitar unirme
+export const obtenerEquiposDiferentes = async (personaId) => {
+  try {
+    
+  } catch (error) {
+    console.error("Error al obtener los equipos: ", error.message);
+  }
+};

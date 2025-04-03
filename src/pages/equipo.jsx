@@ -84,7 +84,7 @@ export default function EquipoPage() {
       const data = await jugadoresDiferenteEquipo(equipoPersona?.equipo_id);
       const personasArray = data.map((item) => item.personas);
       setListaJugadores(personasArray);
-      console.log("Diferentes jugadores", personasArray);
+      // console.log("Diferentes jugadores", personasArray);
     };
 
     fetchPersonas();
@@ -116,8 +116,9 @@ export default function EquipoPage() {
     }
   };
 
-  console.log(personas);
+  // console.log(personas);
   // console.log(equipoPersona)
+  console.log('jugadores diferentes: ', listaJugadores)
   // console.log(defaultTab)
   return (
     <div className="min-h-screen flex flex-col">
@@ -136,9 +137,14 @@ export default function EquipoPage() {
                 <TabsTrigger value="jugadores" className={"cursor-pointer"}>
                   Jugadores
                 </TabsTrigger>
-                <TabsTrigger value="invitaciones" className={"cursor-pointer"}>
+                {/* <TabsTrigger value="invitaciones" className={"cursor-pointer"}>
                   Invitaciones
-                </TabsTrigger>
+                </TabsTrigger> */}
+                {/* Si el usuario actual es capitán es subcapitán, puede ver las invitaciones */}
+                {Object.values(equipoPersona?.equipos).includes(equipoPersona?.persona_id) &&
+                  <TabsTrigger value="invitaciones" className={"cursor-pointer"}>
+                  Invitaciones
+                </TabsTrigger>}
               </TabsList>
             </Tabs>
             {/* Modal para invitar a jugador */}
@@ -355,7 +361,9 @@ export default function EquipoPage() {
                   </CardContent>
                 </Card>
               ))
-          ) : personas.filter((persona) => persona.estado === "invitado").length > 0 ? (personas
+          ) : personas.filter((persona) => persona.estado === "invitado")
+              .length > 0 ? (
+            personas
               .filter((persona) => persona.estado === "invitado")
               .map((player) => (
                 <Card
@@ -403,10 +411,7 @@ export default function EquipoPage() {
                               Ver perfil
                             </Button>
                           </Link>
-                          <Button
-                            size="sm"
-                            className="w-full mt-2 "
-                          >
+                          <Button size="sm" className="w-full mt-2 ">
                             Aceptar solicitud
                           </Button>
                         </div>

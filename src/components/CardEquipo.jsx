@@ -47,7 +47,6 @@ export default function CardEquipo({ equipo, invitation = false }) {
   };
 
   console.log("equipo: ", equipo);
-  console.log(": ", equipoPersona);
 
   return (
     <Card className="overflow-hidden w-full">
