@@ -12,9 +12,22 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { useState } from "react";
-import { aceptarInvitacion } from "@/lib/database";
+import { useEffect, useState } from "react";
+import { aceptarInvitacion, getMiembrosEquipo, getUltimoPartidoaJugar, getUltimosPartidosJugados } from "@/lib/database";
 import { cn } from "@/lib/utils";
+import { Copy } from "lucide-react"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function CardEquipo({ equipo, invitation = false }) {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -22,6 +35,8 @@ export default function CardEquipo({ equipo, invitation = false }) {
   const navigate = useNavigate()
   const personaId = JSON.parse(localStorage.getItem('user')).persona[0]?.id;
   const equipoId = equipo?.equipo_id;
+  const [numMiembros, setMiembros] = useState();
+  const [partidojugar, setPartidojugar] = useState(null);
 
   const handleSeleccionEquipo = () => {
     if (!invitation) {
@@ -39,15 +54,28 @@ export default function CardEquipo({ equipo, invitation = false }) {
       } else {
         const data = await aceptarInvitacion(personaId, equipoId, 'rechazado');
       }
-      
-      location.reload;
+      window.location.reload();
     } catch (error) {
       console.error("Error al aceptar la invitacion:", error);
     }
   };
 
-  console.log("equipo: ", equipo);
-  console.log(": ", equipoPersona);
+  useEffect(() => {
+    const miembros = async () => {
+      try {
+        const data = await getMiembrosEquipo(equipoId);
+        const partido = await getUltimoPartidoaJugar(equipoId);
+        setPartidojugar(partido);
+        setMiembros(data);
+      }catch (e) {
+        console.error("Error al obtener los miembros del equipo:", e);
+      }
+
+    }
+    miembros();
+  }, []);
+
+  console.log(partidojugar);
 
   return (
     <Card className="overflow-hidden w-full">
@@ -58,9 +86,9 @@ export default function CardEquipo({ equipo, invitation = false }) {
             <AvatarFallback>{equipo?.equipo_id}</AvatarFallback>
           </Avatar>
           <div className="space-y-1">
-            <CardTitle>{equipo?.name || "Equipo"}</CardTitle>
+            <CardTitle>{equipo?.equipos.nombre || "Equipo"}</CardTitle>
             <CardDescription className="line-clamp-1">
-              {equipo?.description || ""}
+              {equipo?.equipos.descripcion || ""}
             </CardDescription>
           </div>
         </div>
@@ -71,7 +99,7 @@ export default function CardEquipo({ equipo, invitation = false }) {
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                {equipo?.members || ""} miembros
+                {numMiembros || ""} miembros
               </span>
             </div>
             <Badge variant="outline">
@@ -87,17 +115,59 @@ export default function CardEquipo({ equipo, invitation = false }) {
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">
-                Próximo partido: {equipo?.nextMeeting || ""}
+                Próximo partido: {partidojugar?.length > 0? new Intl.DateTimeFormat('es-ES', {
+                    dateStyle:'medium',
+                  }).format(new Date(partidojugar[0].fecha)) : "Sin partidos"}
               </span>
             </div>
           </div>
-          <Button
+          
+          {/* Mostrar detalles */}
+          <Dialog>
+            <DialogTrigger asChild>
+            <Button variant="ghost" className="ml-auto h-8 w-full justify-between px-2">
+              <span>Detalles</span> <Info className="h-4 w-4" />
+          </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>{equipo?.name}</DialogTitle>
+                <DialogDescription>
+                  Anyone who has this link will be able to view this.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex items-center space-x-2">
+                <div className="grid flex-1 gap-2">
+                  <Label htmlFor="link" className="sr-only">
+                    Link
+                  </Label>
+                  <Input
+                    id="link"
+                    defaultValue="https://ui.shadcn.com/docs/installation"
+                    readOnly
+                  />
+                </div>
+                <Button type="submit" size="sm" className="px-3">
+                  <span className="sr-only">Copy</span>
+                  <Copy />
+                </Button>
+              </div>
+              <DialogFooter className="sm:justify-start">
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary">
+                    Close
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          {/* <Button
             variant="ghost"
             className="ml-auto h-8 w-full justify-between px-2"
           >
             Detalles
             <Info className="h-4 w-4" />
-          </Button>
+          </Button> */}
           {/* <div className="flex items-center justify-between">
             <div className="flex -space-x-2">
               Miembros
@@ -113,19 +183,29 @@ export default function CardEquipo({ equipo, invitation = false }) {
       </CardContent>
       <CardFooter className="border-t bg-muted/50 px-6 py-3">
         {invitation ? (
+          <>
           <Button
             variant=""
-            className="ml-auto h-8 w-full justify-between px-2 hover:bg-gray-100 transition-colors"
-            onClick={handleAceptar}
+            className="ml-auto h-8 w-1/2 justify-between px-2 hover:bg-gray-200 hover:text-black transition-colors"
+            onClick={() => handleAceptar(true)}
           >
             <span>Unirme al equipo</span>
             <Check className="h-4 w-4" />
           </Button>
+          <Button
+            variant="ghost"
+            className="ml-auto h-8 w-1/2 justify-between px-2 hover:bg-gray-200 transition-colors"
+            onClick={() => handleAceptar(false)}
+          >
+            <span>Rechazar invitación</span>
+            <X className="h-4 w-4" />
+          </Button>
+          </>
         ) : (
           <Button
             variant=""
             className={cn(
-              "ml-auto h-8 w-full justify-between px-2 hover:bg-gray-100 transition-colors",
+              "ml-auto h-8 w-full justify-between px-2 hover:bg-gray-200 hover:text-black transition-colors",
               equipoPersona?.equipo_id == equipo?.equipo_id && "bg-green-700"
             )}
             onClick={handleSeleccionEquipo}
