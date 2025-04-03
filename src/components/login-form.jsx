@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 export function LoginForm({ className, ...props }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fail, setFail] = useState(false);
   const navigate = useNavigate();
 
   const { login, user } = useAuth();
@@ -19,6 +20,7 @@ export function LoginForm({ className, ...props }) {
     const { data, error } = await login(email, password);
     if (error) {
       console.error("Error de inicio de sesión:", error.message);
+      setFail(true);
     } else {
       console.log("Sesion iniciada:", data);
     }
@@ -72,6 +74,11 @@ export function LoginForm({ className, ...props }) {
             required
           />
         </div>
+        {fail && (
+          <div className="text-sm text-red-600">
+            Error al iniciar sesión. Verifique email y contraseña.
+          </div>
+        )}
         <Button type="submit" className="w-full">
           Login
         </Button>
