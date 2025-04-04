@@ -13,9 +13,14 @@ import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
-import { aceptarInvitacion, getMiembrosEquipo, getUltimoPartidoaJugar, getUltimosPartidosJugados } from "@/lib/database";
+import {
+  aceptarInvitacion,
+  getMiembrosEquipo,
+  getUltimoPartidoaJugar,
+  getUltimosPartidosJugados,
+} from "@/lib/database";
 import { cn } from "@/lib/utils";
-import { Copy } from "lucide-react"
+import { Copy } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -25,16 +30,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-export default function CardEquipo({ equipo, invitation = false }) {
-  const user = JSON.parse(localStorage.getItem('user'));
-  const {setEquipoPersona, equipoPersona} = useAuth()
-  const navigate = useNavigate()
-  const personaId = JSON.parse(localStorage.getItem('user')).persona[0]?.id;
-  const equipoId = equipo?.equipo_id;
+export default function CardEquipo({
+  equipo,
+  invitation = false,
+  solicitar = false,
+}) {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const { setEquipoPersona, equipoPersona } = useAuth();
+  const navigate = useNavigate();
+  const personaId = JSON.parse(localStorage.getItem("user")).persona[0]?.id;
+  const equipoId = equipo?.equipo_id || equipo?.id;
   const [numMiembros, setMiembros] = useState();
   const [partidojugar, setPartidojugar] = useState(null);
 
@@ -50,9 +59,9 @@ export default function CardEquipo({ equipo, invitation = false }) {
   const handleAceptar = async (aceptar) => {
     try {
       if (aceptar) {
-        const data = await aceptarInvitacion(personaId, equipoId, 'aceptado');
+        const data = await aceptarInvitacion(personaId, equipoId, "aceptado");
       } else {
-        const data = await aceptarInvitacion(personaId, equipoId, 'rechazado');
+        const data = await aceptarInvitacion(personaId, equipoId, "rechazado");
       }
       window.location.reload();
     } catch (error) {
@@ -67,11 +76,10 @@ export default function CardEquipo({ equipo, invitation = false }) {
         const partido = await getUltimoPartidoaJugar(equipoId);
         setPartidojugar(partido);
         setMiembros(data);
-      }catch (e) {
+      } catch (e) {
         console.error("Error al obtener los miembros del equipo:", e);
       }
-
-    }
+    };
     miembros();
   }, []);
 
@@ -83,12 +91,14 @@ export default function CardEquipo({ equipo, invitation = false }) {
         <div className="flex items-center gap-4">
           <Avatar className={`h-12 w-12 ${equipo?.avatarColor || "Equipo"}`}>
             {/* Iniciales del equipo */}
-            <AvatarFallback>{equipo?.equipo_id}</AvatarFallback>
+            <AvatarFallback>{equipo?.equipo_id || equipo?.id}</AvatarFallback>
           </Avatar>
           <div className="space-y-1">
-            <CardTitle>{equipo?.equipos.nombre || "Equipo"}</CardTitle>
+            <CardTitle>
+              {equipo?.equipos?.nombre || equipo?.nombre || "Equipo"}
+            </CardTitle>
             <CardDescription className="line-clamp-1">
-              {equipo?.equipos.descripcion || ""}
+              {equipo?.equipos?.descripcion || equipo?.descripcion || ""}
             </CardDescription>
           </div>
         </div>
@@ -103,9 +113,11 @@ export default function CardEquipo({ equipo, invitation = false }) {
               </span>
             </div>
             <Badge variant="outline">
-              {user.persona[0].id == equipo?.equipos.capitan_id
+              {user.persona[0].id ==
+              (equipo?.equipos?.capitan_id || equipo?.capitan_id)
                 ? "Capitan"
-                : user.persona[0].id == equipo?.equipos.subcapitan_id
+                : user.persona[0].id ==
+                  (equipo?.equipos?.subcapitan_id || equipo?.subcapitan_id)
                 ? "Subcapitan"
                 : "Jugador"}
             </Badge>
@@ -115,19 +127,25 @@ export default function CardEquipo({ equipo, invitation = false }) {
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">
-                Próximo partido: {partidojugar?.length > 0? new Intl.DateTimeFormat('es-ES', {
-                    dateStyle:'medium',
-                  }).format(new Date(partidojugar[0].fecha)) : "Sin partidos"}
+                Próximo partido:{" "}
+                {partidojugar?.length > 0
+                  ? new Intl.DateTimeFormat("es-ES", {
+                      dateStyle: "medium",
+                    }).format(new Date(partidojugar[0].fecha))
+                  : "Sin partidos"}
               </span>
             </div>
           </div>
-          
+
           {/* Mostrar detalles */}
           <Dialog>
             <DialogTrigger asChild>
-            <Button variant="ghost" className="ml-auto h-8 w-full justify-between px-2">
-              <span>Detalles</span> <Info className="h-4 w-4" />
-          </Button>
+              <Button
+                variant="ghost"
+                className="ml-auto h-8 w-full justify-between px-2"
+              >
+                <span>Detalles</span> <Info className="h-4 w-4" />
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
@@ -184,23 +202,32 @@ export default function CardEquipo({ equipo, invitation = false }) {
       <CardFooter className="border-t bg-muted/50 px-6 py-3">
         {invitation ? (
           <>
+            <Button
+              variant=""
+              className="ml-auto h-8 w-1/2 justify-between px-2 hover:bg-gray-200 hover:text-black transition-colors"
+              onClick={() => handleAceptar(true)}
+            >
+              <span>Unirme al equipo</span>
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              className="ml-auto h-8 w-1/2 justify-between px-2 hover:bg-gray-200 transition-colors"
+              onClick={() => handleAceptar(false)}
+            >
+              <span>Rechazar invitación</span>
+              <X className="h-4 w-4" />
+            </Button>
+          </>
+        ) : solicitar ? (
           <Button
             variant=""
-            className="ml-auto h-8 w-1/2 justify-between px-2 hover:bg-gray-200 hover:text-black transition-colors"
-            onClick={() => handleAceptar(true)}
+            className="ml-auto h-8 w-full justify-between px-2 hover:bg-gray-200 hover:text-black transition-colors"
+            // onClick={handleSolicitarUnirme}
           >
-            <span>Unirme al equipo</span>
-            <Check className="h-4 w-4" />
+            <span>Solicitar unirme a este equipo</span>
+            <ArrowRight className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            className="ml-auto h-8 w-1/2 justify-between px-2 hover:bg-gray-200 transition-colors"
-            onClick={() => handleAceptar(false)}
-          >
-            <span>Rechazar invitación</span>
-            <X className="h-4 w-4" />
-          </Button>
-          </>
         ) : (
           <Button
             variant=""
@@ -210,8 +237,11 @@ export default function CardEquipo({ equipo, invitation = false }) {
             )}
             onClick={handleSeleccionEquipo}
           >
-            
-            <span>{equipoPersona?.equipo_id == equipo?.equipo_id  ? "Equipo Seleccionado" : "Seleccionar este equipo"}</span>
+            <span>
+              {equipoPersona?.equipo_id == equipo?.equipo_id
+                ? "Equipo Seleccionado"
+                : "Seleccionar este equipo"}
+            </span>
             <ArrowRight className="h-4 w-4" />
           </Button>
         )}

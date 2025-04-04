@@ -210,19 +210,38 @@ export const aceptarInvitacion = async (personaId, equipoId, aceptado) => {
 };
 
 // Obtener equipos a los que puedo solicitar unirme
+//
 export const obtenerEquiposDiferentes = async (personaId) => {
   try {
-    const { data, error } = await supabase
-      .from("equipos")
-      .select("*, equipos_personas!inner(*)", { distinct: true }) 
-      .neq("equipos_personas.persona_id", personaId); 
+   
+    const { data: equiposRelacionados, error: errorRelacionados } =
+      await supabase
+        .from("equipos_personas")
+        .select("equipo_id")
+        .eq("persona_id", personaId);
 
-    if (error) {
-      console.error(error);
-    } 
-    return data
+    if (errorRelacionados) {
+      console.error("Error obteniendo los ids de los equipos relacionados con el usuario:", errorRelacionados);
+      return null;
+    }
+
+   
+    const idsRelacionados = equiposRelacionados.map((row) => row.equipo_id);
+
+    const { data: equiposDiferentes, error: errorDiferentes } = await supabase
+      .from("equipos")
+      .select("*")
+      .not("id", "in", `(${idsRelacionados.join(",")})`);
+
+    if (errorDiferentes) {
+      console.error("Error obteniendo los equipos a los que el usuario no pertenece:", errorDiferentes);
+      return null;
+    }
+
+    return equiposDiferentes;
   } catch (error) {
-    console.error("Error al obtener los equipos: ", error.message);
+    console.error("Error en obtenerEquiposDiferentes:", error.message);
+    return null;
   }
 };
 

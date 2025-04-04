@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }) => {
       await supabase.auth.admin.deleteUser(authData.user.id); // Opcional: eliminar usuario si falla
       return { error: personaError.message };
     }
-  
+    await supabase.auth.signOut(); // cerrar sesión después de registrar exitosamente, para que el usuario inicie sesión con su email y password
     return { data: personaData };
   };
 

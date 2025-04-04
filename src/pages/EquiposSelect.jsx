@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function EquiposSelect() {
   const [equipos, setEquipos] = useState([]);
+  const [equiposDiferentes, setEquiposDiferentes] = useState([]);
   const { signOut, equipoPersona} = useAuth();
   const navigate = useNavigate()
 
@@ -21,8 +22,8 @@ export default function EquiposSelect() {
         setEquipos(equiposData);
 
         // Guardar los equipos diferentes en el state también (prueba)
-        const difEquiposData = await obtenerEquiposDiferentes(equipoPersona?.persona_id)
-        setEquipos((prevEquipos) => [...prevEquipos, difEquiposData])
+        const difEquiposData = await obtenerEquiposDiferentes(user.persona[0]?.id)
+        setEquiposDiferentes(difEquiposData)
       }
     }
 
@@ -30,6 +31,7 @@ export default function EquiposSelect() {
   }, []);
 
   console.log('equipos: ', equipos)
+  console.log('equiposDif: ', equiposDiferentes)
 
   return (
     <div className="container relative mx-auto min-h-screen flex flex-col justify-center items-center">
@@ -80,8 +82,8 @@ export default function EquiposSelect() {
           {/* Pestaña para solicitar unión a equipo */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Filtrar por persona id */}
-            {(equipos.filter((equipo) => equipo.estado == "pendiente")).map((equipo) => (
-              <CardEquipo key={equipo.id} equipo={equipo} invitation={true} />
+            {equiposDiferentes.map((equipo) => (
+              <CardEquipo key={equipo.id} equipo={equipo} solicitar={true} />
             ))}
 
           </div>
