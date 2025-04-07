@@ -18,11 +18,11 @@ export async function getEquiposUsuario(userId) {
   }
 }
 
-export async function getEquipos(id) {
+export async function getEquipos(id, campos = "*") {
   try {
     const { data, error } = await supabase
       .from("equipos")
-      .select("*")
+      .select(campos)
       .eq("id", id);
 
     if (error) throw error;
@@ -210,7 +210,6 @@ export const aceptarInvitacion = async (personaId, equipoId, aceptado) => {
 };
 
 // Obtener equipos a los que puedo solicitar unirme
-//
 export const obtenerEquiposDiferentes = async (personaId) => {
   try {
    
@@ -244,6 +243,57 @@ export const obtenerEquiposDiferentes = async (personaId) => {
     return null;
   }
 };
+
+//funcion para insertar un partido
+export async function insertarPartido(partido) {
+  try {
+    const { data, error } = await supabase
+      .from("partidos")
+      .insert([partido])
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al insertar partido:", error.message);
+    return null;
+  }
+}
+
+//obtener equipos que pertenezcan a una liga, exclutendote a ti mismo
+export async function getEquipoPartidos(id, liga_id){
+  try{
+    const {data, error} = await supabase
+      .from("equipos")
+      .select("*")
+      .eq("liga_id", liga_id)
+      .neq("id", id);
+    
+    if (error) throw error;
+
+    return data;
+  } catch(error){
+    console.error("Error al obtener equipos para los partidos:", error.message);
+    return null;
+  }
+}
+
+//obtener todas las sedes
+export async function getSedes(){
+  try{
+    const {data, error} = await supabase
+      .from("sedes")
+      .select("*")
+
+    if (error) throw error;
+
+    return data;
+  }catch(error){
+    console.error("Error al obtener las sedes:", error.message);
+    return null;
+  }
+}
 
 //funciones sin probar
 // Función para crear un nuevo equipo
