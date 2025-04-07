@@ -7,8 +7,26 @@ import { CreateMatchDialog } from "@/components/create-match-dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { Calendar, MapPin, Users2 } from "lucide-react"
 import { Link } from "react-router-dom"
+import { getUltimosPartidosJugados } from "@/lib/database"
+import { useEffect, useState } from "react"
 
 export default function PartidosPage() {
+  const savedInfo = JSON.parse(localStorage.getItem("personaGuardada"))
+  const [nextMatch, setNext] = useState([]);
+
+    useEffect(() => {
+        async function fetchAll(){
+          try {
+            const nextMatchData = await getUltimosPartidosJugados(savedInfo.equipo_id, 2)
+            setNext(nextMatchData);
+          }catch(error){
+            console.error(error)
+          }
+        }
+    
+        fetchAll();
+    },[]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -23,31 +41,31 @@ export default function PartidosPage() {
           {/* Próximos partidos */}
           <h2 className="text-xl font-semibold mb-4">Próximos Partidos</h2>
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-            {[1, 2].map((match) => (
+            {nextMatch.map((match) => (
               <Card key={`upcoming-${match}`}>
                 <CardContent className="p-4">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <div className="flex flex-col items-center justify-center bg-primary/10 rounded-lg p-3">
-                        <span className="text-lg font-bold">24</span>
-                        <span className="text-sm">Feb</span>
+                        <span className="text-lg font-bold">{new Date(match.fecha).getDate()}</span>
+                        <span className="text-sm">{new Date(match.fecha).getMonth()}</span>
                       </div>
                       <div>
-                        <h3 className="font-semibold">Partido Amistoso #{match}</h3>
+                        <h3 className="font-semibold">Partido Amistoso #{match.id}</h3>
                         <div className="flex items-center text-sm text-muted-foreground mt-1">
                           <Calendar className="h-4 w-4 mr-2" />
-                          10:00 - 11:30
+                          {new Date(match.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground mt-1">
                           <MapPin className="h-4 w-4 mr-2" />
-                          Club Deportivo Central
+                          {match.sede_id} *cambiar por nombre*
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground mt-1">
                           <Users2 className="h-4 w-4 mr-2" />4 jugadores confirmados
                         </div>
                       </div>
                     </div>
-                    <Link to={`/partidos/${match}`} className="block w-full md:w-auto">
+                    <Link to={`/partidos/${match.id}`} className="block w-full md:w-auto">
                       <Button variant="outline" className="w-full">
                         Ver detalles
                       </Button>

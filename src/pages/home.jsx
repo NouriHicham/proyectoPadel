@@ -21,7 +21,7 @@ export default function Home(){
         setEquipo(equipoData);
         const miembrosData = await getMiembrosEquipo(savedInfo.equipo_id);
         setMiembros(miembrosData);
-        const partidosData = await getUltimosPartidosJugados(savedInfo.equipo_id);
+        const partidosData = await getUltimosPartidosJugados(savedInfo.equipo_id, 3);
         setPartidos(partidosData);
         const partidojugarData = await getUltimoPartidoaJugar(savedInfo.equipo_id);
         setPartidojugar(partidojugarData);

@@ -51,7 +51,7 @@ export async function getMiembrosEquipo(equipo_id) {
 }
 
 // funcion para obtener los ultimos tres partidos jugados
-export async function getUltimosPartidosJugados(equipo_id) {
+export async function getUltimosPartidosJugados(equipo_id, limit = 1) {
   try {
     const { data, error } = await supabase
       .from("partidos")
@@ -59,7 +59,7 @@ export async function getUltimosPartidosJugados(equipo_id) {
       .or(`equipo1_id.eq.${equipo_id},equipo2_id.eq.${equipo_id}`)
       .eq("estado", "finalizado")
       .order("fecha", { ascending: false })
-      .limit(3);
+      .limit(limit);
 
     if (error) throw error;
 
@@ -71,7 +71,7 @@ export async function getUltimosPartidosJugados(equipo_id) {
 }
 
 // funcion para obtener el siguiente partido a jugar
-export async function getUltimoPartidoaJugar(equipo_id) {
+export async function getUltimoPartidoaJugar(equipo_id, limit = 1) {
   try {
     const { data, error } = await supabase
       .from("partidos")
@@ -79,7 +79,7 @@ export async function getUltimoPartidoaJugar(equipo_id) {
       .or(`equipo1_id.eq.${equipo_id},equipo2_id.eq.${equipo_id}`)
       .eq("estado", "programado")
       .order("fecha", { ascending: false })
-      .limit(1);
+      .limit(limit);
 
     if (error) throw error;
 
