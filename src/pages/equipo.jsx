@@ -356,8 +356,17 @@ export default function EquipoPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <h3 className="font-semibold">
-                          {player.personas.nombre}
+                        <h3 className="font-semibold text-lg">
+                          {player.personas.nombre} 
+                          {equipoPersona?.equipos.capitan_id === player.personas.id && (
+                            <span className="text-sm text-gray-600"> (Capitán)</span>
+                          )}
+                          {equipoPersona?.equipos.subcapitan_id === player.personas.id && (
+                            <span className="text-sm text-gray-600"> (Subcapitán)</span>
+                          )}
+                          {equipoPersona?.persona_id === player.personas.id && (
+                            <span className="text-sm text-gray-600"> (Tú)</span>
+                          )}
                         </h3>
                         <div className="mt-2 space-y-2">
                           <div className="flex items-center text-sm text-muted-foreground">
