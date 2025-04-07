@@ -73,29 +73,29 @@ export default function EquipoPage() {
     localStorage.getItem("personaGuardada")
   )?.equipo_id;
 
-  const [listaJugadores, setListaJugadores] = useState([]); // array de jugadores pre-cargados
-
-  useEffect(() => {
-    const fetchPersonas = async () => {
-      const data = await leerPersonas(equipoPersona?.equipo_id);
-      setPersonas(data);
-    };
-
-    const diferentesJugadores = async () => {
-      const data = await jugadoresDiferenteEquipo(equipoPersona?.equipo_id);
-      const personasArray = data.map((item) => item.personas);
-      setListaJugadores(personasArray);
-      // console.log("Diferentes jugadores", personasArray);
-    };
-
-    fetchPersonas();
-    diferentesJugadores();
-  }, []);
-
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {},
   });
+
+  const [listaJugadores, setListaJugadores] = useState([]); // array de jugadores pre-cargados
+
+  const fetchPersonas = async () => {
+    const data = await leerPersonas(equipoPersona?.equipo_id);
+    setPersonas(data);
+  };
+
+  const diferentesJugadores = async () => {
+    const data = await jugadoresDiferenteEquipo(equipoPersona?.equipo_id);
+    const personasArray = data.map((item) => item.personas);
+    setListaJugadores(personasArray);
+  };
+
+  useEffect(() => {
+    fetchPersonas();
+    diferentesJugadores();
+  }, []);
+
 
   function onSubmit(values) {
     console.log(values);
@@ -111,6 +111,7 @@ export default function EquipoPage() {
       }
 
       await invitarPersona(personaId, equipoId);
+      fetchPersonas()
       setOpen2(false);
     } catch (error) {
       console.error("Error al invitar a la persona:", error);
@@ -126,16 +127,16 @@ export default function EquipoPage() {
       } else {
         const data = await aceptarInvitacion(persona_id, equipoId, "rechazado");
       }
-      window.location.reload();
+
+      fetchPersonas();
     } catch (error) {
       console.error("Error al aceptar la invitacion:", error);
     }
   };
 
   console.log('personas: ', personas);
-  // console.log(equipoPersona)
   console.log("jugadores diferentes: ", listaJugadores);
-  // console.log(defaultTab)
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

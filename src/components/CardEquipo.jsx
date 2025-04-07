@@ -57,6 +57,7 @@ export default function CardEquipo({
     }
   };
 
+
   const handleAceptar = async (aceptar) => {
     try {
       if (aceptar) {
@@ -64,7 +65,6 @@ export default function CardEquipo({
       } else {
         const data = await aceptarInvitacion(personaId, equipoId, "rechazado");
       }
-      window.location.reload();
     } catch (error) {
       console.error("Error al aceptar la invitacion:", error);
     }
