@@ -87,8 +87,7 @@ export default function EquipoPage() {
 
   const diferentesJugadores = async () => {
     const data = await jugadoresDiferenteEquipo(equipoPersona?.equipo_id);
-    const personasArray = data.map((item) => item.personas);
-    setListaJugadores(personasArray);
+    setListaJugadores(data);
   };
 
   useEffect(() => {

@@ -145,38 +145,42 @@ export const getPerfilUsuario = async (id) => {
 };
 
 // Mostrar los demás jugadores, para poder invitarlos
-// --> ejemplo consulta sql: SELECT * from equipos_personas ep join personas p on (ep.persona_id = p.id) where equipo_id != 12 and persona_id not in (SELECT persona_id from equipos_personas where equipo_id = 12)
 export const jugadoresDiferenteEquipo = async (equipoId) => {
   try {
-    // Primero obtenemos los persona_id del equipo que queremos excluir
-    const { data: excludedPersonas } = await supabase
+    // Paso 1: Obtener los persona_id del equipo que queremos excluir
+    const { data: excludedIds, error: excludedError } = await supabase
       .from("equipos_personas")
       .select("persona_id")
       .eq("equipo_id", equipoId);
 
-    // Extraemos solo los IDs
-    const excludedIds = excludedPersonas.map((p) => p.persona_id);
+    if (excludedError) {
+      console.error("Error al obtener IDs excluidos:", excludedError.message);
+      return []; 
+    }
 
-    // Luego hacemos la consulta principal
-    let { data, error } = await supabase
-      .from("equipos_personas")
-      .select(
-        `
-        *,
-        personas (*)
-      `
-      )
-      .neq("equipo_id", equipoId)
-      .eq("estado", "aceptado")
-      .not("persona_id", "in", `(${excludedIds.join(",")})`);
+    // Extraer los IDs a excluir y formatearlos correctamente
+    const idsToExclude = excludedIds.map((item) => item.persona_id);
 
-    if (error) throw error;
+    if (idsToExclude.length === 0) {
+      console.log("No hay IDs para excluir.");
+      return await supabase.from("personas").select("*"); 
+    }
 
-    console.log("personas encontradas:", data);
+    // Paso 2: Usar los IDs excluidos para filtrar en la tabla personas
+    const { data, error } = await supabase
+      .from("personas")
+      .select("*")
+      .not("id", "in", `(${idsToExclude.join(",")})`); 
+
+    if (error) {
+      console.error("Error al ejecutar la consulta:", error.message);
+      return []; 
+    }
+
     return data;
   } catch (error) {
-    console.error("Error al leer personas:", error);
-    return [];
+    console.error("Error al leer personas:", error.message);
+    return []; 
   }
 };
 
