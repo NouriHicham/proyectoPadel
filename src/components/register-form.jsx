@@ -5,6 +5,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export function RegisterForm({ className, ...props }) {
   const [name, setName] = useState('');
@@ -17,16 +18,25 @@ export function RegisterForm({ className, ...props }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await registrar(email, password, name, surname, phone);
+    const {data, error} = await registrar(email, password, name, surname, phone);
     
-    console.log(result)
-    
-    if (result.success) {
-      console.log("Registro exitoso:", result.data);
+    if (!error) {
+      console.log("Registro exitoso:", data);
+      limpiarInputs()
+
+      return toast.success("Registro exitoso, por favor inicia sesión con tu email y contraseña.")
     } else {
-      console.error("Error en el registro:", result.error);
+      console.error("Error en el registro:", error);
     }
   };
+
+  const limpiarInputs = () => {
+    setName('')
+    setSurname('')
+    setEmail('')
+    setPassword('')
+    setPhone('')
+  }
 
   return (
     <form className={cn("flex flex-col gap-6", className)} {...props} onSubmit={handleSubmit}>

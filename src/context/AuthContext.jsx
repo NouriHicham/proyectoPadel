@@ -92,19 +92,20 @@ export const AuthProvider = ({ children }) => {
     const { data: personaData, error: personaError } = await supabase
       .from('personas')
       .insert([{
-        user_id: authData.user.id, // ¡Clave! Vincular con auth.users
+        user_id: authData.user.id, // Vincular con auth.users
         nombre: name,
         apellido: surname,
         telefono: phone,
         email: email
-      }]);
+      }])
+      .select();
   
     if (personaError) {
       await supabase.auth.admin.deleteUser(authData.user.id); // Opcional: eliminar usuario si falla
       return { error: personaError.message };
     }
     await supabase.auth.signOut(); // cerrar sesión después de registrar exitosamente, para que el usuario inicie sesión con su email y password
-    return { data: personaData };
+    return { data: personaData};
   };
 
   useEffect(() => {
