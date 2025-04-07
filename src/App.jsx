@@ -1,6 +1,7 @@
-import './App.css'
-import { Route, Routes } from 'react-router-dom';
-import LoginPage from './pages/login';
+import toast, { Toaster } from "react-hot-toast";
+import "./App.css";
+import { Route, Routes } from "react-router-dom";
+import LoginPage from "./pages/login";
 // import { Header } from './components/header';
 import Home from "./pages/home";
 import RegisterPage from "./pages/register";
@@ -9,8 +10,8 @@ import PartidoDetalles from "./pages/partidoDetalles";
 import EquipoPage from "./pages/equipo";
 import JugadorDetalles from "./pages/jugadorDetalles";
 import ProtectedRoutes from "./components/ProtectedRoutes";
-import Perfil from './pages/perfil';
-import EquiposSelect from './pages/EquiposSelect';
+import Perfil from "./pages/perfil";
+import EquiposSelect from "./pages/EquiposSelect";
 
 /* 
   En ProtectedRoutes anidamos las rutas que nos interesa que el usuario no pueda 
@@ -23,7 +24,6 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
- 
         <Route element={<ProtectedRoutes />}>
           <Route path="/" element={<Home />} />
           <Route path="/partidos" element={<PartidosPage />} />
@@ -31,10 +31,11 @@ function App() {
           <Route path="/equipo" element={<EquipoPage />} />
           <Route path="/equipo/jugador/:id" element={<JugadorDetalles />} />
           <Route path="/perfil" element={<Perfil />} />
-          <Route path='/equipos' element={<EquiposSelect/>}/>
+          <Route path="/equipos" element={<EquiposSelect />} />
           <Route path="*" element={<div> 404 | Not Found Page</div>} />
         </Route>
       </Routes>
+      <Toaster />
     </>
   );
 }

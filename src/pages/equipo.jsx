@@ -95,7 +95,6 @@ export default function EquipoPage() {
     diferentesJugadores();
   }, []);
 
-
   function onSubmit(values) {
     console.log(values);
     setOpen(false);
@@ -110,7 +109,7 @@ export default function EquipoPage() {
       }
 
       await invitarPersona(personaId, equipoId);
-      fetchPersonas()
+      fetchPersonas();
       setOpen2(false);
     } catch (error) {
       console.error("Error al invitar a la persona:", error);
@@ -120,7 +119,7 @@ export default function EquipoPage() {
   const handleAceptar = async (persona_id, aceptar) => {
     try {
       if (!persona_id || !equipoId) return;
-      
+
       if (aceptar) {
         const data = await aceptarInvitacion(persona_id, equipoId, "aceptado");
       } else {
@@ -133,9 +132,9 @@ export default function EquipoPage() {
     }
   };
 
-  console.log('personas: ', personas);
+  console.log("personas: ", personas);
   console.log("jugadores diferentes: ", listaJugadores);
-  
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -167,9 +166,13 @@ export default function EquipoPage() {
                     Invitaciones
                   </TabsTrigger>
                 )}
-                <TabsTrigger value="solicitudes" className={"cursor-pointer"}>
-                  Solicitudes
-                </TabsTrigger>
+                {Object.values(equipoPersona?.equipos).includes(
+                  equipoPersona?.persona_id
+                ) && (
+                  <TabsTrigger value="solicitudes" className={"cursor-pointer"}>
+                    Solicitudes
+                  </TabsTrigger>
+                )}
               </TabsList>
             </Tabs>
             {/* Modal para invitar a jugador */}
@@ -353,8 +356,17 @@ export default function EquipoPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <h3 className="font-semibold">
-                          {player.personas.nombre}
+                        <h3 className="font-semibold text-lg">
+                          {player.personas.nombre} 
+                          {equipoPersona?.equipos.capitan_id === player.personas.id && (
+                            <span className="text-sm text-gray-600"> (Capitán)</span>
+                          )}
+                          {equipoPersona?.equipos.subcapitan_id === player.personas.id && (
+                            <span className="text-sm text-gray-600"> (Subcapitán)</span>
+                          )}
+                          {equipoPersona?.persona_id === player.personas.id && (
+                            <span className="text-sm text-gray-600"> (Tú)</span>
+                          )}
                         </h3>
                         <div className="mt-2 space-y-2">
                           <div className="flex items-center text-sm text-muted-foreground">
@@ -505,7 +517,9 @@ export default function EquipoPage() {
                           <Button
                             size="sm"
                             className="w-full mt-2"
-                            onClick={() => handleAceptar(player?.persona_id, true)}
+                            onClick={() =>
+                              handleAceptar(player?.persona_id, true)
+                            }
                           >
                             Aceptar solicitud
                           </Button>
