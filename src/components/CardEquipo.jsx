@@ -18,6 +18,7 @@ import {
   getMiembrosEquipo,
   getUltimoPartidoaJugar,
   getUltimosPartidosJugados,
+  solicitarUnirseEquipo,
 } from "@/lib/database";
 import { cn } from "@/lib/utils";
 import { Copy } from "lucide-react";
@@ -66,6 +67,17 @@ export default function CardEquipo({
       window.location.reload();
     } catch (error) {
       console.error("Error al aceptar la invitacion:", error);
+    }
+  };
+
+  const handleSolicitarUnirme = async () => {
+    try {
+      if (!solicitar || !personaId) return;
+      console.log(personaId)
+      const data = await solicitarUnirseEquipo(personaId, equipoId);
+      console.log("solicitud: ", data);
+    } catch (error) {
+      console.error("Error al solicitar unirse:", error);
     }
   };
 
@@ -223,7 +235,7 @@ export default function CardEquipo({
           <Button
             variant=""
             className="ml-auto h-8 w-full justify-between px-2 hover:bg-gray-200 hover:text-black transition-colors"
-            // onClick={handleSolicitarUnirme}
+            onClick={handleSolicitarUnirme}
           >
             <span>Solicitar unirme a este equipo</span>
             <ArrowRight className="h-4 w-4" />

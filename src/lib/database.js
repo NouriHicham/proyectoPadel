@@ -213,7 +213,6 @@ export const aceptarInvitacion = async (personaId, equipoId, aceptado) => {
 //
 export const obtenerEquiposDiferentes = async (personaId) => {
   try {
-   
     const { data: equiposRelacionados, error: errorRelacionados } =
       await supabase
         .from("equipos_personas")
@@ -221,11 +220,13 @@ export const obtenerEquiposDiferentes = async (personaId) => {
         .eq("persona_id", personaId);
 
     if (errorRelacionados) {
-      console.error("Error obteniendo los ids de los equipos relacionados con el usuario:", errorRelacionados);
+      console.error(
+        "Error obteniendo los ids de los equipos relacionados con el usuario:",
+        errorRelacionados
+      );
       return null;
     }
 
-   
     const idsRelacionados = equiposRelacionados.map((row) => row.equipo_id);
 
     const { data: equiposDiferentes, error: errorDiferentes } = await supabase
@@ -234,7 +235,10 @@ export const obtenerEquiposDiferentes = async (personaId) => {
       .not("id", "in", `(${idsRelacionados.join(",")})`);
 
     if (errorDiferentes) {
-      console.error("Error obteniendo los equipos a los que el usuario no pertenece:", errorDiferentes);
+      console.error(
+        "Error obteniendo los equipos a los que el usuario no pertenece:",
+        errorDiferentes
+      );
       return null;
     }
 
@@ -297,3 +301,18 @@ export async function eliminarEquipo(equipoId) {
     return false;
   }
 }
+
+export const solicitarUnirseEquipo = async (personaId, equipoId) => {
+  try {
+    const { data, error } = await supabase.from("equipos_personas").upsert([
+      {
+        equipo_id: equipoId,
+        persona_id: personaId,
+        estado: "solicitado",
+      },
+    ]);
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error al invitar a la persona:", error.message);
+  }
+};

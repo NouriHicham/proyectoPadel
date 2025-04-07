@@ -118,7 +118,7 @@ export default function EquipoPage() {
 
   // console.log(personas);
   // console.log(equipoPersona)
-  console.log('jugadores diferentes: ', listaJugadores)
+  console.log("jugadores diferentes: ", listaJugadores);
   // console.log(defaultTab)
   return (
     <div className="min-h-screen flex flex-col">
@@ -141,10 +141,19 @@ export default function EquipoPage() {
                   Invitaciones
                 </TabsTrigger> */}
                 {/* Si el usuario actual es capitán es subcapitán, puede ver las invitaciones */}
-                {Object.values(equipoPersona?.equipos).includes(equipoPersona?.persona_id) &&
-                  <TabsTrigger value="invitaciones" className={"cursor-pointer"}>
-                  Invitaciones
-                </TabsTrigger>}
+                {Object.values(equipoPersona?.equipos).includes(
+                  equipoPersona?.persona_id
+                ) && (
+                  <TabsTrigger
+                    value="invitaciones"
+                    className={"cursor-pointer"}
+                  >
+                    Invitaciones
+                  </TabsTrigger>
+                )}
+                <TabsTrigger value="solicitudes" className={"cursor-pointer"}>
+                  Solicitudes
+                </TabsTrigger>
               </TabsList>
             </Tabs>
             {/* Modal para invitar a jugador */}
@@ -331,7 +340,6 @@ export default function EquipoPage() {
                         <h3 className="font-semibold">
                           {player.personas.nombre}
                         </h3>
-
                         <div className="mt-2 space-y-2">
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Phone className="h-4 w-4 mr-2 opacity-70" />
@@ -344,7 +352,6 @@ export default function EquipoPage() {
                             {player.personas.email}
                           </div>
                         </div>
-
                         <div className="mt-4 space-y-2">
                           <Link to={`/equipo/jugador/${player.id}`}>
                             <Button
@@ -361,74 +368,144 @@ export default function EquipoPage() {
                   </CardContent>
                 </Card>
               ))
-          ) : personas.filter((persona) => persona.estado === "invitado")
-              .length > 0 ? (
-            personas
-              .filter((persona) => persona.estado === "invitado")
-              .map((player) => (
-                <Card
-                  key={player.id}
-                  className="hover:shadow-md transition-shadow"
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-4">
-                      <Avatar>
-                        <AvatarImage
-                          src={
-                            player.personas.foto ||
-                            "https://github.com/shadcn.png"
-                          }
-                        />
-                        <AvatarFallback>
-                          {player.personas.nombre.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">
-                          {player.personas.nombre}
-                        </h3>
-
-                        <div className="mt-2 space-y-2">
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Phone className="h-4 w-4 mr-2 opacity-70" />
-                            {player.personas.telefono
-                              ? `+34 ${player.personas.telefono}`
-                              : "No registrado"}
+          ) : defaultTab === "invitaciones" ? (
+            // En este caso, se muestran las invitaciones que se han hecho a los jugadores
+            personas.filter((persona) => persona.estado === "invitado").length >
+            0 ? (
+              personas
+                .filter((persona) => persona.estado === "invitado")
+                .map((player) => (
+                  <Card
+                    key={player.id}
+                    className="hover:shadow-md transition-shadow"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        <Avatar>
+                          <AvatarImage
+                            src={
+                              player.personas.foto ||
+                              "https://github.com/shadcn.png"
+                            }
+                          />
+                          <AvatarFallback>
+                            {player.personas.nombre.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h3 className="font-semibold">
+                            {player.personas.nombre}
+                          </h3>
+                          <div className="mt-2 space-y-2">
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Phone className="h-4 w-4 mr-2 opacity-70" />
+                              {player.personas.telefono
+                                ? `+34 ${player.personas.telefono}`
+                                : "No registrado"}
+                            </div>
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Mail className="h-4 w-4 mr-2 opacity-70" />
+                              {player.personas.email}
+                            </div>
                           </div>
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Mail className="h-4 w-4 mr-2 opacity-70" />
-                            {player.personas.email}
+                          <div className="mt-4 space-y-2">
+                            <Link to={`/equipo/jugador/${player.id}`}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                              >
+                                Ver perfil
+                              </Button>
+                            </Link>
+                            {/* <Button size="sm" className="w-full mt-2">
+                              Aceptar solicitud
+                            </Button> */}
                           </div>
-                        </div>
-
-                        <div className="mt-4 space-y-2">
-                          <Link to={`/equipo/jugador/${player.id}`}>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full"
-                            >
-                              Ver perfil
-                            </Button>
-                          </Link>
-                          <Button size="sm" className="w-full mt-2 ">
-                            Aceptar solicitud
-                          </Button>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-          ) : (
-            <div className="col-span-full py-12 text-center">
-              <div className="mx-auto flex flex-col items-center justify-center text-muted-foreground">
-                <UserX className="h-12 w-12 mb-4 opacity-50" />
-                <h3 className="text-lg font-medium">
-                  No hay invitaciones pendientes
-                </h3>
+                    </CardContent>
+                  </Card>
+                ))
+            ) : (
+              <div className="col-span-full py-12 text-center">
+                <div className="mx-auto flex flex-col items-center justify-center text-muted-foreground">
+                  <UserX className="h-12 w-12 mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium">
+                    No hay invitaciones pendientes
+                  </h3>
+                </div>
               </div>
-            </div>
+            )
+          ) : (
+            // Vista en la que se muestran las solicitudes de unión a este equipo 
+            personas.filter((persona) => persona.estado === "solicitado").length >
+            0 ? (
+              personas
+                .filter((persona) => persona.estado === "solicitado")
+                .map((player) => (
+                  <Card
+                    key={player.id}
+                    className="hover:shadow-md transition-shadow"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        <Avatar>
+                          <AvatarImage
+                            src={
+                              player.personas.foto ||
+                              "https://github.com/shadcn.png"
+                            }
+                          />
+                          <AvatarFallback>
+                            {player.personas.nombre.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h3 className="font-semibold">
+                            {player.personas.nombre}
+                          </h3>
+                          <div className="mt-2 space-y-2">
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Phone className="h-4 w-4 mr-2 opacity-70" />
+                              {player.personas.telefono
+                                ? `+34 ${player.personas.telefono}`
+                                : "No registrado"}
+                            </div>
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Mail className="h-4 w-4 mr-2 opacity-70" />
+                              {player.personas.email}
+                            </div>
+                          </div>
+                          <div className="mt-4 space-y-2">
+                            <Link to={`/equipo/jugador/${player.id}`}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                              >
+                                Ver perfil
+                              </Button>
+                            </Link>
+                            <Button size="sm" className="w-full mt-2">
+                              Aceptar solicitud
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+            ) : (
+              <div className="col-span-full py-12 text-center">
+                <div className="mx-auto flex flex-col items-center justify-center text-muted-foreground">
+                  <UserX className="h-12 w-12 mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium">
+                    No hay solicitudes pendientes
+                  </h3>
+                </div>
+              </div>
+            )   
           )}
         </div>
       </main>
