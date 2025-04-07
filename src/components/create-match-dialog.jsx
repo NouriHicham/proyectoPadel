@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { CalendarIcon, Clock, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -23,26 +23,38 @@ import { es } from "date-fns/locale"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import { getEquipoPartidos, getSedes, insertarPartido } from "@/lib/database"
 
 const formSchema = z.object({
   date: z.date({
     required_error: "La fecha es requerida.",
   }),
   time: z.string().min(1, "La hora es requerida."),
-  venue: z.string().min(1, "La sede es requerida."),
-  matchType: z.string().min(1, "El tipo de partido es requerido."),
-  category: z.string().min(1, "La categoría es requerida."),
+  sede: z.string().min(1, "La sede es requerida."),
+  equipos: z.string().min(1, "¿Contra quien juegas?"),
 })
-
-const venues = [
-  { id: "sede1", name: "Club Deportivo Central" },
-  { id: "sede2", name: "Polideportivo Municipal" },
-  { id: "sede3", name: "Club de Tenis y Pádel" },
-  { id: "sede4", name: "Centro Deportivo Urban" },
-]
 
 export function CreateMatchDialog() {
   const [open, setOpen] = useState(false)
+  const savedInfo = JSON.parse(localStorage.getItem("personaGuardada"))
+  const [equipos, setEquipos] = useState([]);
+  const [sedes, setSedes] = useState([]);
+  
+  useEffect(() => {
+      async function fetchAll(){
+        try {
+          const equipoData = await getEquipoPartidos(savedInfo.equipo_id, savedInfo.equipos.liga_id);
+          setEquipos(equipoData);
+          const sedeData = await getSedes();
+          setSedes(sedeData);
+        }catch(error){
+          console.error(error)
+        }
+      }
+  
+      fetchAll();
+  },[]);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,9 +63,25 @@ export function CreateMatchDialog() {
   })
 
   function onSubmit(values) {
+    const { date, time, sede, equipos } = values;
+
+    const dateTime = format(date, "yyyy-MM-dd") + " " +  time
+    
+    const datos = [];
+    datos.push({
+      fecha: dateTime,
+      estado: "programado",
+      sede_id: sede,
+      equipo1_id: savedInfo.equipo_id,
+      equipo2_id: equipos,
+      liga_id: savedInfo.equipos.liga_id
+    });
+
     console.log(values)
-    setOpen(false)
-    form.reset()
+    console.log(datos)
+    insertarPartido(datos[0]);
+    setOpen(false);
+    form.reset();
   }
 
   return (
@@ -117,7 +145,6 @@ export function CreateMatchDialog() {
                     <FormControl>
                       <div className="flex items-center">
                         <Input type="time" {...field} />
-                        <Clock className="ml-2 h-4 w-4 text-muted-foreground" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -128,7 +155,7 @@ export function CreateMatchDialog() {
 
             <FormField
               control={form.control}
-              name="venue"
+              name="sede"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Sede</FormLabel>
@@ -139,9 +166,34 @@ export function CreateMatchDialog() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {venues.map((venue) => (
-                        <SelectItem key={venue.id} value={venue.id}>
-                          {venue.name}
+                      {sedes.map((sede) => (
+                        <SelectItem key={sede.id} value={sede.id.toString()}>
+                          {sede.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="equipos"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Equipo contrario</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona el equipo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {equipos.map((equipo) => (
+                        <SelectItem key={equipo.id} value={equipo.id.toString()}>
+                          {equipo.nombre}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -156,7 +208,7 @@ export function CreateMatchDialog() {
               name="matchType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo de Convocatoria</FormLabel>
+                  <FormLabel>Tipo de Convocatoria (pronto...)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -168,28 +220,6 @@ export function CreateMatchDialog() {
                       <SelectItem value="league">Liga</SelectItem>
                       <SelectItem value="tournament">Torneo</SelectItem>
                       <SelectItem value="training">Entrenamiento</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categoría</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona la categoría" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="male">Masculino</SelectItem>
-                      <SelectItem value="female">Femenino</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
