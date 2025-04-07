@@ -37,6 +37,7 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
+  aceptarInvitacion,
   invitarPersona,
   jugadoresDiferenteEquipo,
   leerPersonas,
@@ -70,7 +71,7 @@ export default function EquipoPage() {
 
   const equipoId = JSON.parse(
     localStorage.getItem("personaGuardada")
-  ).equipo_id;
+  )?.equipo_id;
 
   const [listaJugadores, setListaJugadores] = useState([]); // array de jugadores pre-cargados
 
@@ -116,7 +117,22 @@ export default function EquipoPage() {
     }
   };
 
-  // console.log(personas);
+  const handleAceptar = async (persona_id, aceptar) => {
+    try {
+      if (!persona_id || !equipoId) return;
+      
+      if (aceptar) {
+        const data = await aceptarInvitacion(persona_id, equipoId, "aceptado");
+      } else {
+        const data = await aceptarInvitacion(persona_id, equipoId, "rechazado");
+      }
+      window.location.reload();
+    } catch (error) {
+      console.error("Error al aceptar la invitacion:", error);
+    }
+  };
+
+  console.log('personas: ', personas);
   // console.log(equipoPersona)
   console.log("jugadores diferentes: ", listaJugadores);
   // console.log(defaultTab)
@@ -437,75 +453,85 @@ export default function EquipoPage() {
                 </div>
               </div>
             )
-          ) : (
-            // Vista en la que se muestran las solicitudes de unión a este equipo 
-            personas.filter((persona) => persona.estado === "solicitado").length >
+          ) : // Vista en la que se muestran las solicitudes de unión a este equipo
+          personas.filter((persona) => persona.estado === "solicitado").length >
             0 ? (
-              personas
-                .filter((persona) => persona.estado === "solicitado")
-                .map((player) => (
-                  <Card
-                    key={player.id}
-                    className="hover:shadow-md transition-shadow"
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        <Avatar>
-                          <AvatarImage
-                            src={
-                              player.personas.foto ||
-                              "https://github.com/shadcn.png"
-                            }
-                          />
-                          <AvatarFallback>
-                            {player.personas.nombre.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <h3 className="font-semibold">
-                            {player.personas.nombre}
-                          </h3>
-                          <div className="mt-2 space-y-2">
-                            <div className="flex items-center text-sm text-muted-foreground">
-                              <Phone className="h-4 w-4 mr-2 opacity-70" />
-                              {player.personas.telefono
-                                ? `+34 ${player.personas.telefono}`
-                                : "No registrado"}
-                            </div>
-                            <div className="flex items-center text-sm text-muted-foreground">
-                              <Mail className="h-4 w-4 mr-2 opacity-70" />
-                              {player.personas.email}
-                            </div>
+            personas
+              .filter((persona) => persona.estado === "solicitado")
+              .map((player) => (
+                <Card
+                  key={player.id}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      <Avatar>
+                        <AvatarImage
+                          src={
+                            player.personas.foto ||
+                            "https://github.com/shadcn.png"
+                          }
+                        />
+                        <AvatarFallback>
+                          {player.personas.nombre.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h3 className="font-semibold">
+                          {player.personas.nombre}
+                        </h3>
+                        <div className="mt-2 space-y-2">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Phone className="h-4 w-4 mr-2 opacity-70" />
+                            {player.personas.telefono
+                              ? `+34 ${player.personas.telefono}`
+                              : "No registrado"}
                           </div>
-                          <div className="mt-4 space-y-2">
-                            <Link to={`/equipo/jugador/${player.id}`}>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-full"
-                              >
-                                Ver perfil
-                              </Button>
-                            </Link>
-                            <Button size="sm" className="w-full mt-2">
-                              Aceptar solicitud
-                            </Button>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Mail className="h-4 w-4 mr-2 opacity-70" />
+                            {player.personas.email}
                           </div>
                         </div>
+                        <div className="mt-4 space-y-2">
+                          <Link to={`/equipo/jugador/${player.id}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                            >
+                              Ver perfil
+                            </Button>
+                          </Link>
+                          <Button
+                            size="sm"
+                            className="w-full mt-2"
+                            onClick={() => handleAceptar(player?.persona_id, true)}
+                          >
+                            Aceptar solicitud
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="w-full mt-2"
+                            onClick={() => handleAceptar(false)}
+                          >
+                            Rechazar solicitud
+                          </Button>
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))
-            ) : (
-              <div className="col-span-full py-12 text-center">
-                <div className="mx-auto flex flex-col items-center justify-center text-muted-foreground">
-                  <UserX className="h-12 w-12 mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium">
-                    No hay solicitudes pendientes
-                  </h3>
-                </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+          ) : (
+            <div className="col-span-full py-12 text-center">
+              <div className="mx-auto flex flex-col items-center justify-center text-muted-foreground">
+                <UserX className="h-12 w-12 mb-4 opacity-50" />
+                <h3 className="text-lg font-medium">
+                  No hay solicitudes pendientes
+                </h3>
               </div>
-            )   
+            </div>
           )}
         </div>
       </main>
