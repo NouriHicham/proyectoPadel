@@ -155,7 +155,7 @@ export const jugadoresDiferenteEquipo = async (equipoId) => {
 
     if (excludedError) {
       console.error("Error al obtener IDs excluidos:", excludedError.message);
-      return []; 
+      return [];
     }
 
     // Extraer los IDs a excluir y formatearlos correctamente
@@ -163,24 +163,24 @@ export const jugadoresDiferenteEquipo = async (equipoId) => {
 
     if (idsToExclude.length === 0) {
       console.log("No hay IDs para excluir.");
-      return await supabase.from("personas").select("*"); 
+      return await supabase.from("personas").select("*");
     }
 
     // Paso 2: Usar los IDs excluidos para filtrar en la tabla personas
     const { data, error } = await supabase
       .from("personas")
       .select("*")
-      .not("id", "in", `(${idsToExclude.join(",")})`); 
+      .not("id", "in", `(${idsToExclude.join(",")})`);
 
     if (error) {
       console.error("Error al ejecutar la consulta:", error.message);
-      return []; 
+      return [];
     }
 
     return data;
   } catch (error) {
     console.error("Error al leer personas:", error.message);
-    return []; 
+    return [];
   }
 };
 
@@ -270,34 +270,32 @@ export async function insertarPartido(partido) {
 }
 
 //obtener equipos que pertenezcan a una liga, exclutendote a ti mismo
-export async function getEquipoPartidos(id, liga_id){
-  try{
-    const {data, error} = await supabase
+export async function getEquipoPartidos(id, liga_id) {
+  try {
+    const { data, error } = await supabase
       .from("equipos")
       .select("*")
       .eq("liga_id", liga_id)
       .neq("id", id);
-    
+
     if (error) throw error;
 
     return data;
-  } catch(error){
+  } catch (error) {
     console.error("Error al obtener equipos para los partidos:", error.message);
     return null;
   }
 }
 
 //obtener todas las sedes
-export async function getSedes(){
-  try{
-    const {data, error} = await supabase
-      .from("sedes")
-      .select("*")
+export async function getSedes() {
+  try {
+    const { data, error } = await supabase.from("sedes").select("*");
 
     if (error) throw error;
 
     return data;
-  }catch(error){
+  } catch (error) {
     console.error("Error al obtener las sedes:", error.message);
     return null;
   }
@@ -358,14 +356,18 @@ export async function eliminarEquipo(equipoId) {
 
 export const solicitarUnirseEquipo = async (personaId, equipoId) => {
   try {
-    const { data, error } = await supabase.from("equipos_personas").upsert([
-      {
-        equipo_id: equipoId,
-        persona_id: personaId,
-        estado: "solicitado",
-      },
-    ]);
+    const { data, error } = await supabase
+      .from("equipos_personas")
+      .upsert([
+        {
+          equipo_id: equipoId,
+          persona_id: personaId,
+          estado: "solicitado",
+        },
+      ])
+      .select();
     if (error) throw error;
+    return data;
   } catch (error) {
     console.error("Error al invitar a la persona:", error.message);
   }

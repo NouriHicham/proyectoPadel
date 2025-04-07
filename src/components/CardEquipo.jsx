@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import toast from "react-hot-toast";
 
 export default function CardEquipo({
   equipo,
@@ -57,7 +58,6 @@ export default function CardEquipo({
     }
   };
 
-
   const handleAceptar = async (aceptar) => {
     try {
       if (aceptar) {
@@ -73,9 +73,13 @@ export default function CardEquipo({
   const handleSolicitarUnirme = async () => {
     try {
       if (!solicitar || !personaId) return;
-      console.log(personaId)
+      console.log(personaId);
       const data = await solicitarUnirseEquipo(personaId, equipoId);
+
       console.log("solicitud: ", data);
+      if (data) {
+        return toast.success("Solicitud enviada al equipo.");
+      }
     } catch (error) {
       console.error("Error al solicitar unirse:", error);
     }
