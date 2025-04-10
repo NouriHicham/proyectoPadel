@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { CalendarIcon, Clock, Plus } from "lucide-react"
+import { CalendarIcon, ChevronRight, Clock, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -24,6 +24,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { getEquipoPartidos, getSedes, insertarPartido } from "@/lib/database"
+import { Navigate } from "react-router-dom"
 
 const formSchema = z.object({
   date: z.date({

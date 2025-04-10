@@ -15,14 +15,14 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center mx-auto">
         <div className="flex items-center space-x-2 mr-4">
-          <Trophy className="h-6 w-6" />
+          <Trophy className="h-6 w-6 ml-2 sm:ml-0" />
           <span className="hidden font-bold sm:inline-block">PadelTeam</span>
         </div>
         <MainNav className="mx-6" />
         <div className="ml-auto flex items-center space-x-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 rounded-xl p-1 text-sm font-medium hover:bg-accent hover:text-accent-foreground hover:cursor-pointer">
+            <button className="flex items-center gap-2 rounded-xl p-1 text-sm font-medium hover:bg-accent hover:text-accent-foreground hover:cursor-pointer mr-2 sm:mr-0">
               <Avatar className="h-8 w-8">
                 <AvatarImage src="/placeholder.svg?height=32&width=32" alt="@usuario" />
                 <AvatarFallback>{user.nombre.charAt(0)}</AvatarFallback>
