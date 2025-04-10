@@ -269,6 +269,23 @@ export async function insertarPartido(partido) {
   }
 }
 
+//funcion para insertar sedes
+export async function insertarSede(sede){
+  try {
+    const { data, error } = await supabase
+      .from("sedes")
+      .insert([sede])
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al insertar sede:", error.message);
+    return null;
+  }
+}
+
 //obtener equipos que pertenezcan a una liga, exclutendote a ti mismo
 export async function getEquipoPartidos(id, liga_id) {
   try {

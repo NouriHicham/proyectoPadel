@@ -24,7 +24,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { getEquipoPartidos, getSedes, insertarPartido } from "@/lib/database"
-import { Navigate } from "react-router-dom"
 
 const formSchema = z.object({
   date: z.date({

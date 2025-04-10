@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Header } from "@/components/header"
 // import { MobileNav } from "@/components/mobile-nav"
 import { CreateMatchDialog } from "@/components/create-match-dialog"
+import { CreateSedeDialog } from "@/components/create-sede-dialog";
 import { Card, CardContent } from "@/components/ui/card"
 import { Calendar, MapPin, Plus, Users2 } from "lucide-react"
 import { Link } from "react-router-dom"
@@ -35,13 +36,14 @@ export default function PartidosPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Partidos</h1>
           <div>
-            <Button className="mr-1">
+            {/* <Button className="mr-1">
               <Plus className="h-4 w-4" />
               <span className="hidden lg:block">
                 Nueva sede
               </span>
               
-            </Button>
+            </Button> */}
+            <CreateSedeDialog />
             <CreateMatchDialog />
           </div>
           
