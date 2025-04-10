@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/supabase/supabase";
 import { Header } from "@/components/header";
+import CreateClubDialog from "@/components/CreateClubDialog";
 
 export default function EquiposSelect() {
   const [equipos, setEquipos] = useState([]);
@@ -69,7 +70,8 @@ export default function EquiposSelect() {
         )}
         <div className="text-center">
           <h1 className="text-4xl font-semibold">Mis equipos</h1>
-          <p>Visualiza los equipos a los que perteneces o tus invitaciones</p>
+          <p>Visualiza los equipos a los que perteneces o tus invitaciones.</p>
+          <CreateClubDialog/>
         </div>
         <Tabs
           defaultValue="teams"
