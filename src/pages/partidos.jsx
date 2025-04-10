@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Header } from "@/components/header"
 // import { MobileNav } from "@/components/mobile-nav"
 import { CreateMatchDialog } from "@/components/create-match-dialog"
+import { CreateSedeDialog } from "@/components/create-sede-dialog";
 import { Card, CardContent } from "@/components/ui/card"
-import { Calendar, MapPin, Users2 } from "lucide-react"
+import { Calendar, MapPin, Plus, Users2 } from "lucide-react"
 import { Link } from "react-router-dom"
-import { getUltimosPartidosJugados } from "@/lib/database"
+import { getUltimoPartidoaJugar } from "@/lib/database"
 import { useEffect, useState } from "react"
 
 export default function PartidosPage() {
@@ -17,7 +18,7 @@ export default function PartidosPage() {
     useEffect(() => {
         async function fetchAll(){
           try {
-            const nextMatchData = await getUltimosPartidosJugados(savedInfo.equipo_id, 2)
+            const nextMatchData = await getUltimoPartidoaJugar(savedInfo.equipo_id, 2)
             setNext(nextMatchData);
           }catch(error){
             console.error(error)
@@ -34,7 +35,18 @@ export default function PartidosPage() {
       <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Partidos</h1>
-          <CreateMatchDialog />
+          <div>
+            {/* <Button className="mr-1">
+              <Plus className="h-4 w-4" />
+              <span className="hidden lg:block">
+                Nueva sede
+              </span>
+              
+            </Button> */}
+            <CreateSedeDialog />
+            <CreateMatchDialog />
+          </div>
+          
         </div>
 
         <div className="space-y-4">
@@ -48,7 +60,9 @@ export default function PartidosPage() {
                     <div className="flex items-start gap-4">
                       <div className="flex flex-col items-center justify-center bg-primary/10 rounded-lg p-3">
                         <span className="text-lg font-bold">{new Date(match.fecha).getDate()}</span>
-                        <span className="text-sm">{new Date(match.fecha).getMonth()}</span>
+                        <span className="text-sm">
+                          {new Date(match.fecha).toLocaleString('es-ES', { month: 'long' })}
+                        </span>
                       </div>
                       <div>
                         <h3 className="font-semibold">Partido Amistoso #{match.id}</h3>
@@ -58,7 +72,7 @@ export default function PartidosPage() {
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground mt-1">
                           <MapPin className="h-4 w-4 mr-2" />
-                          {match.sede_id} *cambiar por nombre*
+                          {match.sedes.nombre}
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground mt-1">
                           <Users2 className="h-4 w-4 mr-2" />4 jugadores confirmados

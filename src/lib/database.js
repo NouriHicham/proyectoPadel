@@ -50,7 +50,7 @@ export async function getMiembrosEquipo(equipo_id) {
   }
 }
 
-// funcion para obtener los ultimos tres partidos jugados
+// funcion para obtener los ultimos partidos jugados
 export async function getUltimosPartidosJugados(equipo_id, limit = 1) {
   try {
     const { data, error } = await supabase
@@ -75,7 +75,7 @@ export async function getUltimoPartidoaJugar(equipo_id, limit = 1) {
   try {
     const { data, error } = await supabase
       .from("partidos")
-      .select("*, sedes(nombre)")
+      .select("*, sedes(*)")
       .or(`equipo1_id.eq.${equipo_id},equipo2_id.eq.${equipo_id}`)
       .eq("estado", "programado")
       .order("fecha", { ascending: false })
@@ -265,6 +265,23 @@ export async function insertarPartido(partido) {
     return data;
   } catch (error) {
     console.error("Error al insertar partido:", error.message);
+    return null;
+  }
+}
+
+//funcion para insertar sedes
+export async function insertarSede(sede){
+  try {
+    const { data, error } = await supabase
+      .from("sedes")
+      .insert([sede])
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al insertar sede:", error.message);
     return null;
   }
 }
