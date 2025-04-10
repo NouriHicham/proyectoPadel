@@ -215,7 +215,7 @@ export default function CardEquipo({
           </div> */}
         </div>
       </CardContent>
-      <CardFooter className="border-t bg-muted/50 px-6 py-3">
+      <CardFooter className="border-t px-6 py-3">
         {invitation ? (
           <>
             <Button
