@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { CalendarIcon, Clock, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { useEffect, useState } from "react";
+import { CalendarIcon, Clock, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -12,18 +12,35 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { getEquipoPartidos, getSedes, insertarPartido } from "@/lib/database"
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { getEquipoPartidos, getSedes, insertarPartido } from "@/lib/database";
 
 const formSchema = z.object({
   date: z.date({
@@ -32,41 +49,44 @@ const formSchema = z.object({
   time: z.string().min(1, "La hora es requerida."),
   sede: z.string().min(1, "La sede es requerida."),
   equipos: z.string().min(1, "¿Contra quien juegas?"),
-})
+});
 
 export function CreateMatchDialog() {
-  const [open, setOpen] = useState(false)
-  const savedInfo = JSON.parse(localStorage.getItem("personaGuardada"))
+  const [open, setOpen] = useState(false);
+  const savedInfo = JSON.parse(localStorage.getItem("personaGuardada"));
   const [equipos, setEquipos] = useState([]);
   const [sedes, setSedes] = useState([]);
-  
+
   useEffect(() => {
-      async function fetchAll(){
-        try {
-          const equipoData = await getEquipoPartidos(savedInfo.equipo_id, savedInfo.equipos.liga_id);
-          setEquipos(equipoData);
-          const sedeData = await getSedes();
-          setSedes(sedeData);
-        }catch(error){
-          console.error(error)
-        }
+    async function fetchAll() {
+      try {
+        const equipoData = await getEquipoPartidos(
+          savedInfo.equipo_id,
+          savedInfo.equipos.liga_id
+        );
+        setEquipos(equipoData);
+        const sedeData = await getSedes();
+        setSedes(sedeData);
+      } catch (error) {
+        console.error(error);
       }
-  
-      fetchAll();
-  },[]);
+    }
+
+    fetchAll();
+  }, []);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       time: "10:00",
     },
-  })
+  });
 
   function onSubmit(values) {
     const { date, time, sede, equipos } = values;
 
-    const dateTime = format(date, "yyyy-MM-dd") + " " +  time
-    
+    const dateTime = format(date, "yyyy-MM-dd") + " " + time;
+
     const datos = [];
     datos.push({
       fecha: dateTime,
@@ -74,11 +94,11 @@ export function CreateMatchDialog() {
       sede_id: sede,
       equipo1_id: savedInfo.equipo_id,
       equipo2_id: equipos,
-      liga_id: savedInfo.equipos.liga_id
+      liga_id: savedInfo.equipos.liga_id,
     });
 
-    console.log(values)
-    console.log(datos)
+    console.log(values);
+    console.log(datos);
     insertarPartido(datos[0]);
     setOpen(false);
     form.reset();
@@ -87,14 +107,17 @@ export function CreateMatchDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus/>
-          Nueva Convocatoria</Button>
+        <Button className={"rounded-full h-8 w-8 sm:rounded-md sm:h-auto sm:w-auto"}>
+          <Plus />
+          <span className="hidden sm:block">Nueva Convocatoria</span>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Crear Nueva Convocatoria</DialogTitle>
-          <DialogDescription>Programa una nueva convocatoria para los partidos.</DialogDescription>
+          <DialogDescription>
+            Programa una nueva convocatoria para los partidos.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -110,7 +133,10 @@ export function CreateMatchDialog() {
                         <FormControl>
                           <Button
                             variant={"outline"}
-                            className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
                           >
                             {field.value ? (
                               format(field.value, "PPP", { locale: es })
@@ -126,7 +152,9 @@ export function CreateMatchDialog() {
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
+                          disabled={(date) =>
+                            date < new Date() || date < new Date("1900-01-01")
+                          }
                           initialFocus
                         />
                       </PopoverContent>
@@ -159,7 +187,10 @@ export function CreateMatchDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Sede</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona la sede" />
@@ -184,7 +215,10 @@ export function CreateMatchDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Equipo contrario</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona el equipo" />
@@ -192,7 +226,10 @@ export function CreateMatchDialog() {
                     </FormControl>
                     <SelectContent>
                       {equipos.map((equipo) => (
-                        <SelectItem key={equipo.id} value={equipo.id.toString()}>
+                        <SelectItem
+                          key={equipo.id}
+                          value={equipo.id.toString()}
+                        >
                           {equipo.nombre}
                         </SelectItem>
                       ))}
@@ -209,7 +246,10 @@ export function CreateMatchDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tipo de Convocatoria (pronto...)</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona el tipo" />
@@ -228,7 +268,11 @@ export function CreateMatchDialog() {
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
                 Cancelar
               </Button>
               <Button type="submit">Crear Convocatoria</Button>
@@ -237,6 +281,5 @@ export function CreateMatchDialog() {
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

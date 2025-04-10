@@ -27,7 +27,7 @@ export function Header() {
                 <AvatarImage src="/placeholder.svg?height=32&width=32" alt="@usuario" />
                 <AvatarFallback>{user.nombre.charAt(0)}</AvatarFallback>
               </Avatar>
-              <span>{user.nombre} {user.apellido}</span>
+              <span className="hidden sm:block">{user.nombre} {user.apellido}</span>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">

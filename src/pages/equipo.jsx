@@ -142,7 +142,7 @@ export default function EquipoPage() {
       <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-3xl font-bold">Equipo</h1>
-          <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="flex items-center gap-4 w-full sm:w-auto flex-wrap">
             <Tabs
               defaultValue="jugadores"
               className="mr-2"
@@ -176,71 +176,105 @@ export default function EquipoPage() {
               </TabsList>
             </Tabs>
             {/* Modal para invitar a jugador */}
-            <Dialog open={open2} onOpenChange={setOpen2}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Invitar a Jugador
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Invitar a Jugador</DialogTitle>
-                  <DialogDescription></DialogDescription>
-                </DialogHeader>
+            <div className="flex gap-2 items-center flex-wrap">
+              <Dialog open={open2} onOpenChange={setOpen2}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Invitar a Jugador
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Invitar a Jugador</DialogTitle>
+                    <DialogDescription></DialogDescription>
+                  </DialogHeader>
 
-                <Select
-                  onValueChange={(value) => setPersonaId(parseInt(value))}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecciona un jugador" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {listaJugadores.map((jugador) => (
-                        <SelectItem
-                          key={jugador.id}
-                          value={jugador.id.toString()}
-                        >
-                          {`${jugador.nombre} ${jugador.apellido}`}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <Button onClick={handleInvitar}>Invitar</Button>
-              </DialogContent>
-            </Dialog>
-            {/* Modal para añadir jugador de forma manual */}
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Añadir Jugador
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Añadir jugador</DialogTitle>
-                  <DialogDescription>
-                    Introduce los datos del jugador
-                  </DialogDescription>
-                </DialogHeader>
-
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
+                  <Select
+                    onValueChange={(value) => setPersonaId(parseInt(value))}
                   >
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecciona un jugador" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {listaJugadores.map((jugador) => (
+                          <SelectItem
+                            key={jugador.id}
+                            value={jugador.id.toString()}
+                          >
+                            {`${jugador.nombre} ${jugador.apellido}`}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={handleInvitar}>Invitar</Button>
+                </DialogContent>
+              </Dialog>
+              {/* Modal para añadir jugador de forma manual */}
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Añadir Jugador
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Añadir jugador</DialogTitle>
+                    <DialogDescription>
+                      Introduce los datos del jugador
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className="space-y-4"
+                    >
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nombre</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Nombre" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="lastName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Apellido</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Apellido" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
                       <FormField
                         control={form.control}
-                        name="name"
+                        name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Nombre</FormLabel>
+                            <FormLabel>Email</FormLabel>
                             <FormControl>
-                              <Input placeholder="Nombre" {...field} />
+                              <Input
+                                placeholder="Email"
+                                type="email"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -249,87 +283,55 @@ export default function EquipoPage() {
 
                       <FormField
                         control={form.control}
-                        name="lastName"
+                        name="phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Apellido</FormLabel>
+                            <FormLabel>Teléfono</FormLabel>
                             <FormControl>
-                              <Input placeholder="Apellido" {...field} />
+                              <Input
+                                placeholder="Teléfono"
+                                type="tel"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
 
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Email"
-                              type="email"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      <FormField
+                        control={form.control}
+                        name="avatar"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Avatar URL</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="URL del Avatar"
+                                type="url"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Teléfono</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Teléfono"
-                              type="tel"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="avatar"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Avatar URL</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="URL del Avatar"
-                              type="url"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <DialogFooter>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setOpen(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button type="submit">Añadir Jugador</Button>
-                    </DialogFooter>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
+                      <DialogFooter>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setOpen(false)}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button type="submit">Añadir Jugador</Button>
+                      </DialogFooter>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
         {/* Interesa que solo el admin pueda ver el siguiente contenido.  */}
@@ -357,12 +359,20 @@ export default function EquipoPage() {
                       </Avatar>
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg">
-                          {player.personas.nombre} 
-                          {equipoPersona?.equipos.capitan_id === player.personas.id && (
-                            <span className="text-sm text-gray-600"> (Capitán)</span>
+                          {player.personas.nombre}
+                          {equipoPersona?.equipos.capitan_id ===
+                            player.personas.id && (
+                            <span className="text-sm text-gray-600">
+                              {" "}
+                              (Capitán)
+                            </span>
                           )}
-                          {equipoPersona?.equipos.subcapitan_id === player.personas.id && (
-                            <span className="text-sm text-gray-600"> (Subcapitán)</span>
+                          {equipoPersona?.equipos.subcapitan_id ===
+                            player.personas.id && (
+                            <span className="text-sm text-gray-600">
+                              {" "}
+                              (Subcapitán)
+                            </span>
                           )}
                           {equipoPersona?.persona_id === player.personas.id && (
                             <span className="text-sm text-gray-600"> (Tú)</span>
