@@ -27,7 +27,7 @@ import { Button } from "./ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { format } from "date-fns";
 import {
   Popover,
@@ -38,44 +38,47 @@ import { cn } from "@/lib/utils";
 import { es, id } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { useAuth } from "@/context/AuthContext";
+import { crearClub } from "@/lib/database";
 
 const formSchema = z.object({
-  date: z.date({
+  nombre: z.string({
     required_error: "La fecha es requerida.",
   }),
-  time: z.string().min(1, "La hora es requerida."),
-  sede: z.string().min(1, "La sede es requerida."),
-  equipos: z.string().min(1, "¿Contra quien juegas?"),
+  descripcion: z.string().min(1, "Introduce una descripción del club."),
+  // foto: z.string().min(1, "Elige una foto."),
+  ubicacion: z.string().min(1, "La ubicación es requerida."),
 });
 
 export default function CreateClubDialog() {
   const [open, setOpen] = useState(false);
+  const {equipoPersona} = useAuth()
+ 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      time: "10:00",
+      nombre: "", 
+      descripcion: "", 
+      foto: "", 
+      ubicacion: ""
     },
   });
-  function onSubmit(values) {
-    // const { date, time, sede, equipos } = values;
-
-    // const dateTime = format(date, "yyyy-MM-dd") + " " + time;
-
-    // const datos = [];
-    // datos.push({
-    //   fecha: dateTime,
-    //   estado: "programado",
-    //   sede_id: sede,
-    //   equipo1_id: savedInfo.equipo_id,
-    //   equipo2_id: equipos,
-    //   liga_id: savedInfo.equipos.liga_id,
-    // });
-
-    // console.log(values);
-    // console.log(datos);
-    // insertarPartido(datos[0]);
-    setOpen(false);
-    form.reset();
+  async function onSubmit(values) {
+    // const { nombre, descripcion, foto, ubicacion} = values;
+    let data = {
+      ...values,
+      admin_id: equipoPersona?.persona_id
+    }
+    
+    console.log(data)
+    try {
+      await crearClub(data)
+      setOpen(false);
+      form.reset();
+    } catch (error) {
+      console.error('Error al crear el club: ', error)
+    }
   }
 
   return (
@@ -120,7 +123,7 @@ export default function CreateClubDialog() {
                 <FormItem>
                   <FormLabel>Descripción</FormLabel>
                   <FormControl>
-                    <textarea
+                    <Textarea
                       placeholder="Describe brevemente el proyecto"
                       {...field}
                     />
@@ -152,7 +155,10 @@ export default function CreateClubDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Ubicación</FormLabel>
-                  <Select
+                  <FormControl>
+                    <Input type="text" placeholder="Introduce la ubicación" {...field} />
+                  </FormControl>
+                  {/* <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
@@ -162,14 +168,9 @@ export default function CreateClubDialog() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {/* Aquí puedes mapear las ubicaciones disponibles */}
-                      {/* {ubicaciones.map((ubicacion) => (
-                <SelectItem key={ubicacion.id} value={ubicacion.id.toString()}>
-                  {ubicacion.nombre}
-                </SelectItem>
-              ))} */}
+
                     </SelectContent>
-                  </Select>
+                  </Select> */}
                   <FormMessage />
                 </FormItem>
               )}
