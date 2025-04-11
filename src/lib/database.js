@@ -389,3 +389,22 @@ export const solicitarUnirseEquipo = async (personaId, equipoId) => {
     console.error("Error al invitar a la persona:", error.message);
   }
 };
+
+
+
+// Insertar club
+export async function crearClub(clubData) {
+  try {
+    const { data, error } = await supabase
+      .from("clubs")
+      .insert(clubData)
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al insertar partido:", error.message);
+    return null;
+  }
+}
