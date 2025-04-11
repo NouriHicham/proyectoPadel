@@ -80,8 +80,6 @@ export function CreateMatchDialog() {
       liga_id: savedInfo.equipos.liga_id,
     });
 
-    console.log(values);
-    console.log(datos);
     insertarPartido(datos[0]);
     setOpen(false);
     form.reset();

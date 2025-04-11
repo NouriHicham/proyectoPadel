@@ -18,11 +18,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Plus } from "lucide-react";
+import { insertarSede } from "@/lib/database";
 
 const formSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido."),
   ubicacion: z.string().min(1, "La ubicación es requerida."),
-  numPistas: z.number().min(1, "Debe haber al menos 1 pista."),
+  numPistas: z.string().min(1, "Debe haber al menos 1 pista."),
   tipo: z.enum(["indoor", "outdoor"], "El tipo es requerido."),
 });
 
@@ -34,14 +35,22 @@ export function CreateSedeDialog() {
     defaultValues: {
       nombre: "",
       ubicacion: "",
-      numPistas: 1,
+      numPistas: 2,
       tipo: "indoor",
     },
   });
 
   function onSubmit(values) {
-    console.log(values);
-    //insertarSede(values); Llama a la función para insertar la sede en la base de datos
+    const { nombre, ubicacion, numPistas, tipo } = values;
+
+    const sede = [];
+    sede.push({
+      nombre: nombre,
+      ubicacion: ubicacion,
+      numpistas: numPistas,
+      tipo: tipo
+    })
+    insertarSede(sede[0]); //Llama a la función para insertar la sede en la base de datos
     setOpen(false);
     form.reset();
   }
