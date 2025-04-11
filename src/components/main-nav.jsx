@@ -15,7 +15,7 @@ export function MainNav({ className, ...props }) {
           pathname === "/" ? "text-primary" : "text-muted-foreground"
         )}
       >
-        <Home className="h-4 w-4 lg:hidden" />
+        <Home className="lg:hidden" size={20} strokeWidth={2.1}/>
         <span className="hidden lg:block">Inicio</span>
       </Link>
 
@@ -26,7 +26,7 @@ export function MainNav({ className, ...props }) {
           pathname.startsWith("/partidos") ? "text-primary" : "text-muted-foreground"
         )}
       >
-        <Calendar className="h-4 w-4 lg:hidden" />
+        <Calendar className="lg:hidden" size={20} strokeWidth={2.1}/>
         <span className="hidden lg:block">Partidos</span>
       </Link>
 
@@ -37,7 +37,7 @@ export function MainNav({ className, ...props }) {
           pathname.startsWith("/equipo") ? "text-primary" : "text-muted-foreground"
         )}
       >
-        <Users2 className="h-4 w-4 lg:hidden" />
+        <Users2 className="lg:hidden" size={20} strokeWidth={2.1}/>
         <span className="hidden lg:block">Equipo</span>
       </Link>
 

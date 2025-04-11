@@ -56,7 +56,7 @@ export default function EquiposSelect() {
   return (
     <>
       {equipoPersona && <Header />}
-      <div className="container relative mx-auto min-h-screen flex flex-col justify-center items-center py-4">
+      <div className="container relative mx-auto mt-7 flex flex-col justify-center items-center py-4">
         {/* <Button className="absolute right-4 top-10" onClick={signOut}>
           Cerrar Sesión
         </Button> */}
@@ -92,7 +92,7 @@ export default function EquiposSelect() {
             {/* Aceptado, Invitado, Pendiente */}
 
             {/* Equipos a los que perteneces */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {equipos
                 .filter((equipo) => equipo.estado == "aceptado")
                 .map((equipo) => (
@@ -102,7 +102,7 @@ export default function EquiposSelect() {
           </TabsContent>
           <TabsContent value="invitations">
             {/*Equipos que te han invitado */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {equipos
                 .filter((equipo) => equipo.estado == "invitado")
                 .map((equipo) => (
@@ -116,7 +116,7 @@ export default function EquiposSelect() {
           </TabsContent>
           <TabsContent value="requests">
             {/* Pestaña para solicitar unión a equipo */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {/* Filtrar por persona id */}
               {equiposDiferentes.map((equipo) => (
                 <CardEquipo key={equipo.id} equipo={equipo} solicitar={true} />
