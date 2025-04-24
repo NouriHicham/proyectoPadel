@@ -12,6 +12,7 @@ import JugadorDetalles from "./pages/jugadorDetalles";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import Perfil from "./pages/perfil";
 import EquiposSelect from "./pages/EquiposSelect";
+import AdminPage from "./pages/AdminPage";
 
 /* 
   En ProtectedRoutes anidamos las rutas que nos interesa que el usuario no pueda 
@@ -32,6 +33,8 @@ function App() {
           <Route path="/equipo/jugador/:id" element={<JugadorDetalles />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/equipos" element={<EquiposSelect />} />
+          <Route path="/clubs/:id" element={< AdminPage/>} />
+
           <Route path="*" element={<div> 404 | Not Found Page</div>} />
         </Route>
       </Routes>

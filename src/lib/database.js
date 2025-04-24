@@ -270,7 +270,7 @@ export async function insertarPartido(partido) {
 }
 
 //funcion para insertar sedes
-export async function insertarSede(sede){
+export async function insertarSede(sede) {
   try {
     const { data, error } = await supabase
       .from("sedes")
@@ -390,7 +390,42 @@ export const solicitarUnirseEquipo = async (personaId, equipoId) => {
   }
 };
 
+export async function getClubs(id_persona) {
+  try {
+    const { data, error } = await supabase
+      .from("clubs")
+      .select("*")
+      .eq("admin_id", id_persona);
 
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error al obtener los clubes:", error.message);
+    return null;
+  }
+}
+export async function getClub(id) {
+  try {
+    const { data, error } = await supabase
+      .from("clubs")
+      .select(
+        `
+    *,
+    equipos (
+      *,
+      equipos_personas (*)
+    )
+  `
+      )
+      .eq("id", id);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error al obtener los clubes:", error.message);
+    return null;
+  }
+}
 
 // Insertar club
 export async function crearClub(clubData) {
