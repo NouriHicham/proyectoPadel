@@ -318,6 +318,24 @@ export async function getSedes() {
   }
 }
 
+export async function updatePersona(id, datos) {
+  try {
+    const { data, error } = await supabase
+      .from("personas")
+      .update(datos)
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al actualizar la persona:", error.message);
+    return null;
+  }
+  
+}
+
 //funciones sin probar
 // Función para crear un nuevo equipo
 export async function crearEquipo(equipo) {
