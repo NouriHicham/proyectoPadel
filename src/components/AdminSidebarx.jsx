@@ -1,6 +1,6 @@
-// AdminSidebar.jsx
 import { Trophy, Home as HomeIcon, Info, Users, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils"; 
 
 export default function AdminSidebar({ clubData, activeTab, setActiveTab }) {
   return (
@@ -15,33 +15,36 @@ export default function AdminSidebar({ clubData, activeTab, setActiveTab }) {
         <nav className="flex-1 p-4 space-y-1">
           <button
             onClick={() => setActiveTab("club")}
-            className={`flex items-center px-4 py-2 rounded-md space-x-2 transition-colors ${
+            className={cn(
+              "flex items-center px-4 py-2 rounded-md space-x-2 transition-colors cursor-pointer",
               activeTab === "club"
                 ? "bg-primary text-primary-foreground"
                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
+            )}
           >
             <Info className="h-5 w-5" />
             <span>Información</span>
           </button>
           <button
             onClick={() => setActiveTab("teams")}
-            className={`flex items-center px-4 py-2 rounded-md space-x-2 transition-colors ${
+            className={cn(
+              "flex items-center px-4 py-2 rounded-md space-x-2 transition-colors cursor-pointer",
               activeTab === "teams"
                 ? "bg-primary text-primary-foreground"
                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
+            )}
           >
             <Users className="h-5 w-5" />
             <span>Equipos</span>
           </button>
           <button
             onClick={() => setActiveTab("matches")}
-            className={`flex items-center px-4 py-2 rounded-md space-x-2 transition-colors ${
+            className={cn(
+              "flex items-center px-4 py-2 rounded-md space-x-2 transition-colors cursor-pointer",
               activeTab === "matches"
                 ? "bg-primary text-primary-foreground"
                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
+            )}
           >
             <Calendar className="h-5 w-5" />
             <span>Partidos</span>
