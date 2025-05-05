@@ -474,3 +474,18 @@ export async function getLigas() {
     return null;
   }
 }
+
+export async function getJugadresClub(club_id) {
+  try {
+    const { data, error } = await supabase
+      .from("personas")
+      .select("*")
+      .eq("club_id", club_id);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}

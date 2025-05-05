@@ -15,65 +15,70 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useEffect, useState } from "react";
-import { getLigas } from "@/lib/database";
+import { getJugadresClub } from "@/lib/database";
+import { useAuth } from "@/context/AuthContext";
 
-export function ComboboxLigas({ value, onChange }) {
+export function ComboboxPersonas({ value, onChange }) {
   const [open, setOpen] = useState(false);
-  const [ligas, setLigas] = useState([]);
+  const [personas, setPersonas] = useState([]);
+  const { clubData } = useAuth();
 
   useEffect(() => {
-    const fetchLigas = async () => {
+    const fetchPersonas = async () => {
       try {
-        const data = await getLigas();
-        setLigas(data || []);
+        console.log(clubData)
+        const data = await getJugadresClub(clubData?.id);
+        setPersonas(data || []);
       } catch (error) {
         console.error("Error fetching ligas:", error);
       }
     };
-    fetchLigas();
+    fetchPersonas();
   }, []);
-
-  //   console.log(ligas)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          type="button"
           variant="outline"
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
+          onClick={() => setOpen((prev) => !prev)}
         >
           {value
-            ? ligas.find((liga) => String(liga.id) === String(value))?.nombre
-            : "Selecciona una liga..."}
+            ? personas.find((persona) => String(persona.id) === String(value))
+                ?.nombre
+            : "Selecciona una persona de tu club..."}
           <ChevronsUpDown className="ml-2 opacity-50 h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[250px] p-0" style={{ zIndex: 99999 }}>
+      <PopoverContent className="w-[350px] p-0">
         <Command>
           <CommandInput placeholder="Buscar liga..." className="h-9" />
           <CommandList>
-            <CommandEmpty>No se encontraron ligas.</CommandEmpty>
+            <CommandEmpty>No se encontraron personas de tu club.</CommandEmpty>
             <CommandGroup>
-              {ligas.map((liga) => (
+              {personas.map((persona) => (
                 <CommandItem
-                  key={liga.id}
-                  value={String(liga.id)}
+                  key={persona.id}
+                  value={String(persona.id)}
                   onSelect={(currentValue) => {
-                    console.log(currentValue);
                     onChange(currentValue);
                     setOpen(false);
                   }}
                 >
-                  <span className="font-medium">{liga.nombre}</span>
+                  <span className="font-medium">
+                    {persona.nombre + " " + persona.apellido}
+                  </span>
                   <span className="ml-2 text-xs text-gray-500">
-                    {liga.tipo}
+                    {persona.posicion}
                   </span>
                   <Check
                     className={cn(
                       "ml-auto",
-                      String(value) === String(liga.id)
+                      String(value) === String(persona.id)
                         ? "opacity-100"
                         : "opacity-0"
                     )}

@@ -45,6 +45,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
 import AlertConfirmation from "./AlertConfirmation";
+import CreateClubDialog from "./CreateClubDialog";
+import CreateTeamDialog from "./CreateTeamDialog";
 
 export default function CardEquipo({
   equipo,
@@ -259,13 +261,14 @@ export default function CardEquipo({
         ) : gestionar ? (
           // operaciones crud
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2 w-full">
-            <Button
+            {/* <Button
               variant=""
               className="px-2 h-8 hover:bg-gray-200 hover:text-black transition-colors"
             >
               <Pen />
               <span className="hidden md:block">Editar</span>
-            </Button>
+            </Button> */}
+            <CreateTeamDialog isEditing={true} teamData={equipo} />
             <AlertConfirmation id={equipo?.id} type={"team"} />
             {/* <Button
               variant=""

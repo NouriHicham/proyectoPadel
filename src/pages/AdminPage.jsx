@@ -44,12 +44,12 @@ function ClubInfo({ clubData }) {
     </div>
   );
 }
-function TeamsManagement({ teams, clubData }) {
+function TeamsManagement({ teams }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-2xl mb-2 font-semibold">Equipos</h2>
-        <CreateTeamDialog clubData={clubData} />
+        <CreateTeamDialog />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {teams.length === 0 ? (
@@ -76,7 +76,6 @@ export default function AdminPage() {
   const { id } = useParams();
   const { clubData, getClubData } = useClubData();
   const [activeTab, setActiveTab] = useState("club");
-
 
   useEffect(() => {
     if (id) getClubData(id);

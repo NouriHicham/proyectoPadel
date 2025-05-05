@@ -15,17 +15,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { crearEquipo } from "@/lib/database";
-import { Plus } from "lucide-react";
+import { actualizarEquipo, crearEquipo } from "@/lib/database";
+import { Pen, Plus } from "lucide-react";
 import { useClubData } from "@/hooks/useEquipos";
-import { ComboboxLigas } from "./selects/ligas";
+import { ComboboxLigas } from "./combobox/ligas";
+import { ComboboxPersonas } from "./combobox/personasClub";
+import { useAuth } from "@/context/AuthContext";
+import toast from "react-hot-toast";
 
 // Esquema de validación
 const formSchema = z.object({
@@ -38,56 +41,120 @@ const formSchema = z.object({
   subcapitan_id: z.string().min(1, "El subcapitán es requerido."),
 });
 
-export default function CreateTeamDialog({ clubData }) {
+export default function CreateTeamDialog({
+  isEditing = false,
+  teamData = null,
+}) {
   const [open, setOpen] = useState(false);
   const { getClubData } = useClubData();
 
+  const { clubData } = useAuth();
+
+  
+  const defaultValues =
+    isEditing && teamData
+      ? {
+          nombre: teamData.nombre || "",
+          descripcion: teamData.descripcion || "",
+          foto: teamData.foto || "",
+          club_id: teamData.club_id
+            ? String(teamData.club_id)
+            : clubData?.id
+            ? String(clubData.id)
+            : "",
+          liga_id: teamData.liga_id ? String(teamData.liga_id) : "",
+          capitan_id: teamData.capitan_id ? String(teamData.capitan_id) : "",
+          subcapitan_id: teamData.subcapitan_id
+            ? String(teamData.subcapitan_id)
+            : "",
+        }
+      : {
+          nombre: "",
+          descripcion: "",
+          foto: "",
+          club_id: clubData?.id ? String(clubData.id) : "",
+          liga_id: "",
+          capitan_id: "",
+          subcapitan_id: "",
+        };
+
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      nombre: "",
-      descripcion: "",
-      foto: "",
-      club_id: clubData?.id ? String(clubData.id) : "",
-      liga_id: "",
-      capitan_id: "",
-      subcapitan_id: "",
-    },
+    defaultValues,
   });
 
   async function onSubmit(values) {
+    console.log(clubData, clubData.id);
+    if (!clubData || !clubData.id) {
+      alert("No hay datos de club disponibles.");
+      return;
+    }
     try {
-      await crearEquipo({
-        ...values,
+      const equipo = {
+        nombre: values.nombre,
+        descripcion: values.descripcion,
+        foto: values.foto,
         club_id: parseInt(values.club_id),
         liga_id: parseInt(values.liga_id),
         capitan_id: parseInt(values.capitan_id),
         subcapitan_id: parseInt(values.subcapitan_id),
-      });
+      };
 
-      getClubData(clubData?.id);
+      if (isEditing && teamData?.id) {
+        // Editar equipo existente
+        await actualizarEquipo(teamData.id, equipo);
+        toast.success("Equipo actualizado correctamente.");
+      } else {
+        // Crear equipo nuevo
+        await crearEquipo(equipo);
+        toast.success("Equipo creado correctamente.");
+      }
+
+      getClubData(clubData.id);
       setOpen(false);
       form.reset();
-      // Vuelve a poner el club_id después del reset
       form.setValue("club_id", String(clubData.id));
     } catch (error) {
-      console.error("Error al crear el equipo: ", error);
+      console.error("Error al guardar el equipo: ", error);
+      toast.error("Hubo un error al guardar el equipo.");
     }
   }
+
+  useEffect(() => {
+    if (isEditing && teamData && open) {
+      form.reset({
+        nombre: teamData.nombre || "",
+        descripcion: teamData.descripcion || "",
+        foto: teamData.foto || "",
+        club_id: teamData.club_id
+          ? String(teamData.club_id)
+          : clubData?.id
+          ? String(clubData.id)
+          : "",
+        liga_id: teamData.liga_id ? String(teamData.liga_id) : "",
+        capitan_id: teamData.capitan_id ? String(teamData.capitan_id) : "",
+        subcapitan_id: teamData.subcapitan_id
+          ? String(teamData.subcapitan_id)
+          : "",
+      });
+    }
+  }, [isEditing, teamData, open]);
 
   console.log(clubData);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen} className="z-0">
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           className={"rounded-full h-8 w-8 sm:rounded-md sm:h-auto sm:w-auto"}
         >
-          <Plus />
-          <span className="hidden sm:block">Nuevo Equipo</span>
+          {isEditing ? <Pen /> : <Plus />}
+          <span className="hidden sm:block">
+            {isEditing ? "Editar" : "Nuevo Equipo"}
+          </span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] overflow-visible">
         <DialogHeader>
           <DialogTitle>Crear Nuevo Equipo</DialogTitle>
           <DialogDescription>
@@ -193,10 +260,9 @@ export default function CreateTeamDialog({ clubData }) {
                 <FormItem>
                   <FormLabel>Capitán</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="ID del capitán"
-                      {...field}
+                    <ComboboxPersonas
+                      value={field.value}
+                      onChange={field.onChange}
                     />
                   </FormControl>
                   <FormMessage />
@@ -211,10 +277,9 @@ export default function CreateTeamDialog({ clubData }) {
                 <FormItem>
                   <FormLabel>Subcapitán</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="ID del subcapitán"
-                      {...field}
+                    <ComboboxPersonas
+                      value={field.value}
+                      onChange={field.onChange}
                     />
                   </FormControl>
                   <FormMessage />
@@ -230,7 +295,9 @@ export default function CreateTeamDialog({ clubData }) {
               >
                 Cancelar
               </Button>
-              <Button type="submit">Guardar</Button>
+              <Button type="submit">
+                {isEditing ? "Actualizar" : "Guardar"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
