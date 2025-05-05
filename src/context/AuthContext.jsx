@@ -5,10 +5,14 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   // estado del usuario, que si existe se obtiene el usuario
-  const [user, setUser] = useState(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null);
-  
+  const [user, setUser] = useState(
+    localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user"))
+      : null
+  );
+
   const [equipoPersona, setEquipoPersona] = useState(() => {
-    const personaGuardada = localStorage.getItem('personaGuardada');
+    const personaGuardada = localStorage.getItem("personaGuardada");
     return personaGuardada ? JSON.parse(personaGuardada) : null;
   });
 
@@ -25,7 +29,7 @@ export const AuthProvider = ({ children }) => {
         const { data, error } = await supabase
           .from("personas")
           .select("*")
-          .eq("user_id", session.user.id)
+          .eq("user_id", session.user.id);
         if (error) {
           console.error("Error obteniendo datos de personas:", error);
         } else {
@@ -54,12 +58,15 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const {data, error} = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     if (error) {
       return { error: error.message };
     }
     return { data };
-  }
+  };
 
   const signOut = async () => {
     try {
@@ -75,45 +82,63 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("user");
       localStorage.removeItem("personaGuardada");
       setUser(null);
-      setEquipoPersona(null)
+      setEquipoPersona(null);
     }
   };
-  
 
   const registrar = async (email, password, name, surname, phone) => {
     // Registrar usuario en auth.users
-    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
-  
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
     if (authError) {
       return { error: authError.message };
     }
-  
+
     // Insertar datos en public.personas
     const { data: personaData, error: personaError } = await supabase
-      .from('personas')
-      .insert([{
-        user_id: authData.user.id, // Vincular con auth.users
-        nombre: name,
-        apellido: surname,
-        telefono: phone,
-        email: email
-      }])
+      .from("personas")
+      .insert([
+        {
+          user_id: authData.user.id, // Vincular con auth.users
+          nombre: name,
+          apellido: surname,
+          telefono: phone,
+          email: email,
+        },
+      ])
       .select();
-  
+
     if (personaError) {
       await supabase.auth.admin.deleteUser(authData.user.id); // Opcional: eliminar usuario si falla
       return { error: personaError.message };
     }
     await supabase.auth.signOut(); // cerrar sesión después de registrar exitosamente, para que el usuario inicie sesión con su email y password
-    return { data: personaData};
+    return { data: personaData };
   };
 
   useEffect(() => {
-    localStorage.setItem('personaGuardada', JSON.stringify(equipoPersona))
-  }, [equipoPersona])
+    localStorage.setItem("personaGuardada", JSON.stringify(equipoPersona));
+  }, [equipoPersona]);
+
+
+  const [clubData, setClubData] = useState({});
 
   return (
-    <AuthContext.Provider value={{ user, login, signOut, registrar, equipoPersona, setEquipoPersona}}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        signOut,
+        registrar,
+        equipoPersona,
+        setEquipoPersona,
+        clubData,
+        setClubData,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

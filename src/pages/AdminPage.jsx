@@ -1,7 +1,7 @@
 import AdminSidebar from "@/components/AdminSidebarx";
 import CardEquipo from "@/components/CardEquipo";
 import CreateTeamDialog from "@/components/CreateTeamDialog";
-import { getClub } from "@/lib/database";
+import { useClubData } from "@/hooks/useEquipos";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -44,18 +44,20 @@ function ClubInfo({ clubData }) {
     </div>
   );
 }
-function TeamsManagement({ teams , clubData}) {
+function TeamsManagement({ teams, clubData }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-2xl mb-2 font-semibold">Equipos</h2>
-        <CreateTeamDialog clubData={clubData}/>
+        <CreateTeamDialog clubData={clubData} />
       </div>
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {teams.length === 0 ? (
           <p>Todavia no hay equipos asociados a este club.</p>
         ) : (
-          teams.map((equipo) => <CardEquipo key={equipo.id} equipo={equipo} />)
+          teams.map((equipo) => (
+            <CardEquipo key={equipo.id} equipo={equipo} gestionar={true} />
+          ))
         )}
       </div>
     </div>
@@ -72,20 +74,12 @@ function MatchesManagement({ matches }) {
 
 export default function AdminPage() {
   const { id } = useParams();
-  const [clubData, setClubData] = useState({});
+  const { clubData, getClubData } = useClubData();
   const [activeTab, setActiveTab] = useState("club");
 
+
   useEffect(() => {
-    const getClubData = async (id) => {
-      try {
-        if (!id) return;
-        const [club] = await getClub(id);
-        setClubData(club || {});
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    getClubData(id);
+    if (id) getClubData(id);
   }, [id]);
 
   console.log(clubData);
@@ -102,7 +96,11 @@ export default function AdminPage() {
         <div className="mt-5">
           {activeTab === "club" && <ClubInfo clubData={clubData} />}
           {activeTab === "teams" && (
-            <TeamsManagement teams={clubData?.equipos || []} clubData={clubData}/>
+            <TeamsManagement
+              teams={clubData?.equipos || []}
+              clubData={clubData}
+              getClubData={getClubData}
+            />
           )}
           {activeTab === "matches" && (
             <MatchesManagement matches={clubData?.partidos || []} />

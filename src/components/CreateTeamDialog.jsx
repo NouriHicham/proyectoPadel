@@ -24,6 +24,7 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { crearEquipo } from "@/lib/database";
 import { Plus } from "lucide-react";
+import { useClubData } from "@/hooks/useEquipos";
 
 // Esquema de validación
 const formSchema = z.object({
@@ -38,6 +39,7 @@ const formSchema = z.object({
 
 export default function CreateTeamDialog({ clubData }) {
   const [open, setOpen] = useState(false);
+  const { getClubData } = useClubData();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -52,7 +54,6 @@ export default function CreateTeamDialog({ clubData }) {
     },
   });
 
-
   async function onSubmit(values) {
     try {
       await crearEquipo({
@@ -62,6 +63,8 @@ export default function CreateTeamDialog({ clubData }) {
         capitan_id: parseInt(values.capitan_id),
         subcapitan_id: parseInt(values.subcapitan_id),
       });
+
+      getClubData(clubData?.id);
       setOpen(false);
       form.reset();
       // Vuelve a poner el club_id después del reset
@@ -70,6 +73,8 @@ export default function CreateTeamDialog({ clubData }) {
       console.error("Error al crear el equipo: ", error);
     }
   }
+
+  console.log(clubData)
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

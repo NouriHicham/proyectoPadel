@@ -7,7 +7,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Users, Calendar, ArrowRight, Check, Info, X } from "lucide-react";
+import {
+  Users,
+  Calendar,
+  ArrowRight,
+  Check,
+  Info,
+  X,
+  Pen,
+  Settings,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -35,11 +44,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
+import AlertConfirmation from "./AlertConfirmation";
 
 export default function CardEquipo({
   equipo,
   invitation = false,
   solicitar = false,
+  gestionar = false,
+  // getClubData = undefined
 }) {
   const user = JSON.parse(localStorage.getItem("user"));
   const { setEquipoPersona, equipoPersona } = useAuth();
@@ -244,6 +256,25 @@ export default function CardEquipo({
             <span>Solicitar unirme a este equipo</span>
             <ArrowRight className="h-4 w-4" />
           </Button>
+        ) : gestionar ? (
+          // operaciones crud
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-3 w-full">
+            <Button
+              variant=""
+              className="px-2 h-8 hover:bg-gray-200 hover:text-black transition-colors"
+            >
+              <Pen />
+              <span className="hidden md:block">Editar</span>
+            </Button>
+            <AlertConfirmation id={equipo?.id} type={"team"} />
+            <Button
+              variant=""
+              className="px-2 h-8 hover:bg-gray-200 hover:text-black transition-colors"
+            >
+              <Settings />
+              <span className="hidden md:block">Gestionar</span>
+            </Button>
+          </div>
         ) : (
           <Button
             variant=""
