@@ -258,7 +258,7 @@ export default function CardEquipo({
           </Button>
         ) : gestionar ? (
           // operaciones crud
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-3 w-full">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 w-full">
             <Button
               variant=""
               className="px-2 h-8 hover:bg-gray-200 hover:text-black transition-colors"
@@ -267,13 +267,13 @@ export default function CardEquipo({
               <span className="hidden md:block">Editar</span>
             </Button>
             <AlertConfirmation id={equipo?.id} type={"team"} />
-            <Button
+            {/* <Button
               variant=""
               className="px-2 h-8 hover:bg-gray-200 hover:text-black transition-colors"
             >
               <Settings />
               <span className="hidden md:block">Gestionar</span>
-            </Button>
+            </Button> */}
           </div>
         ) : (
           <Button

@@ -333,7 +333,6 @@ export async function updatePersona(id, datos) {
     console.error("Error al actualizar la persona:", error.message);
     return null;
   }
-  
 }
 
 //funciones sin probar
@@ -458,6 +457,20 @@ export async function crearClub(clubData) {
     return data;
   } catch (error) {
     console.error("Error al insertar partido:", error.message);
+    return null;
+  }
+}
+
+// ligas
+
+export async function getLigas() {
+  try {
+    const { data, error } = await supabase.from("ligas").select("*");
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
     return null;
   }
 }

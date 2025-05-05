@@ -82,7 +82,7 @@ export default function AdminPage() {
     if (id) getClubData(id);
   }, [id]);
 
-  console.log(clubData);
+  // console.log(clubData);
 
   return (
     <div className="container mx-auto p-2 my-4 flex">

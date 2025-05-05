@@ -25,6 +25,7 @@ import { Textarea } from "./ui/textarea";
 import { crearEquipo } from "@/lib/database";
 import { Plus } from "lucide-react";
 import { useClubData } from "@/hooks/useEquipos";
+import { ComboboxLigas } from "./selects/ligas";
 
 // Esquema de validación
 const formSchema = z.object({
@@ -74,10 +75,10 @@ export default function CreateTeamDialog({ clubData }) {
     }
   }
 
-  console.log(clubData)
+  console.log(clubData);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen} className="z-0">
       <DialogTrigger asChild>
         <Button
           className={"rounded-full h-8 w-8 sm:rounded-md sm:h-auto sm:w-auto"}
@@ -173,12 +174,11 @@ export default function CreateTeamDialog({ clubData }) {
               name="liga_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Liga ID</FormLabel>
+                  <FormLabel>Liga</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="ID de la liga"
-                      {...field}
+                    <ComboboxLigas
+                      value={field.value}
+                      onChange={field.onChange}
                     />
                   </FormControl>
                   <FormMessage />
@@ -191,7 +191,7 @@ export default function CreateTeamDialog({ clubData }) {
               name="capitan_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Capitán ID</FormLabel>
+                  <FormLabel>Capitán</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -209,7 +209,7 @@ export default function CreateTeamDialog({ clubData }) {
               name="subcapitan_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Subcapitán ID</FormLabel>
+                  <FormLabel>Subcapitán</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
