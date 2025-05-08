@@ -421,6 +421,7 @@ export async function getClubs(id_persona) {
     return null;
   }
 }
+
 export async function getClub(id) {
   try {
     const { data, error } = await supabase
@@ -458,6 +459,36 @@ export async function crearClub(clubData) {
   } catch (error) {
     console.error("Error al insertar partido:", error.message);
     return null;
+  }
+}
+
+export async function actualizarClub(clubId, actualizaciones) {
+  try {
+    const { data, error } = await supabase
+      .from("clubs")
+      .update(actualizaciones)
+      .eq("id", clubId)
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al actualizar el club:", error.message);
+    return null;
+  }
+}
+
+export async function eliminarClub(clubId) {
+  try {
+    const { error } = await supabase.from("clubs").delete().eq("id", clubId);
+
+    if (error) throw error;
+
+    return true;
+  } catch (error) {
+    console.error("Error al eliminar equipo:", error.message);
+    return false;
   }
 }
 

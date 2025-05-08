@@ -1,5 +1,7 @@
 import AdminSidebar from "@/components/AdminSidebarx";
+import AlertConfirmation from "@/components/AlertConfirmation";
 import CardEquipo from "@/components/CardEquipo";
+import CreateClubDialog from "@/components/CreateClubDialog";
 import CreateTeamDialog from "@/components/CreateTeamDialog";
 import { useClubData } from "@/hooks/useEquipos";
 import { useEffect, useState } from "react";
@@ -10,26 +12,32 @@ function ClubInfo({ clubData }) {
   return (
     <div className="p-2">
       <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
-        <div className="flex-shrink-0">
-          {clubData.foto ? (
-            <img
-              src={clubData.foto}
-              alt={`Logo de ${clubData.nombre}`}
-              className="w-24 h-24 rounded-full object-cover border-2 border-primary shadow"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-bold text-gray-500 border-2 border-primary shadow">
-              {clubData.nombre?.charAt(0)}
-            </div>
-          )}
+        <div className="flex items-center gap-3 justify-between w-full">
+          <div className="flex-shrink-0">
+            {clubData.foto ? (
+              <img
+                src={clubData.foto}
+                alt={`Logo de ${clubData.nombre}`}
+                className="w-24 h-24 rounded-full object-cover border-2 border-primary shadow"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-bold text-gray-500 border-2 border-primary shadow">
+                {clubData.nombre?.charAt(0)}
+              </div>
+            )}
+          </div>
+          <div className="flex-1 text-center sm:text-left">
+            <h1 className="text-2xl font-bold text-primary mb-1">
+              {clubData.nombre}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
+              {clubData.descripcion}
+            </p>
+          </div>
         </div>
-        <div className="flex-1 text-center sm:text-left">
-          <h1 className="text-2xl font-bold text-primary mb-1">
-            {clubData.nombre}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {clubData.descripcion}
-          </p>
+        <div className="flex items-center gap-2">
+          <CreateClubDialog edit={true} club={clubData} />
+          <AlertConfirmation id={clubData?.id} type={"club"} />
         </div>
       </div>
 

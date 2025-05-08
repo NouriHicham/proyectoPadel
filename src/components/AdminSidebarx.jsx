@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 export default function AdminSidebar({ clubData, activeTab, setActiveTab }) {
   return (
-    <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen sticky top-0">
+    <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-64 sticky top-0">
       <div className="flex flex-col h-full">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <button className="flex items-center space-x-2" onClick={() => setActiveTab("club")}>

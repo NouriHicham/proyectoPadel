@@ -23,13 +23,15 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useClubData } from "@/hooks/useEquipos";
 
 export default function EquiposSelect() {
   const [equipos, setEquipos] = useState([]);
   const [equiposDiferentes, setEquiposDiferentes] = useState([]);
-  const { signOut, equipoPersona, user } = useAuth();
+  const { signOut, equipoPersona, user, userClubs } = useAuth();
   const navigate = useNavigate();
-  const [userClubs, setUserClubs] = useState([]);
+  const { getUserClubs } = useClubData();
+  // const [userClubs, setUserClubs] = useState([]);
 
   async function fetchEquipos() {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -46,8 +48,9 @@ export default function EquiposSelect() {
         setEquiposDiferentes(difEquiposData);
 
         // clubes user
-        const clubsData = await getClubs(user.persona[0].id);
-        setUserClubs(clubsData);
+        // const clubsData = await getClubs(user.persona[0].id);
+        // setUserClubs(clubsData);
+        getUserClubs();
       } catch (error) {
         console.error(error);
       }

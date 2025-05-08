@@ -22,6 +22,7 @@ export default function JugadorDetalles() {
     const fetchUserData = async () => {
       try {
         const [data] = await getPerfilUsuario(id);
+        console.log(data);
         setUserData(data);
       } catch (error) {
         console.error("Error al obtener los datos del usuario:", error);

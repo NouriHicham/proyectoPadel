@@ -123,8 +123,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("personaGuardada", JSON.stringify(equipoPersona));
   }, [equipoPersona]);
 
-
   const [clubData, setClubData] = useState({});
+  const [userClubs, setUserClubs] = useState([]);
 
   return (
     <AuthContext.Provider
@@ -137,6 +137,8 @@ export const AuthProvider = ({ children }) => {
         setEquipoPersona,
         clubData,
         setClubData,
+        userClubs,
+        setUserClubs
       }}
     >
       {children}
