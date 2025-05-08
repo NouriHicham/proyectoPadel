@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useClubData } from "@/hooks/useEquipos";
 
 export default function EquiposSelect() {
