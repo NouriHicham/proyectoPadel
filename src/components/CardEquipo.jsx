@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "./ui/skeleton";
 import toast from "react-hot-toast";
 import AlertConfirmation from "./AlertConfirmation";
 import CreateClubDialog from "./CreateClubDialog";
@@ -138,9 +139,17 @@ export default function CardEquipo({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                {numMiembros || ""} miembros
-              </span>
+              {numMiembros ? (
+                <span className="text-sm">
+                  {numMiembros} miembros
+                </span>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <Skeleton className="h-4 w-4 bg-gray-300" />
+                  <Skeleton className="h-4 w-12 bg-gray-300" />
+                </div>
+              )}
+              
             </div>
             <Badge variant="outline">
               {user.persona[0].id ==
@@ -156,7 +165,8 @@ export default function CardEquipo({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">
+              {partidojugar?.length > 0 ? (
+                <span className="text-sm">
                 Próx. partido:{" "}
                 {partidojugar?.length > 0
                   ? new Intl.DateTimeFormat("es-ES", {
@@ -164,11 +174,18 @@ export default function CardEquipo({
                     }).format(new Date(partidojugar[0].fecha))
                   : "Sin partidos"}
               </span>
+              ):(
+                <div className="flex items-center gap-1 mt-1">
+                  <Skeleton className="h-4 w-20 bg-gray-300" />
+                  <Skeleton className="h-4 w-18 bg-gray-300" />
+                </div>
+              )}
+              
             </div>
           </div>
 
           {/* Mostrar detalles */}
-          <Dialog>
+          {/* <Dialog>
             <DialogTrigger asChild>
               <Button
                 variant="ghost"
@@ -208,7 +225,7 @@ export default function CardEquipo({
                 </DialogClose>
               </DialogFooter>
             </DialogContent>
-          </Dialog>
+          </Dialog> */}
           {/* <Button
             variant="ghost"
             className="ml-auto h-8 w-full justify-between px-2"

@@ -7,41 +7,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { updatePersona } from "@/lib/database"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import { Trophy } from "lucide-react"
+import { useState } from "react";
 
 export default function Perfil() {
-  const user = JSON.parse(localStorage.getItem('user')).persona[0];
+  const user = JSON.parse(localStorage.getItem("user")).persona[0];
+
+  const [formData, setFormData] = useState({
+    nombre: user.nombre || "",
+    apellido: user.apellido || "",
+    email: user.email || "",
+    telefono: user.telefono || "",
+    posicion: user.posicion || "",
+    disponibilidad: user.disponibilidad || "",
+  });
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
 
   const handleUpdate = async () => {
-    if(!document.querySelector('#name').value){
-      document.querySelector('#name').value = user.nombre
-    }
-
-    if(!document.querySelector('#apellido').value){
-      document.querySelector('#apellido').value = user.apellido
-    }
-
-    if(!document.querySelector('#email').value){
-      document.querySelector('#email').value = user.email
-    }
-
-    if(!document.querySelector('#telefono').value){
-      document.querySelector('#telefono').value = user.telefono
-    }
-
-    if(!document.querySelector('#disponibilidad').value){
-      document.querySelector('#disponibilidad').value = user.disponibilidad
-    }
-
-    if(!document.querySelector('#posicion').value){
-      document.querySelector('#posicion').value = user.posicion
-    }
     const datos = {
-      nombre: document.getElementById("name").value,
-      apellido: document.getElementById("apellido").value,
-      email: document.getElementById("email").value,
-      telefono: document.getElementById("telefono").value,
-      posicion: document.getElementById("posicion").value,
-      disponibilidad: document.getElementById("disponibilidad").value
+      nombre: formData.nombre,
+      apellido: formData.apellido,
+      email: formData.email,
+      telefono: formData.telefono,
+      posicion: formData.posicion,
+      disponibilidad: formData.disponibilidad,
     };
 
     await updatePersona(user.id, datos);
@@ -51,7 +43,7 @@ export default function Perfil() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0">
+      <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 items-center mx-auto">
         <h1 className="text-3xl font-bold mb-6 px-6">Mi Perfil</h1>
 
         <div className="grid gap-6 md:grid-cols-[1fr_300px]">
@@ -62,30 +54,53 @@ export default function Perfil() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nombre</Label>
-                  <Input id="name" placeholder={user.nombre} />
+                  <Label htmlFor="nombre">Nombre</Label>
+                  <Input
+                    id="nombre"
+                    value={formData.nombre}
+                    onChange={handleInputChange}
+                    placeholder="Nombre"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="surname">Apellido</Label>
-                  <Input id="surname" placeholder={user.apellido} />
+                  <Label htmlFor="apellido">Apellido</Label>
+                  <Input
+                    id="apellido"
+                    value={formData.apellido}
+                    onChange={handleInputChange}
+                    placeholder="Apellido"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder={user.email} />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Email"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Teléfono</Label>
-                  <Input id="phone" type="tel" placeholder={user.telefono} />
+                  <Label htmlFor="telefono">Teléfono</Label>
+                  <Input
+                    id="telefono"
+                    type="tel"
+                    value={formData.telefono}
+                    onChange={handleInputChange}
+                    placeholder="Teléfono"
+                  />
                 </div>
-                <Separator />
-                <CardHeader className="px-0 mt-4 mb-[24px]">
-                  <CardTitle>Preferencias de Juego</CardTitle>
-                </CardHeader>
                 <div className="space-y-2">
-                  <Label>Posición preferida</Label>
-                  <Select>
+                  <Label htmlFor="posicion">Posición preferida</Label>
+                  <Select
+                    value={formData.posicion}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, posicion: value }))
+                    }
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder={user.posicion ? user.posicion : "Selecciona tu posición preferida" } />
+                      <SelectValue placeholder="Selecciona tu posición preferida" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Drive">Drive</SelectItem>
@@ -95,10 +110,15 @@ export default function Perfil() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Disponibilidad</Label>
-                  <Select>
+                  <Label htmlFor="disponibilidad">Disponibilidad</Label>
+                  <Select
+                    value={formData.disponibilidad}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, disponibilidad: value }))
+                    }
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder={user.disponibilidad ? user.disponibilidad : "Selecciona tu disponibilidad" } />
+                      <SelectValue placeholder="Selecciona tu disponibilidad" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Fines de semana">Fines de semana</SelectItem>
@@ -108,7 +128,9 @@ export default function Perfil() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button className="w-full" onClick={handleUpdate}>Guardar Cambios</Button>
+                <Button className="w-full" onClick={handleUpdate}>
+                  Guardar Cambios
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -142,5 +164,5 @@ export default function Perfil() {
         </div>
       </main>
     </div>
-  )
+  );
 }

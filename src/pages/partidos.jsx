@@ -6,6 +6,7 @@ import { Header } from "@/components/header"
 import { CreateMatchDialog } from "@/components/create-match-dialog"
 import { CreateSedeDialog } from "@/components/create-sede-dialog";
 import { Card, CardContent } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Calendar, MapPin, Plus, Users2 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { getUltimoPartidoaJugar } from "@/lib/database"
@@ -53,41 +54,79 @@ export default function PartidosPage() {
           {/* Próximos partidos */}
           <h2 className="text-xl font-semibold mb-4">Próximos Partidos</h2>
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-            {nextMatch.map((match) => (
-              <Card key={`upcoming-${match}`}>
-                <CardContent className="p-4">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="flex flex-col items-center justify-center bg-primary/10 rounded-lg p-3">
-                        <span className="text-lg font-bold">{new Date(match.fecha).getDate()}</span>
-                        <span className="text-sm">
-                          {new Date(match.fecha).toLocaleString('es-ES', { month: 'long' })}
-                        </span>
+            
+            {nextMatch.length === 0 ? (
+              Array.from({ length: 2 }).map((_, index) => (
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <Skeleton className="w-18 h-18 bg-gray-300"/>
+                        <div>
+                          <div className="flex">
+                            <h3 className="font-semibold">Partido Amistoso #</h3>
+                            <Skeleton className="w-4 h-4 mt-1 bg-gray-300"/>
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground mt-2">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            <Skeleton className="w-18 h-4 bg-gray-300"/>
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground mt-2">
+                            <MapPin className="h-4 w-4 mr-2" />
+                            <Skeleton className="w-18 h-4 bg-gray-300"/>
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground mt-2">
+                            <Users2 className="h-4 w-4 mr-2" />
+                            <Skeleton className="w-18 h-4 bg-gray-300"/>
+                          </div>
+                        </div>
                       </div>
                       <div>
-                        <h3 className="font-semibold">Partido Amistoso #{match.id}</h3>
-                        <div className="flex items-center text-sm text-muted-foreground mt-1">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          {new Date(match.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <Button variant="outline" className="w-full">
+                            Ver detalles
+                          </Button>
+                      </div>
+                    </div> 
+                  </CardContent>
+                </Card>
+              ))
+            ):(
+              nextMatch.map((match) => (
+                <Card key={`upcoming-${match}`}>
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <div className="flex flex-col items-center justify-center bg-primary/10 rounded-lg p-3">
+                          <span className="text-lg font-bold">{new Date(match.fecha).getDate()}</span>
+                          <span className="text-sm">
+                            {new Date(match.fecha).toLocaleString('es-ES', { month: 'long' })}
+                          </span>
                         </div>
-                        <div className="flex items-center text-sm text-muted-foreground mt-1">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          {match.sedes.nombre}
-                        </div>
-                        <div className="flex items-center text-sm text-muted-foreground mt-1">
-                          <Users2 className="h-4 w-4 mr-2" />4 jugadores confirmados
+                        <div>
+                          <h3 className="font-semibold">Partido Amistoso #{match.id}</h3>
+                          <div className="flex items-center text-sm text-muted-foreground mt-1">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            {new Date(match.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground mt-1">
+                            <MapPin className="h-4 w-4 mr-2" />
+                            {match.sedes.nombre}
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground mt-1">
+                            <Users2 className="h-4 w-4 mr-2" />4 jugadores confirmados
+                          </div>
                         </div>
                       </div>
+                      <Link to={`/partidos/${match.id}`} className="block w-full md:w-auto">
+                        <Button variant="outline" className="w-full">
+                          Ver detalles
+                        </Button>
+                      </Link>
                     </div>
-                    <Link to={`/partidos/${match.id}`} className="block w-full md:w-auto">
-                      <Button variant="outline" className="w-full">
-                        Ver detalles
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
           {/* Partidos pasados */}
