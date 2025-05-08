@@ -1,6 +1,7 @@
 import { Header } from "@/components/header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/context/AuthContext";
 import { getEquipos, getMiembrosEquipo, getUltimoPartidoaJugar, getUltimosPartidosJugados } from "@/lib/database";
 import { Calendar, Trophy, Users2 } from "lucide-react"
 import { useEffect, useState } from "react";
