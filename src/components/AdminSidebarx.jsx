@@ -1,13 +1,23 @@
-import { Trophy, Home as HomeIcon, Info, Users, Calendar } from "lucide-react";
+import {
+  Trophy,
+  Home as HomeIcon,
+  Info,
+  Users,
+  Calendar,
+  User,
+} from "lucide-react";
 import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils"; 
+import { cn } from "@/lib/utils";
 
 export default function AdminSidebar({ clubData, activeTab, setActiveTab }) {
   return (
     <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-64 sticky top-0">
       <div className="flex flex-col h-full">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <button className="flex items-center space-x-2" onClick={() => setActiveTab("club")}>
+          <button
+            className="flex items-center space-x-2"
+            onClick={() => setActiveTab("club")}
+          >
             <Trophy className="h-6 w-6 text-primary" />
             <span>{clubData?.nombre}</span>
           </button>
@@ -36,6 +46,18 @@ export default function AdminSidebar({ clubData, activeTab, setActiveTab }) {
           >
             <Users className="h-5 w-5" />
             <span>Equipos</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("players")}
+            className={cn(
+              "flex items-center px-4 py-2 rounded-md space-x-2 transition-colors cursor-pointer",
+              activeTab === "players"
+                ? "bg-primary text-primary-foreground"
+                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            )}
+          >
+            <User className="h-5 w-5" />
+            <span>Jugadores</span>
           </button>
           <button
             onClick={() => setActiveTab("matches")}

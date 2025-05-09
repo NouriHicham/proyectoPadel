@@ -407,12 +407,16 @@ export const solicitarUnirseEquipo = async (personaId, equipoId) => {
   }
 };
 
-export async function getClubs(id_persona) {
+export async function getClubs(id_persona = null) {
   try {
-    const { data, error } = await supabase
-      .from("clubs")
-      .select("*")
-      .eq("admin_id", id_persona);
+    let query = supabase.from("clubs").select("*");
+
+    // Solo filtra por admin_id si se proporciona id_persona
+    if (id_persona) {
+      query = query.eq("admin_id", id_persona);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
     return data;

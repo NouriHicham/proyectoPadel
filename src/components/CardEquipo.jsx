@@ -140,16 +140,13 @@ export default function CardEquipo({
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
               {numMiembros ? (
-                <span className="text-sm">
-                  {numMiembros} miembros
-                </span>
+                <span className="text-sm">{numMiembros} miembros</span>
               ) : (
                 <div className="flex items-center gap-1">
                   <Skeleton className="h-4 w-4 bg-gray-300" />
                   <Skeleton className="h-4 w-12 bg-gray-300" />
                 </div>
               )}
-              
             </div>
             <Badge variant="outline">
               {user.persona[0].id ==
@@ -167,20 +164,19 @@ export default function CardEquipo({
               <Calendar className="h-4 w-4 text-muted-foreground" />
               {partidojugar?.length > 0 ? (
                 <span className="text-sm">
-                Próx. partido:{" "}
-                {partidojugar?.length > 0
-                  ? new Intl.DateTimeFormat("es-ES", {
-                      dateStyle: "medium",
-                    }).format(new Date(partidojugar[0].fecha))
-                  : "Sin partidos"}
-              </span>
-              ):(
+                  Próx. partido:{" "}
+                  {partidojugar?.length > 0
+                    ? new Intl.DateTimeFormat("es-ES", {
+                        dateStyle: "medium",
+                      }).format(new Date(partidojugar[0].fecha))
+                    : "Sin partidos"}
+                </span>
+              ) : (
                 <div className="flex items-center gap-1 mt-1">
                   <Skeleton className="h-4 w-20 bg-gray-300" />
                   <Skeleton className="h-4 w-18 bg-gray-300" />
                 </div>
               )}
-              
             </div>
           </div>
 
@@ -287,13 +283,13 @@ export default function CardEquipo({
             </Button> */}
             <CreateTeamDialog isEditing={true} teamData={equipo} />
             <AlertConfirmation id={equipo?.id} type={"team"} />
-            {/* <Button
+            <Button
               variant=""
               className="px-2 h-8 hover:bg-gray-200 hover:text-black transition-colors"
             >
               <Settings />
               <span className="hidden md:block">Gestionar</span>
-            </Button> */}
+            </Button>
           </div>
         ) : (
           <Button
