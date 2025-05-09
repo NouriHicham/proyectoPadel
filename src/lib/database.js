@@ -55,7 +55,7 @@ export async function getUltimosPartidosJugados(equipo_id, limit = 1) {
   try {
     const { data, error } = await supabase
       .from("partidos")
-      .select("*")
+      .select("*, sedes(*)")
       .or(`equipo1_id.eq.${equipo_id},equipo2_id.eq.${equipo_id}`)
       .eq("estado", "finalizado")
       .order("fecha", { ascending: false })
@@ -512,6 +512,58 @@ export async function getJugadresClub(club_id) {
       .from("personas")
       .select("*")
       .eq("club_id", club_id);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function getPartidos(id){
+  try {
+    const { data, error } = await supabase
+      .from("partidos")
+      .select("*, equipo1_id(*), equipo2_id(*), sedes(*)")
+      .eq("id", id);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function getDisponibilidad(id) {
+  try {
+    const { data, error } = await supabase
+      .from("disponibilidad_partidos")
+      .select("*, persona_id(*)")
+      .eq("partido_id", id);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function addDisponibilidad(persona_id, partido_id) {
+  try {
+    const { data, error } = await supabase
+      .from("disponibilidad_partidos")
+      .insert([
+        {
+          persona_id: persona_id,
+          partido_id: partido_id,
+          disponible: true,
+          convocado: false,
+        },
+      ])
+      .select();
 
     if (error) throw error;
     return data;
