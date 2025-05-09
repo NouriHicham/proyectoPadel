@@ -9,17 +9,20 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Calendar, MapPin, Plus, Users2 } from "lucide-react"
 import { Link } from "react-router-dom"
-import { getUltimoPartidoaJugar } from "@/lib/database"
+import { getUltimoPartidoaJugar, getUltimosPartidosJugados } from "@/lib/database"
 import { useEffect, useState } from "react"
 
 export default function PartidosPage() {
   const savedInfo = JSON.parse(localStorage.getItem("personaGuardada"))
   const [nextMatch, setNext] = useState([]);
+  const [partidos, setPartidos] = useState([]);
 
     useEffect(() => {
         async function fetchAll(){
           try {
+            const partidosData = await getUltimosPartidosJugados(savedInfo.equipo_id, 3);
             const nextMatchData = await getUltimoPartidoaJugar(savedInfo.equipo_id, 2)
+            setPartidos(partidosData);
             setNext(nextMatchData);
           }catch(error){
             console.error(error)
@@ -57,15 +60,14 @@ export default function PartidosPage() {
             
             {nextMatch.length === 0 ? (
               Array.from({ length: 2 }).map((_, index) => (
-                <Card>
+                <Card key={index}>
                   <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div className="flex items-start gap-4">
                         <Skeleton className="w-18 h-18 bg-gray-300"/>
                         <div>
                           <div className="flex">
-                            <h3 className="font-semibold">Partido Amistoso #</h3>
-                            <Skeleton className="w-4 h-4 mt-1 bg-gray-300"/>
+                            <Skeleton className="w-40 h-4 mt-1 bg-gray-300"/>
                           </div>
                           <div className="flex items-center text-sm text-muted-foreground mt-2">
                             <Calendar className="h-4 w-4 mr-2" />
@@ -92,7 +94,7 @@ export default function PartidosPage() {
               ))
             ):(
               nextMatch.map((match) => (
-                <Card key={`upcoming-${match}`}>
+                <Card key={match.id}>
                   <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div className="flex items-start gap-4">
@@ -132,35 +134,66 @@ export default function PartidosPage() {
           {/* Partidos pasados */}
           <h2 className="text-xl font-semibold mb-4 mt-8">Partidos Anteriores</h2>
           <div className="grid gap-4">
-            {[1, 2, 3].map((match) => (
-              <Card key={`past-${match}`}>
-                <CardContent className="p-4">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="flex flex-col items-center justify-center bg-muted rounded-lg p-3">
-                        <span className="text-lg font-bold">15</span>
-                        <span className="text-sm">Feb</span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Partido Liga #{match}</h3>
-                        <div className="flex items-center text-sm text-muted-foreground mt-1">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          Club Deportivo Central
+            {partidos.length === 0 ? (
+              Array.from({ length: 2 }).map((_, index) => (
+                <Card key={index}>
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <div className="flex flex-col items-center justify-center bg-muted rounded-lg p-3">
+                          <Skeleton className="w-8 h-8 bg-gray-300"/>
+                          <Skeleton className="w-16 h-3 mt-2 bg-gray-300"/>
                         </div>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-2">
-                          Victoria 6-4, 6-3
-                        </span>
+                        <div>
+                          <Skeleton className="w-30 h-4 mt-1 bg-gray-300"/>
+                          <div className="flex items-center text-sm text-muted-foreground mt-2.5">
+                            <MapPin className="h-4 w-4 mr-2" />
+                            <Skeleton className="w-18 h-4 mt-1 bg-gray-300"/>
+                          </div>
+                          <Skeleton className="w-24 h-4 mt-2 ml-2 bg-gray-300"/>
+                        </div>
                       </div>
+                        <Button variant="outline" className="block w-full md:w-auto">
+                          Ver resumen
+                        </Button>
                     </div>
-                    <Link to={`/partidos/${match + 10}`} className="block w-full md:w-auto">
-                      <Button variant="outline" className="w-full">
-                        Ver resumen
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            ):(
+              partidos.map((partido) => (
+                <Card key={`past-${partido.id}`}>
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <div className="flex flex-col items-center justify-center bg-muted rounded-lg p-3">
+                          <span className="text-lg font-bold">{new Date(partido.fecha).getDate()}</span>
+                          <span className="text-sm">
+                            {new Date(partido.fecha).toLocaleString('es-ES', { month: 'long' })}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">Partido Liga #{partido.id}</h3>
+                          <div className="flex items-center text-sm text-muted-foreground mt-1">
+                            <MapPin className="h-4 w-4 mr-2" />
+                            {partido.sedes.nombre}
+                          </div>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-2">
+                            Victoria 6-4, 6-3
+                          </span>
+                        </div>                      
+                      </div>
+                      <Link to={`/partidos/${partido.id}`} className="block w-full md:w-auto">
+                        <Button variant="outline" className="w-full">
+                          Ver resumen
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+            
           </div>
         </div>
       </main>

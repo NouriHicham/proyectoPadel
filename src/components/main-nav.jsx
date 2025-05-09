@@ -8,7 +8,7 @@ export function MainNav({ className, ...props }) {
   const pathname = location.pathname;
   const {equipoPersona} = useAuth()
 
-  console.log('datos persona: ', equipoPersona)
+  //console.log('datos persona: ', equipoPersona)
   return (
     <nav className={cn("flex items-center space-x-4 lg:space-x-6", className)} {...props}>
       <Link
