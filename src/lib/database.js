@@ -525,7 +525,7 @@ export async function getJugadresClub(club_id) {
   }
 }
 
-export async function getPartidos(id){
+export async function getPartidos(id) {
   try {
     const { data, error } = await supabase
       .from("partidos")
@@ -536,6 +536,23 @@ export async function getPartidos(id){
     return data;
   } catch (error) {
     console.error(error);
+    return null;
+  }
+}
+
+export async function getJugadoresEquipo(equipo_id) {
+  try {
+    const { data, error } = await supabase
+      .from("equipos_personas")
+      .select("persona:persona_id(*)") 
+      .eq("equipo_id", equipo_id);
+
+    if (error) throw error;
+
+    // Si solo quieres el array de personas:
+    return data.map((row) => row.persona);
+  } catch (error) {
+    console.error("Error al obtener jugadores del equipo:", error.message);
     return null;
   }
 }

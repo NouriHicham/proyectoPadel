@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Home } from "lucide-react";
+import { FilterX, Home, Search } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/supabase/supabase";
 import { Header } from "@/components/header";
@@ -25,6 +25,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClubData } from "@/hooks/useEquipos";
+import { Input } from "@/components/ui/input";
+import { ComboboxClubs } from "@/components/combobox/Clubs";
 
 export default function EquiposSelect() {
   const [equipos, setEquipos] = useState([]);
@@ -33,6 +35,10 @@ export default function EquiposSelect() {
   const navigate = useNavigate();
   const { getUserClubs } = useClubData();
   // const [userClubs, setUserClubs] = useState([]);
+
+  // filter
+  const [search, setSearch] = useState("");
+  const [selectedClub, setSelectedClub] = useState(null);
 
   async function fetchEquipos() {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -57,6 +63,11 @@ export default function EquiposSelect() {
       }
     }
   }
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setSelectedClub(null);
+  };
 
   useEffect(() => {
     fetchEquipos();
@@ -83,6 +94,7 @@ export default function EquiposSelect() {
   console.log("equipos: ", equipos);
   console.log("clubs: ", userClubs);
   console.log("user: ", user);
+  console.log("eqdiferentes: ", equiposDiferentes);
 
   return (
     <>
@@ -99,6 +111,12 @@ export default function EquiposSelect() {
             <Home className="" />
           </Button>
         )}
+        <Button
+          className="fixed right-3 bottom-5 rounded-full"
+          onClick={() => signOut()}
+        >
+          Logout
+        </Button>
         <div className="text-center">
           <h1 className="text-4xl font-semibold">Mis equipos</h1>
           <p>Visualiza los equipos a los que perteneces o tus invitaciones.</p>
@@ -150,11 +168,60 @@ export default function EquiposSelect() {
           </TabsContent>
           <TabsContent value="requests">
             {/* Pestaña para solicitar unión a equipo */}
+            <div className="flex items-center gap-2 mb-5">
+              <div className="relative w-full">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={16}
+                />
+                <Input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={"Busca por id, nombre o descripción..."}
+                  className="pl-9"
+                  aria-label="Buscar"
+                />
+              </div>
+              <div className="">
+                <ComboboxClubs club={selectedClub} setClub={setSelectedClub} />
+              </div>
+              <Button onClick={() => handleClearFilters()}>
+                <span>Borrar filtros</span>
+                <FilterX />
+              </Button>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {/* Filtrar por persona id */}
-              {equiposDiferentes.map((equipo) => (
-                <CardEquipo key={equipo.id} equipo={equipo} solicitar={true} />
-              ))}
+              {equiposDiferentes
+                .filter((equipo) => {
+                  // Filtro por club si hay uno seleccionado
+                  const clubMatch = selectedClub
+                    ? String(equipo.club_id) === String(selectedClub)
+                    : true;
+
+                  // Filtro por búsqueda (nombre, descripción, id)
+                  const searchLower = search.toLowerCase();
+                  const nombreMatch = equipo.nombre
+                    .toLowerCase()
+                    .includes(searchLower);
+                  const descripcionMatch = equipo.descripcion
+                    .toLowerCase()
+                    .includes(searchLower);
+                  const idMatch = String(equipo.id).includes(searchLower);
+
+                  // si hay club, y almenos uno de los filtros coincide, se muestra el equipo
+                  return (
+                    clubMatch && (nombreMatch || descripcionMatch || idMatch)
+                  );
+                })
+                .map((equipo) => (
+                  <CardEquipo
+                    key={equipo.id}
+                    equipo={equipo}
+                    solicitar={true}
+                  />
+                ))}
             </div>
           </TabsContent>
           <TabsContent value="clubs">
