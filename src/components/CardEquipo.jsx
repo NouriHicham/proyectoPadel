@@ -74,15 +74,38 @@ export default function CardEquipo({
     }
   };
 
+  // const handleAceptar = async (aceptar) => {
+  //   try {
+  //     if (aceptar) {
+  //       const data = await aceptarInvitacion(personaId, equipoId, "aceptado");
+  //     } else {
+  //       const data = await aceptarInvitacion(personaId, equipoId, "rechazado");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error al aceptar la invitacion:", error);
+  //   }
+  // };
   const handleAceptar = async (aceptar) => {
     try {
-      if (aceptar) {
-        const data = await aceptarInvitacion(personaId, equipoId, "aceptado");
+      const result = await aceptarInvitacion(
+        personaId,
+        equipoId,
+        aceptar ? "aceptado" : "rechazado"
+      );
+
+      if (!result) {
+        toast.error("Ha ocurrido un error inesperado.");
+        return;
+      }
+
+      if (result.success) {
+        toast.success(result.message);
       } else {
-        const data = await aceptarInvitacion(personaId, equipoId, "rechazado");
+        toast.error(result.message);
       }
     } catch (error) {
-      console.error("Error al aceptar la invitacion:", error);
+      console.error("Error al aceptar la invitación:", error);
+      toast.error("Ha ocurrido un error al procesar la invitación.");
     }
   };
 

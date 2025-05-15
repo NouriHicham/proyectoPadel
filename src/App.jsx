@@ -38,7 +38,7 @@ function App() {
           <Route path="*" element={<div> 404 | Not Found Page</div>} />
         </Route>
       </Routes>
-      <Toaster />
+      <Toaster position="top-right"/>
     </>
   );
 }

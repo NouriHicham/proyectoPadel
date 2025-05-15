@@ -199,17 +199,113 @@ export const invitarPersona = async (personaId, equipoId) => {
   }
 };
 
-export const aceptarInvitacion = async (personaId, equipoId, aceptado) => {
+// export const aceptarInvitacion = async (personaId, equipoId, aceptado) => {
+//   try {
+//     const { data, error } = await supabase
+//       .from("equipos_personas")
+//       .update({ estado: aceptado })
+//       .eq("persona_id", personaId)
+//       .eq("equipo_id", equipoId);
+//     if (error) throw error;
+//     return data;
+//   } catch (error) {
+//     console.error("Error al aceptar la invitación:", error.message);
+//   }
+// };
+
+export const aceptarInvitacion = async (personaId, equipoId, estado) => {
   try {
-    const { data, error } = await supabase
-      .from("equipos_personas")
-      .update({ estado: aceptado })
-      .eq("persona_id", personaId)
-      .eq("equipo_id", equipoId);
-    if (error) throw error;
-    return data;
+    if (estado === "rechazado") {
+      // Si el usuario rechaza la invitación, solo actualiza el estado
+      const { data, error } = await supabase
+        .from("equipos_personas")
+        .update({ estado: "rechazado" })
+        .eq("persona_id", personaId)
+        .eq("equipo_id", equipoId);
+
+      if (error) throw error;
+
+      return {
+        success: true,
+        message: "Has rechazado la invitación al equipo.",
+        data,
+      };
+    }
+
+    // --- Lógica para aceptar la invitación ---
+    // 1. Consultar club_id del usuario
+    const { data: persona, error: errorPersona } = await supabase
+      .from("personas")
+      .select("club_id")
+      .eq("id", personaId)
+      .single();
+
+    if (errorPersona) throw errorPersona;
+
+    // 2. Consultar club_id del equipo
+    const { data: equipo, error: errorEquipo } = await supabase
+      .from("equipos")
+      .select("club_id")
+      .eq("id", equipoId)
+      .single();
+
+    if (errorEquipo) throw errorEquipo;
+
+    // 3. Lógica de aceptación
+    if (!persona.club_id) {
+      // El usuario no tiene club: se le asigna el club del equipo y se acepta la invitación
+      const { data: dataEquipoPersona, error: errorEquipoPersona } =
+        await supabase
+          .from("equipos_personas")
+          .update({ estado: "aceptado" })
+          .eq("persona_id", personaId)
+          .eq("equipo_id", equipoId);
+
+      if (errorEquipoPersona) throw errorEquipoPersona;
+
+      const { error: errorUpdatePersona } = await supabase
+        .from("personas")
+        .update({ club_id: equipo.club_id })
+        .eq("id", personaId);
+
+      if (errorUpdatePersona) throw errorUpdatePersona;
+
+      return {
+        success: true,
+        message: "Te has unido al equipo y también al club asociado.",
+        data: dataEquipoPersona,
+      };
+    } else if (persona.club_id === equipo.club_id) {
+      // El usuario ya pertenece a este club: solo se acepta la invitación
+      const { data: dataEquipoPersona, error: errorEquipoPersona } =
+        await supabase
+          .from("equipos_personas")
+          .update({ estado: "aceptado" })
+          .eq("persona_id", personaId)
+          .eq("equipo_id", equipoId);
+
+      if (errorEquipoPersona) throw errorEquipoPersona;
+
+      return {
+        success: true,
+        message: "Te has unido al equipo. Ya pertenecías a este club.",
+        data: dataEquipoPersona,
+      };
+    } else {
+      // El usuario pertenece a otro club: no se permite la operación
+      return {
+        success: false,
+        message:
+          "Ya perteneces a otro club. Para unirte a este equipo, el administrador debe quitarte del club actual primero.",
+      };
+    }
   } catch (error) {
     console.error("Error al aceptar la invitación:", error.message);
+    return {
+      success: false,
+      message: "Ha ocurrido un error al procesar la invitación.",
+      error: error.message,
+    };
   }
 };
 
@@ -544,7 +640,7 @@ export async function getJugadoresEquipo(equipo_id) {
   try {
     const { data, error } = await supabase
       .from("equipos_personas")
-      .select("persona:persona_id(*)") 
+      .select("persona:persona_id(*)")
       .eq("equipo_id", equipo_id);
 
     if (error) throw error;
