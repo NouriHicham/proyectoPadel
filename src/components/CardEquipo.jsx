@@ -109,18 +109,41 @@ export default function CardEquipo({
     }
   };
 
+  // impedir que el usuario pueda solicitar unirse a un equipo que pertenece a un club que no es el suyo
+  // const handleSolicitarUnirme = async () => {
+  //   try {
+  //     if (!solicitar || !personaId) return;
+  //     console.log(personaId);
+  //     const data = await solicitarUnirseEquipo(personaId, equipoId);
+
+  //     console.log("solicitud: ", data);
+  //     if (data) {
+  //       return toast.success("Solicitud enviada al equipo.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error al solicitar unirse:", error);
+  //   }
+  // };
+
   const handleSolicitarUnirme = async () => {
     try {
       if (!solicitar || !personaId) return;
-      console.log(personaId);
-      const data = await solicitarUnirseEquipo(personaId, equipoId);
 
-      console.log("solicitud: ", data);
-      if (data) {
-        return toast.success("Solicitud enviada al equipo.");
+      const result = await solicitarUnirseEquipo(personaId, equipoId);
+
+      if (!result) {
+        toast.error("Ha ocurrido un error inesperado.");
+        return;
+      }
+
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
       }
     } catch (error) {
       console.error("Error al solicitar unirse:", error);
+      toast.error("Ha ocurrido un error al solicitar unirse al equipo.");
     }
   };
 

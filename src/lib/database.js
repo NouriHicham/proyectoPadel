@@ -184,6 +184,20 @@ export const jugadoresDiferenteEquipo = async (equipoId) => {
   }
 };
 
+// export const invitarPersona = async (personaId, equipoId) => {
+//   try {
+//     const { data, error } = await supabase.from("equipos_personas").upsert([
+//       {
+//         equipo_id: equipoId,
+//         persona_id: personaId,
+//         estado: "invitado",
+//       },
+//     ]);
+//     if (error) throw error;
+//   } catch (error) {
+//     console.error("Error al invitar a la persona:", error.message);
+//   }
+// };
 export const invitarPersona = async (personaId, equipoId) => {
   try {
     const { data, error } = await supabase.from("equipos_personas").upsert([
@@ -194,8 +208,19 @@ export const invitarPersona = async (personaId, equipoId) => {
       },
     ]);
     if (error) throw error;
+
+    return {
+      success: true,
+      message: "Persona invitada correctamente.",
+      data,
+    };
   } catch (error) {
     console.error("Error al invitar a la persona:", error.message);
+    return {
+      success: false,
+      message: "Error al invitar a la persona.",
+      error: error.message,
+    };
   }
 };
 
@@ -484,22 +509,77 @@ export async function eliminarEquipo(equipoId) {
   }
 }
 
+// export const solicitarUnirseEquipo = async (personaId, equipoId) => {
+//   try {
+//     const { data, error } = await supabase
+//       .from("equipos_personas")
+//       .upsert([
+//         {
+//           equipo_id: equipoId,
+//           persona_id: personaId,
+//           estado: "solicitado",
+//         },
+//       ])
+//       .select();
+//     if (error) throw error;
+//     return data;
+//   } catch (error) {
+//     console.error("Error al invitar a la persona:", error.message);
+//   }
+// };
+
 export const solicitarUnirseEquipo = async (personaId, equipoId) => {
   try {
-    const { data, error } = await supabase
-      .from("equipos_personas")
-      .upsert([
-        {
-          equipo_id: equipoId,
-          persona_id: personaId,
-          estado: "solicitado",
-        },
-      ])
-      .select();
-    if (error) throw error;
-    return data;
+    // 1. Obtener club_id de la persona
+    const { data: persona, error: errorPersona } = await supabase
+      .from("personas")
+      .select("club_id")
+      .eq("id", personaId)
+      .single();
+    if (errorPersona) throw errorPersona;
+
+    // 2. Obtener club_id del equipo
+    const { data: equipo, error: errorEquipo } = await supabase
+      .from("equipos")
+      .select("club_id")
+      .eq("id", equipoId)
+      .single();
+    if (errorEquipo) throw errorEquipo;
+
+    // 3. Lógica de validación
+    if (!persona.club_id || persona.club_id === equipo.club_id) {
+      // Puede solicitar unirse
+      const { data, error } = await supabase
+        .from("equipos_personas")
+        .upsert([
+          {
+            equipo_id: equipoId,
+            persona_id: personaId,
+            estado: "solicitado",
+          },
+        ])
+        .select();
+      if (error) throw error;
+      return {
+        success: true,
+        message: "Solicitud enviada correctamente.",
+        data,
+      };
+    } else {
+      // No puede solicitar unirse
+      return {
+        success: false,
+        message:
+          "Debes desvincularte de tu club actual antes de solicitar unirte a este equipo. Habla con el administrador de tu club.",
+      };
+    }
   } catch (error) {
-    console.error("Error al invitar a la persona:", error.message);
+    console.error("Error al solicitar unirse al equipo:", error.message);
+    return {
+      success: false,
+      message: "Ha ocurrido un error al solicitar unirse al equipo.",
+      error: error.message,
+    };
   }
 };
 

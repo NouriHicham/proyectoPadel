@@ -44,6 +44,7 @@ import {
 } from "@/lib/database";
 import { useAuth } from "@/context/AuthContext";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import toast from "react-hot-toast";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -101,34 +102,66 @@ export default function EquipoPage() {
     form.reset();
   }
 
+  // const handleInvitar = async () => {
+  //   try {
+  //     if (personaId == null) {
+  //       alert("Debes seleccionar una persona");
+  //       return;
+  //     }
+
+  //     await invitarPersona(personaId, equipoId);
+  //     fetchPersonas();
+  //     setOpen2(false);
+  //   } catch (error) {
+  //     console.error("Error al invitar a la persona:", error);
+  //   }
+  // };
   const handleInvitar = async () => {
     try {
       if (personaId == null) {
-        alert("Debes seleccionar una persona");
+        toast.error("Debes seleccionar una persona");
         return;
       }
 
-      await invitarPersona(personaId, equipoId);
-      fetchPersonas();
-      setOpen2(false);
+      const result = await invitarPersona(personaId, equipoId);
+
+      if (result.success) {
+        toast.success(result.message);
+        fetchPersonas();
+        setOpen2(false);
+      } else {
+        toast.error(result.message);
+      }
     } catch (error) {
       console.error("Error al invitar a la persona:", error);
+      toast.error("Ha ocurrido un error al invitar a la persona.");
     }
   };
 
   const handleAceptar = async (persona_id, aceptar) => {
     try {
       if (!persona_id || !equipoId) return;
+      const result = await aceptarInvitacion(
+        personaId,
+        equipoId,
+        aceptar ? "aceptado" : "rechazado"
+      );
 
-      if (aceptar) {
-        const data = await aceptarInvitacion(persona_id, equipoId, "aceptado");
+      if (!result) {
+        toast.error("Ha ocurrido un error inesperado.");
+        return;
+      }
+
+      if (result.success) {
+        toast.success("Solicitud aceptada correctamente.");
       } else {
-        const data = await aceptarInvitacion(persona_id, equipoId, "rechazado");
+        toast.error("Solicitiud rechazada correctamente.");
       }
 
       fetchPersonas();
     } catch (error) {
-      console.error("Error al aceptar la invitacion:", error);
+      console.error("Error al aceptar la invitación:", error);
+      toast.error("Ha ocurrido un error al procesar la invitación.");
     }
   };
 
