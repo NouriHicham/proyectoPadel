@@ -65,6 +65,9 @@ export default function AlertConfirmation({ id, type }) {
 
             {type === "club" &&
               "¿Estás seguro de que deseas eliminar este club? Esta acción eliminará el club y todos los datos relacionados con este."}
+
+            {type === "jugadorEquipo" &&
+              "¿Estás seguro de que deseas desvincular este jugador de este equipo? Esta acción eliminará al jugador de este equipo."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -36,7 +36,14 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { DialogTrigger } from "@radix-ui/react-dialog";
-import { getJugadoresEquipo } from "@/lib/database";
+import {
+  eliminarJugadorEquipo,
+  getJugadoresEquipo,
+  invitarPersona,
+  jugadoresDiferenteEquipo,
+} from "@/lib/database";
+import AlertConfirmation from "./AlertConfirmation";
+import toast from "react-hot-toast";
 
 export default function GestionarEquipoDialog({ teamData }) {
   // Estados
@@ -46,6 +53,7 @@ export default function GestionarEquipoDialog({ teamData }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const [availablePlayers, setAvailablePlayers] = useState([]);
+  const [jugadoresAInvitar, setJugadoresAInvitar] = useState([]);
 
   useEffect(() => {
     const getAvailablePlayers = async () => {
@@ -57,24 +65,70 @@ export default function GestionarEquipoDialog({ teamData }) {
       }
     };
 
+    const jugadoresAInvitar = async () => {
+      try {
+        const data = await jugadoresDiferenteEquipo(teamData?.id);
+        setJugadoresAInvitar(data || []);
+      } catch (error) {
+        console.error(("Error fetching available players:", error));
+      }
+    };
+
     getAvailablePlayers();
+    jugadoresAInvitar();
   }, []);
 
   console.log("available", availablePlayers);
 
   // Filtrado de jugadores
   const filteredPlayers = availablePlayers?.filter((ep) => {
-    const nombre = ep.nombre.toLowerCase();
-    const apellido = ep.apellido ? ep.apellido.toLowerCase() : "";
-    const query = searchQuery.toLowerCase();
+    const nombre = ep?.nombre.toLowerCase() + " " + ep?.apellido.toLowerCase();
+    const posicion = ep?.posicion.toLowerCase();
+    const disponibilidad = ep?.disponibilidad.toLowerCase();
+    const tel = String(ep?.telefono).toLowerCase();
+    const query = searchQuery.toLowerCase().trim();
+
     return (
       nombre.includes(query) ||
-      apellido.includes(query) ||
-      String(ep.persona_id).includes(query)
+      posicion.includes(query) ||
+      disponibilidad.includes(query) ||
+      tel.includes(query) ||
+      String(ep.id).includes(query)
     );
   });
 
+  const handleRemovePlayer = async (jugadorId, equipoId) => {
+    try {
+      if (!jugadorId || !equipoId) return;
+
+      const success = await eliminarJugadorEquipo(jugadorId, equipoId);
+      if (success) {
+        toast.success("Jugador eliminado correctamente.");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleInvitar = async (personaId, equipoId) => {
+    try {
+      if (!personaId || !equipoId) return;
+
+      const result = await invitarPersona(personaId, equipoId);
+
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   console.log(teamData);
+  console.log(filteredPlayers);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -108,7 +162,7 @@ export default function GestionarEquipoDialog({ teamData }) {
                     Jugadores del Equipo
                   </CardTitle>
                   <CardDescription>
-                    {teamData?.equipos_personas.length} jugadores en el equipo
+                    {availablePlayers?.length} jugadores en el equipo
                   </CardDescription>
                 </div>
                 <Button onClick={() => setInviteDialogOpen(true)}>
@@ -119,7 +173,7 @@ export default function GestionarEquipoDialog({ teamData }) {
               <div className="relative mt-2">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar jugadores..."
+                  placeholder="Busca jugadores por id, nombre, posición..."
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -131,14 +185,18 @@ export default function GestionarEquipoDialog({ teamData }) {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>#</TableHead>
                       <TableHead>Jugador</TableHead>
-                      <TableHead>ID</TableHead>
+                      <TableHead>Posición</TableHead>
+                      <TableHead>Disponibilidad</TableHead>
+                      <TableHead>Teléfono</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredPlayers.map((ep) => (
                       <TableRow key={ep.id}>
+                        <TableCell>{ep?.id}</TableCell>
                         <TableCell className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage
@@ -168,12 +226,17 @@ export default function GestionarEquipoDialog({ teamData }) {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>{ep.persona_id}</TableCell>
+                        <TableCell>{ep?.posicion}</TableCell>
+                        <TableCell>{ep?.disponibilidad}</TableCell>
+                        <TableCell>{ep?.telefono}</TableCell>
                         <TableCell className="text-right">
+                          {/* eliminar jugador de equipos_personas */}
                           <Button
                             variant="ghost"
                             size="icon"
-                            // onClick={() => onRemovePlayer(ep.persona_id)}
+                            onClick={() =>
+                              handleRemovePlayer(ep?.id, teamData?.id)
+                            }
                             disabled={
                               ep.persona_id === teamData?.capitan_id ||
                               ep.persona_id === teamData?.subcapitan_id
@@ -211,7 +274,7 @@ export default function GestionarEquipoDialog({ teamData }) {
       </DialogContent>
 
       {/* Invite Player Dialog */}
-      {/* <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Invitar a Jugador</DialogTitle>
@@ -230,7 +293,7 @@ export default function GestionarEquipoDialog({ teamData }) {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {availablePlayers.map((jugador) => (
+                {jugadoresAInvitar.map((jugador) => (
                   <SelectItem key={jugador.id} value={jugador.id.toString()}>
                     {`${jugador.nombre} ${jugador.apellido || ""}`}
                   </SelectItem>
@@ -246,10 +309,15 @@ export default function GestionarEquipoDialog({ teamData }) {
             >
               Cancelar
             </Button>
-            <Button disabled={!selectedPlayerId}>Invitar</Button>
+            <Button
+              disabled={!selectedPlayerId}
+              onClick={() => handleInvitar(selectedPlayerId, teamData?.id)}
+            >
+              Invitar
+            </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
     </Dialog>
   );
 }

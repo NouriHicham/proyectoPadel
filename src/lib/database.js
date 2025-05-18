@@ -508,6 +508,23 @@ export async function eliminarEquipo(equipoId) {
     return false;
   }
 }
+// eliminar jugador de un equipo
+export async function eliminarJugadorEquipo(jugadorId, equipoId) {
+  try {
+    const { error } = await supabase
+      .from("equipos_personas")
+      .delete()
+      .eq("equipo_id", equipoId)
+      .eq("persona_id", jugadorId);
+
+    if (error) throw error;
+
+    return true;
+  } catch (error) {
+    console.error("Error al eliminar equipo:", error.message);
+    return false;
+  }
+}
 
 // export const solicitarUnirseEquipo = async (personaId, equipoId) => {
 //   try {
@@ -721,7 +738,8 @@ export async function getJugadoresEquipo(equipo_id) {
     const { data, error } = await supabase
       .from("equipos_personas")
       .select("persona:persona_id(*)")
-      .eq("equipo_id", equipo_id);
+      .eq("equipo_id", equipo_id)
+      .eq("estado", "aceptado");
 
     if (error) throw error;
 
