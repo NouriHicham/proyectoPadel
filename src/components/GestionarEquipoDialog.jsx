@@ -42,28 +42,29 @@ import {
   invitarPersona,
   jugadoresDiferenteEquipo,
 } from "@/lib/database";
-import AlertConfirmation from "./AlertConfirmation";
 import toast from "react-hot-toast";
+import { useClubData } from "@/hooks/useEquipos";
 
 export default function GestionarEquipoDialog({ teamData }) {
+  const { getAvailablePlayers, availablePlayers } = useClubData();
   // Estados
   const [open, setOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   //   const [team, setTeam] = useState(mockTeam);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
-  const [availablePlayers, setAvailablePlayers] = useState([]);
+  // const [availablePlayers, setAvailablePlayers] = useState([]);
   const [jugadoresAInvitar, setJugadoresAInvitar] = useState([]);
 
   useEffect(() => {
-    const getAvailablePlayers = async () => {
-      try {
-        const data = await getJugadoresEquipo(teamData?.id);
-        setAvailablePlayers(data || []);
-      } catch (error) {
-        console.error(("Error fetching available players:", error));
-      }
-    };
+    // const getAvailablePlayers = async () => {
+    //   try {
+    //     const data = await getJugadoresEquipo(teamData?.id);
+    //     setAvailablePlayers(data || []);
+    //   } catch (error) {
+    //     console.error(("Error fetching available players:", error));
+    //   }
+    // };
 
     const jugadoresAInvitar = async () => {
       try {
@@ -73,10 +74,14 @@ export default function GestionarEquipoDialog({ teamData }) {
         console.error(("Error fetching available players:", error));
       }
     };
-
-    getAvailablePlayers();
     jugadoresAInvitar();
   }, []);
+
+  useEffect(() => {
+    if (teamData?.id) {
+      getAvailablePlayers(teamData);
+    }
+  }, [teamData]);
 
   console.log("available", availablePlayers);
 
@@ -102,7 +107,9 @@ export default function GestionarEquipoDialog({ teamData }) {
       if (!jugadorId || !equipoId) return;
 
       const success = await eliminarJugadorEquipo(jugadorId, equipoId);
+
       if (success) {
+        getAvailablePlayers(teamData);
         toast.success("Jugador eliminado correctamente.");
       }
     } catch (error) {
@@ -190,6 +197,7 @@ export default function GestionarEquipoDialog({ teamData }) {
                       <TableHead>Posición</TableHead>
                       <TableHead>Disponibilidad</TableHead>
                       <TableHead>Teléfono</TableHead>
+                      <TableHead>Rol</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -226,9 +234,18 @@ export default function GestionarEquipoDialog({ teamData }) {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>{ep?.posicion}</TableCell>
+                        <TableCell>{ep?.posicion || "-"}</TableCell>
                         <TableCell>{ep?.disponibilidad}</TableCell>
                         <TableCell>{ep?.telefono}</TableCell>
+                        <TableCell>
+                          <Badge variant={"outline"}>
+                            {ep?.id === teamData?.capitan_id
+                              ? "Capitán"
+                              : ep?.id === teamData?.subcapitan_id
+                              ? "Subcapitán"
+                              : "Jugador"}
+                          </Badge>
+                        </TableCell>
                         <TableCell className="text-right">
                           {/* eliminar jugador de equipos_personas */}
                           <Button
@@ -295,7 +312,14 @@ export default function GestionarEquipoDialog({ teamData }) {
               <SelectGroup>
                 {jugadoresAInvitar.map((jugador) => (
                   <SelectItem key={jugador.id} value={jugador.id.toString()}>
-                    {`${jugador.nombre} ${jugador.apellido || ""}`}
+                    <div className="flex items-center w-full justify-between">
+                      <span>{`${jugador.nombre} ${
+                        jugador.apellido || ""
+                      }`}</span>
+                      <span className="ml-5 text-slate-600">
+                        {jugador?.posicion}
+                      </span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectGroup>

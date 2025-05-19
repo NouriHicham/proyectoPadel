@@ -445,6 +445,7 @@ export async function updatePersona(id, datos) {
       .from("personas")
       .update(datos)
       .eq("id", id)
+      .select()
       .single();
 
     if (error) throw error;

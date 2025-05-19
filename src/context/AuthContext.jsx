@@ -125,6 +125,7 @@ export const AuthProvider = ({ children }) => {
 
   const [clubData, setClubData] = useState({});
   const [userClubs, setUserClubs] = useState([]);
+  const [availablePlayers, setAvailablePlayers] = useState([]);
 
   return (
     <AuthContext.Provider
@@ -138,7 +139,9 @@ export const AuthProvider = ({ children }) => {
         clubData,
         setClubData,
         userClubs,
-        setUserClubs
+        setUserClubs,
+        availablePlayers,
+        setAvailablePlayers
       }}
     >
       {children}

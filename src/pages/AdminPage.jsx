@@ -300,10 +300,10 @@ function PlayersManagement({ clubData }) {
 
   const handleDesvincularJugadorClub = async (playerId) => {
     try {
-      console.log(playerId);
+      console.log('idjogador:', playerId);
       const result = await updatePersona(playerId, { club_id: null });
 
-      console.log(result);
+      console.log('result:', result);
 
       if (result) {
         getPlayers();

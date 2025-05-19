@@ -142,7 +142,7 @@ export default function EquipoPage() {
     try {
       if (!persona_id || !equipoId) return;
       const result = await aceptarInvitacion(
-        personaId,
+        persona_id,
         equipoId,
         aceptar ? "aceptado" : "rechazado"
       );
@@ -236,7 +236,14 @@ export default function EquipoPage() {
                             key={jugador.id}
                             value={jugador.id.toString()}
                           >
-                            {`${jugador.nombre} ${jugador.apellido}`}
+                            <div className="flex items-center w-full justify-between">
+                              <span>{`${jugador.nombre} ${
+                                jugador.apellido || ""
+                              }`}</span>
+                              <span className="ml-5 text-slate-600">
+                                {jugador?.posicion}
+                              </span>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectGroup>
@@ -570,7 +577,9 @@ export default function EquipoPage() {
                             variant="destructive"
                             size="sm"
                             className="w-full mt-2"
-                            onClick={() => handleAceptar(false)}
+                            onClick={() =>
+                              handleAceptar(player?.persona_id, false)
+                            }
                           >
                             Rechazar solicitud
                           </Button>
