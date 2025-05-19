@@ -50,7 +50,6 @@ export default function CreateTeamDialog({
 
   const { clubData } = useAuth();
 
-  
   const defaultValues =
     isEditing && teamData
       ? {
@@ -99,6 +98,8 @@ export default function CreateTeamDialog({
         capitan_id: parseInt(values.capitan_id),
         subcapitan_id: parseInt(values.subcapitan_id),
       };
+
+      // hay que setear el estado como "aceptado" al crear equipo y al actualizarlo si es necesario
 
       if (isEditing && teamData?.id) {
         // Editar equipo existente

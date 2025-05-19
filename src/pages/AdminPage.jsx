@@ -12,7 +12,7 @@ import {
   PaginationPrevious,
   PaginationNext,
 } from "@/components/ui/pagination";
-import { getJugadresClub } from "@/lib/database";
+import { getJugadoresClub, updatePersona } from "@/lib/database";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -24,7 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 // import { ComboboxClubs } from "@/components/combobox/Clubs";
-import { Calendar, Search } from "lucide-react";
+import { Calendar, FilterX, Search, UserMinus2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -39,6 +39,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PartidosList } from "@/components/PartidosList";
 import { mockData } from "@/lib/dataPartidos";
 import { ComboboxEquipos } from "@/components/combobox/Equipos";
+import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 // componentes de prueba
 function ClubInfo({ clubData }) {
   return (
@@ -85,6 +87,16 @@ function ClubInfo({ clubData }) {
   );
 }
 function TeamsManagement({ teams }) {
+  const [search, setSearch] = useState("");
+
+  const filteredTeams = teams.filter((equipo) => {
+    const searchLower = search.toLowerCase().trim();
+    return (
+      equipo.nombre?.toLowerCase().includes(searchLower) ||
+      String(equipo.id)?.toLowerCase().includes(searchLower) ||
+      equipo.descripcion?.toLowerCase().includes(searchLower)
+    );
+  });
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
@@ -98,9 +110,9 @@ function TeamsManagement({ teams }) {
             />
             <Input
               type="search"
-              // value={value}
-              // onChange={onChange}
-              placeholder={"Busca por cualquier campo"}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={"Busca por id, nombre o descripción"}
               className="pl-9"
               aria-label="Buscar"
             />
@@ -109,10 +121,16 @@ function TeamsManagement({ teams }) {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {teams.length === 0 ? (
-          <p>Todavia no hay equipos asociados a este club.</p>
+        {filteredTeams.length === 0 ? (
+          search.trim().length > 0 ? (
+            <p className="text-muted-foreground ">
+              No hay equipos que coincidan con los criterios de búsqueda.
+            </p>
+          ) : (
+            <p>Todavia no hay equipos asociados a este club.</p>
+          )
         ) : (
-          teams.map((equipo) => (
+          filteredTeams.map((equipo) => (
             <CardEquipo key={equipo.id} equipo={equipo} gestionar={true} />
           ))
         )}
@@ -223,37 +241,89 @@ function PlayersManagement({ clubData }) {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Filtros
+  const [posicion, setPosicion] = useState("all"); // "" para 'todas'
+  const [disponibilidad, setDisponibilidad] = useState("all");
+  const [search, setSearch] = useState("");
+
+  // filtrado
+  const filteredPlayers = players.filter((player) => {
+    const searchLower = search.toLowerCase().trim();
+
+    const matchPosicion = posicion === "all" || player.posicion === posicion;
+    const matchDisponibilidad =
+      disponibilidad === "all" || player.disponibilidad === disponibilidad;
+    const matchSearch =
+      player?.nombre?.toLowerCase().includes(searchLower) ||
+      player?.apellido?.toLowerCase().includes(searchLower) ||
+      player?.email?.toLowerCase().includes(searchLower) ||
+      String(player?.telefono)?.toLowerCase().includes(searchLower) ||
+      String(player?.id)?.toLowerCase().includes(searchLower);
+
+    // Si el campo de búsqueda está vacío, ignora el filtro de búsqueda
+    return (
+      matchPosicion &&
+      matchDisponibilidad &&
+      (searchLower === "" || matchSearch)
+    );
+  });
+
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(players.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredPlayers.length / itemsPerPage);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedPlayers = players.slice(startIndex, endIndex); //
+  const paginatedPlayers = filteredPlayers.slice(startIndex, endIndex); //
 
-  // Filtros
-  // const [selectedClub, setSelectedClub] = useState(null);
-  const [posicion, setPosicion] = useState("all"); // "" para 'todas'
-  const [disponibilidad, setDisponibilidad] = useState("all");
+  const handleClearFilters = () => {
+    setPosicion("all");
+    setDisponibilidad("all");
+    setSearch("");
+    setCurrentPage(1);
+  };
+
+  const getPlayers = async () => {
+    try {
+      setLoading(true);
+      const data = await getJugadoresClub(clubData?.id);
+      console.log(data);
+      setPlayers(data || []);
+      setCurrentPage(1); // Reiniciar a la primera página al cambiar de club
+    } catch (error) {
+      console.error("Error fetching players:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDesvincularJugadorClub = async (playerId) => {
+    try {
+      console.log(playerId);
+      const result = await updatePersona(playerId, { club_id: null });
+
+      console.log(result);
+
+      if (result) {
+        getPlayers();
+        toast.success("Jugador desvinculado del club correctamente.");
+      } else {
+        toast.error("Error al desvincular el jugador.");
+      }
+    } catch (error) {
+      console.error("Error desvinculando jugador: ", error);
+      toast.error("Error en el proceso de desvinculación");
+    }
+  };
 
   useEffect(() => {
-    const getPlayers = async () => {
-      try {
-        setLoading(true);
-        const data = await getJugadresClub(clubData?.id);
-        console.log(data);
-        setPlayers(data || []);
-        setCurrentPage(1); // Reiniciar a la primera página al cambiar de club
-      } catch (error) {
-        console.error("Error fetching players:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     getPlayers();
   }, [clubData]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [disponibilidad, posicion, search]);
 
   return (
     <div className="p-4 max-h-[60rem] ">
@@ -328,14 +398,18 @@ function PlayersManagement({ clubData }) {
               <Input
                 id="filtro-search"
                 type="search"
-                // value={value}
-                // onChange={onChange}
-                placeholder={"Busca por cualquier campo"}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={"Busca por id, nombre o email..."}
                 className="pl-9"
                 aria-label="Buscar"
               />
             </div>
           </div>
+          <Button className={"mt-5"} onClick={handleClearFilters}>
+            Limpiar Filtros
+            <FilterX />
+          </Button>
         </div>
       </div>
 
@@ -356,14 +430,15 @@ function PlayersManagement({ clubData }) {
                 <TableHead>Club ID</TableHead>
                 <TableHead>Posición</TableHead>
                 <TableHead>Disponibilidad</TableHead>
+                <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedPlayers.map((player) => (
                 <TableRow key={player.id}>
-                  <TableCell>{player.id}</TableCell>
-                  <TableCell>{player.nombre}</TableCell>
-                  <TableCell>{player.apellido}</TableCell>
+                  <TableCell>{player?.id}</TableCell>
+                  <TableCell>{player?.nombre}</TableCell>
+                  <TableCell>{player?.apellido}</TableCell>
                   <TableCell>
                     {player.avatar ? (
                       <img
@@ -375,12 +450,21 @@ function PlayersManagement({ clubData }) {
                       <span>Sin avatar</span>
                     )}
                   </TableCell>
-                  <TableCell>{player.user_id}</TableCell>
-                  <TableCell>{player.telefono}</TableCell>
-                  <TableCell>{player.email}</TableCell>
-                  <TableCell>{player.club_id}</TableCell>
-                  <TableCell>{player.posicion}</TableCell>
-                  <TableCell>{player.disponibilidad}</TableCell>
+                  <TableCell>{player?.user_id}</TableCell>
+                  <TableCell>{player?.telefono}</TableCell>
+                  <TableCell>{player?.email}</TableCell>
+                  <TableCell>{player?.club_id}</TableCell>
+                  <TableCell>{player?.posicion || "No asignada"}</TableCell>
+                  <TableCell>{player?.disponibilidad}</TableCell>
+                  <TableCell>
+                    <span
+                      title="Desvincular jugador del club"
+                      className="cursor-pointer"
+                      onClick={() => handleDesvincularJugadorClub(player?.id)}
+                    >
+                      <UserMinus2 size={20} color="red" />
+                    </span>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

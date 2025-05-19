@@ -15,7 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useEffect, useState } from "react";
-import { getJugadresClub } from "@/lib/database";
+import { getJugadoresClub } from "@/lib/database";
 import { useAuth } from "@/context/AuthContext";
 
 export function ComboboxPersonas({ value, onChange }) {
@@ -27,7 +27,7 @@ export function ComboboxPersonas({ value, onChange }) {
     const fetchPersonas = async () => {
       try {
         console.log(clubData)
-        const data = await getJugadresClub(clubData?.id);
+        const data = await getJugadoresClub(clubData?.id);
         setPersonas(data || []);
       } catch (error) {
         console.error("Error fetching ligas:", error);

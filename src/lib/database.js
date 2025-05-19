@@ -224,7 +224,7 @@ export const invitarPersona = async (personaId, equipoId) => {
   }
 };
 
-// export const aceptarInvitacion = async (personaId, equipoId, aceptado) => {
+// export const aceptarcion = async (personaId, equipoId, aceptado) => {
 //   try {
 //     const { data, error } = await supabase
 //       .from("equipos_personas")
@@ -458,14 +458,69 @@ export async function updatePersona(id, datos) {
 
 //funciones sin probar
 // Función para crear un nuevo equipo
+// export async function crearEquipo(equipo) {
+//   try {
+//     const { data, error } = await supabase
+//       .from("equipos")
+//       .insert([equipo])
+//       .single();
+
+//     if (error) throw error;
+
+//     return data;
+//   } catch (error) {
+//     console.error("Error al crear equipo:", error.message);
+//     return null;
+//   }
+// }
 export async function crearEquipo(equipo) {
   try {
+    // 1. Insertar el equipo y obtener todos los campos, incluido el id generado
     const { data, error } = await supabase
       .from("equipos")
       .insert([equipo])
+      .select("*")
       .single();
 
     if (error) throw error;
+
+    // 2. Función auxiliar para crear o actualizar la relación
+    async function crearOActualizarRelacion(persona_id) {
+      if (!persona_id) return;
+
+      // Buscar si ya existe la relación
+      const { data: relacion, error: fetchError } = await supabase
+        .from("equipos_personas")
+        .select("id")
+        .eq("equipo_id", data.id)
+        .eq("persona_id", persona_id)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+
+      if (relacion) {
+        // Si existe, actualizar el estado a "aceptado"
+        const { error: updateError } = await supabase
+          .from("equipos_personas")
+          .update({ estado: "aceptado" })
+          .eq("id", relacion.id);
+        if (updateError) throw updateError;
+      } else {
+        // Si no existe, insertar
+        const { error: insertError } = await supabase
+          .from("equipos_personas")
+          .insert([{ equipo_id: data.id, persona_id, estado: "aceptado" }]);
+        if (insertError) throw insertError;
+      }
+    }
+
+    // 3. Capitán
+    await crearOActualizarRelacion(equipo.capitan_id);
+
+    // 4. Subcapitán (si es distinto)
+    if (equipo.subcapitan_id && equipo.subcapitan_id !== equipo.capitan_id) {
+      await crearOActualizarRelacion(equipo.subcapitan_id);
+    }
 
     return data;
   } catch (error) {
@@ -475,15 +530,84 @@ export async function crearEquipo(equipo) {
 }
 
 // Función para actualizar un equipo
+// export async function actualizarEquipo(equipoId, actualizaciones) {
+//   try {
+//     const { data, error } = await supabase
+//       .from("equipos")
+//       .update(actualizaciones)
+//       .eq("id", equipoId)
+//       .single();
+
+//     // comprobar antes si en equipos_persona existe el registro con equipo id, personaid y estado
+
+//     // hay que actualizar el estado a "aceptado" si es necesario
+//     const { data: persona, error: persona_error } = await supabase
+//       .from("equipos_personas")
+//       .update({ estado: "aceptado" })
+//       .eq("equipo_id", data?.id)
+//       .eq("persona_id", data?.capitan_id)
+//       .single();
+
+//     if (error) throw error;
+
+//     return data;
+//   } catch (error) {
+//     console.error("Error al actualizar equipo:", error.message);
+//     return null;
+//   }
+// }
+
 export async function actualizarEquipo(equipoId, actualizaciones) {
   try {
+    // 1. Actualizar el equipo
     const { data, error } = await supabase
       .from("equipos")
       .update(actualizaciones)
       .eq("id", equipoId)
+      .select("*")
       .single();
 
     if (error) throw error;
+
+    // 2. Función auxiliar para actualizar o crear la relación
+    async function crearOActualizarRelacion(persona_id) {
+      if (!persona_id) return;
+
+      // Buscar si ya existe la relación
+      const { data: relacion, error: fetchError } = await supabase
+        .from("equipos_personas")
+        .select("id")
+        .eq("equipo_id", equipoId)
+        .eq("persona_id", persona_id)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+
+      if (relacion) {
+        // Si existe, actualizar el estado a "aceptado"
+        const { error: updateError } = await supabase
+          .from("equipos_personas")
+          .update({ estado: "aceptado" })
+          .eq("id", relacion.id);
+        if (updateError) throw updateError;
+      } else {
+        // Si no existe, insertar
+        const { error: insertError } = await supabase
+          .from("equipos_personas")
+          .insert([{ equipo_id: equipoId, persona_id, estado: "aceptado" }]);
+        if (insertError) throw insertError;
+      }
+    }
+
+    // 3. Capitán
+    const capitanId = actualizaciones.capitan_id || data.capitan_id;
+    await crearOActualizarRelacion(capitanId);
+
+    // 4. Subcapitán (si es distinto)
+    const subcapitanId = actualizaciones.subcapitan_id || data.subcapitan_id;
+    if (subcapitanId && subcapitanId !== capitanId) {
+      await crearOActualizarRelacion(subcapitanId);
+    }
 
     return data;
   } catch (error) {
@@ -703,7 +827,7 @@ export async function getLigas() {
   }
 }
 
-export async function getJugadresClub(club_id) {
+export async function getJugadoresClub(club_id) {
   try {
     const { data, error } = await supabase
       .from("personas")
