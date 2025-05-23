@@ -51,6 +51,8 @@ export default function Home() {
     fetchAll();
   }, [savedInfo?.equipo_id]);
 
+  console.log("partido", partidojugar);
+
   return (
     <>
       <div className="min-h-screen flex flex-col">
@@ -68,7 +70,7 @@ export default function Home() {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                {partidojugar ? (
+                {partidojugar?.length > 0 ? (
                   <div>
                     <div className="text-2xl font-bold">
                       {new Intl.DateTimeFormat("es-ES", {

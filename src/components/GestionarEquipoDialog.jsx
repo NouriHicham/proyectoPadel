@@ -87,9 +87,9 @@ export default function GestionarEquipoDialog({ teamData }) {
 
   // Filtrado de jugadores
   const filteredPlayers = availablePlayers?.filter((ep) => {
-    const nombre = ep?.nombre.toLowerCase() + " " + ep?.apellido.toLowerCase();
-    const posicion = ep?.posicion.toLowerCase();
-    const disponibilidad = ep?.disponibilidad.toLowerCase();
+    const nombre = ep?.nombre?.toLowerCase() + " " + ep?.apellido.toLowerCase();
+    const posicion = ep?.posicion?.toLowerCase();
+    const disponibilidad = ep?.disponibilidad?.toLowerCase();
     const tel = String(ep?.telefono).toLowerCase();
     const query = searchQuery.toLowerCase().trim();
 

@@ -41,6 +41,7 @@ import { mockData } from "@/lib/dataPartidos";
 import { ComboboxEquipos } from "@/components/combobox/Equipos";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import SolicitudesClub from "@/components/SolicitudesClub";
 // componentes de prueba
 function ClubInfo({ clubData }) {
   return (
@@ -86,7 +87,7 @@ function ClubInfo({ clubData }) {
     </div>
   );
 }
-function TeamsManagement({ teams }) {
+function TeamsManagement({ teams, clubData }) {
   const [search, setSearch] = useState("");
 
   const filteredTeams = teams.filter((equipo) => {
@@ -118,6 +119,7 @@ function TeamsManagement({ teams }) {
             />
           </div>
           <CreateTeamDialog />
+          <SolicitudesClub clubId={clubData?.id}/>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -300,10 +302,10 @@ function PlayersManagement({ clubData }) {
 
   const handleDesvincularJugadorClub = async (playerId) => {
     try {
-      console.log('idjogador:', playerId);
+      console.log("idjogador:", playerId);
       const result = await updatePersona(playerId, { club_id: null });
 
-      console.log('result:', result);
+      console.log("result:", result);
 
       if (result) {
         getPlayers();

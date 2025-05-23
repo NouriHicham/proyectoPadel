@@ -912,3 +912,32 @@ export async function addDisponibilidad(persona_id, partido_id) {
     return null;
   }
 }
+
+// obtener todos los registros con estado 'solicitado' y datos del equipo, (fk, equipo_id), y datos de la persona fk (persona_id)
+
+export async function getSolicitudesClub(clubId) {
+  try {
+    const { data, error } = await supabase
+      .from("equipos_personas")
+      .select(
+        `
+          *,
+          equipos (*),
+          personas (*)
+        `
+      )
+      .eq("estado", "solicitado");
+
+    if (error) throw error;
+
+    // Filtrar en el cliente por clubId en el objeto equipos
+    const filtered = (data ?? []).filter(
+      (solicitud) => solicitud.equipos && solicitud.equipos.club_id === clubId
+    );
+
+    return filtered;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
