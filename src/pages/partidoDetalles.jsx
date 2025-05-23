@@ -13,7 +13,7 @@ import {
   XCircleIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { addDisponibilidad, getDisponibilidad, getPartidos } from "@/lib/database";
+import { addDisponibilidad, getDisponibilidad, getPartidos, getResultados } from "@/lib/database";
 import { Skeleton } from "@/components/ui/skeleton";
 import { add } from "date-fns";
 
@@ -23,6 +23,7 @@ export default function PartidoDetalles() {
   const [partidos, setPartidos] = useState([]);
   const [disponibilidad, setDisponibilidad] = useState([]);
   const [haFinalizado, setHaFinalizado] = useState(false);
+  const [resultados, setResultados] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,7 +40,6 @@ export default function PartidoDetalles() {
     }  
     fetchAll();
   }, [id]);
-  
   // si la persona no pertenece a alguno de los equipos de la convocatoria se redirecciona
   useEffect(() => {
     if (partidos.length > 0) {
@@ -47,16 +47,25 @@ export default function PartidoDetalles() {
         navigate("/");
       }
     }
-    console.log(disponibilidad)
   }, [partidos]);
 
   useEffect(() => {
-    if (partidos[0]?.estado === "finalizado") {
-      setHaFinalizado(true);
-    } else {
-      setHaFinalizado(false);
+    async function fetchResultados() {
+      if (partidos[0]?.estado === "finalizado") {
+        setHaFinalizado(true);
+        try {
+          const resultadosData = await getResultados(id);
+          setResultados(resultadosData);
+        } catch (error) {
+          console.error(error);
+        }
+      } else {
+        setHaFinalizado(false);
+      }
     }
-  }, [partidos]);
+    fetchResultados();
+  }, [partidos, id]);
+  console.log("resultados", resultados);
 
   const aceptarDisponibilidad = () => {
     try {

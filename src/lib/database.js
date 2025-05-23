@@ -936,8 +936,22 @@ export async function getSolicitudesClub(clubId) {
     );
 
     return filtered;
+export async function getResultados(id) {
+  try {
+    const { data, error } = await supabase
+      .from("partidos")
+      .select("id, partidos_pistas(*)")
+      .eq("id", id)
+      .eq("estado", "finalizado");
+
+    if (error) throw error;
+    return data;
   } catch (error) {
     console.error(error);
     return null;
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> b469287052ddeeb020ce29a037fc443330afc248
