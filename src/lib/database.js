@@ -912,3 +912,19 @@ export async function addDisponibilidad(persona_id, partido_id) {
     return null;
   }
 }
+
+export async function getResultados(id) {
+  try {
+    const { data, error } = await supabase
+      .from("partidos")
+      .select("id, partidos_pistas(*)")
+      .eq("id", id)
+      .eq("estado", "finalizado");
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
