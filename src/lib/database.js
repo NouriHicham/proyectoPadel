@@ -929,13 +929,40 @@ export async function getSolicitudesClub(clubId) {
       .eq("estado", "solicitado");
 
     if (error) throw error;
-
     // Filtrar en el cliente por clubId en el objeto equipos
     const filtered = (data ?? []).filter(
       (solicitud) => solicitud.equipos && solicitud.equipos.club_id === clubId
     );
 
     return filtered;
+  } catch (error) {
+    console.error("Error al obtener solicitudes del club:", error.message);
+    return [];
+  }
+}
+
+// export async function getSolicitudesClub(clubId) {
+//   try {
+//     const { data, error } = await supabase
+//       .from("equipos_personas")
+//       .select(
+//         `
+//           *,
+//           equipos (*),
+//           personas (*)
+//         `
+//       )
+//       .eq("estado", "solicitado");
+    
+//     if (error) throw error;
+
+//     // Filtrar en el cliente por clubId en el objeto equipos
+//     const filtered = (data ?? []).filter(
+//       (solicitud) => solicitud.equipos && solicitud.equipos.club_id === clubId
+//     );
+
+//     return filtered;
+
 export async function getResultados(id) {
   try {
     const { data, error } = await supabase
@@ -950,8 +977,4 @@ export async function getResultados(id) {
     console.error(error);
     return null;
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> b469287052ddeeb020ce29a037fc443330afc248
