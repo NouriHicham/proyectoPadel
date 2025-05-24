@@ -13,8 +13,8 @@ import {
   PaginationNext,
 } from "@/components/ui/pagination";
 import { getJugadoresClub, updatePersona } from "@/lib/database";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { Navigate, useParams } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -42,7 +42,6 @@ import { ComboboxEquipos } from "@/components/combobox/Equipos";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import SolicitudesClub from "@/components/SolicitudesClub";
-import { ComboboxClubs } from "@/components/combobox/Clubs";
 // componentes de prueba
 function ClubInfo({ clubData }) {
   return (
@@ -101,11 +100,15 @@ function TeamsManagement({ teams, clubData }) {
   });
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-2xl mb-2 font-semibold">Equipos</h2>
-        {/* search */}
-        <div className="flex items-center gap-2 min-w-[32rem]">
-          <div className="relative w-full">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-10">
+        {/* Título y añadir */}
+        <div className="flex items-center gap-4 justify-between">
+          <h2 className="text-2xl font-semibold">Equipos</h2>
+          <CreateTeamDialog />
+        </div>
+        {/* Búsqueda y solicitudes */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto mt-5 md:mt-0">
+          <div className="relative w-full sm:w-64">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               size={16}
@@ -119,10 +122,10 @@ function TeamsManagement({ teams, clubData }) {
               aria-label="Buscar"
             />
           </div>
-          <CreateTeamDialog />
           <SolicitudesClub clubId={clubData?.id} />
         </div>
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {filteredTeams.length === 0 ? (
           search.trim().length > 0 ? (
@@ -144,7 +147,7 @@ function TeamsManagement({ teams, clubData }) {
 function MatchesManagement({ matches }) {
   console.log("partidos", matches);
   return (
-    <div>
+    <div className="">
       <h2 className="text-2xl mb-2">Partidos</h2>
       <div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -157,9 +160,9 @@ function MatchesManagement({ matches }) {
             </CardHeader>
             <CardContent>
               {/* <div className="text-2xl font-bold">{mockData.length}</div> */}
-              <p className="text-xs text-muted-foreground">
+              {/* <p className="text-xs text-muted-foreground">
                 +2 desde la semana pasada
-              </p>
+              </p> */}
             </CardContent>
           </Card>
           <Card>
@@ -171,9 +174,9 @@ function MatchesManagement({ matches }) {
               <div className="text-2xl font-bold">
                 {/* {mockData.filter((p) => p.estado === "programado").length} */}
               </div>
-              <p className="text-xs text-muted-foreground">
+              {/* <p className="text-xs text-muted-foreground">
                 +1 desde la semana pasada
-              </p>
+              </p> */}
             </CardContent>
           </Card>
           <Card>
@@ -185,7 +188,7 @@ function MatchesManagement({ matches }) {
               <div className="text-2xl font-bold">
                 {/* {mockData.filter((p) => p.estado === "en juego").length} */}
               </div>
-              <p className="text-xs text-muted-foreground">Ahora mismo</p>
+              {/* <p className="text-xs text-muted-foreground">Ahora mismo</p> */}
             </CardContent>
           </Card>
           <Card>
@@ -197,9 +200,9 @@ function MatchesManagement({ matches }) {
               <div className="text-2xl font-bold">
                 {/* {mockData.filter((p) => p.estado === "finalizado").length} */}
               </div>
-              <p className="text-xs text-muted-foreground">
+              {/* <p className="text-xs text-muted-foreground">
                 +3 desde el mes pasado
-              </p>
+              </p> */}
             </CardContent>
           </Card>
         </div>
@@ -565,15 +568,15 @@ export default function AdminPage() {
     if (id) getClubData(id);
   }, [id]);
 
-  console.log(clubData);
-
   return (
-    <div className="container mx-auto p-2 my-4 flex">
-      <AdminSidebar
-        clubData={clubData}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+    <div className="container mx-auto p-2 my-4 flex flex-col lg:flex-row">
+      <div className="w-full lg:w-64 mb-4 lg:mb-0">
+        <AdminSidebar
+          clubData={clubData}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+      </div>
       <div className="flex-1 ml-4">
         <h1 className="text-4xl">Club #{id}</h1>
         <div className="mt-5">

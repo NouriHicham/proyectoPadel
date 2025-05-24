@@ -58,7 +58,7 @@ export default function Home() {
       <div className="min-h-screen flex flex-col">
         <Header />
 
-        <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto">
+        <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto p-2">
           <h1 className="text-3xl font-bold mb-6">Bienvenido a PadelTeam</h1>
 
           <div className="grid gap-4 md:grid-cols-3">
@@ -142,7 +142,7 @@ export default function Home() {
             <div className="space-y-4">
               {partidos.length === 0
                 ? Array.from({ length: 3 }).map((_, index) => (
-                    <Card>
+                    <Card key={index}>
                       <CardContent className="p-4">
                         <div className="flex justify-between items-center">
                           <div>

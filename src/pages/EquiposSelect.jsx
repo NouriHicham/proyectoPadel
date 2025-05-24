@@ -99,7 +99,7 @@ export default function EquiposSelect() {
   return (
     <>
       {equipoPersona && <Header />}
-      <div className="container relative mx-auto mt-7 flex flex-col justify-center items-center py-4">
+      <div className="container relative mx-auto mt-7 flex flex-col justify-center items-center py-4 px-2">
         {/* <Button className="absolute right-4 top-10" onClick={signOut}>
           Cerrar Sesión
         </Button> */}
@@ -168,7 +168,8 @@ export default function EquiposSelect() {
           </TabsContent>
           <TabsContent value="requests">
             {/* Pestaña para solicitar unión a equipo */}
-            <div className="flex items-center gap-2 mb-5">
+            <div className="flex flex-col sm:flex-row gap-3 mb-5">
+              {/* Barra de búsqueda (ocupa todo el ancho en móvil) */}
               <div className="relative w-full">
                 <Search
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -178,20 +179,31 @@ export default function EquiposSelect() {
                   type="search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder={"Busca por id, nombre o descripción..."}
-                  className="pl-9"
+                  placeholder="Busca por id, nombre o descripción..."
+                  className="pl-9 w-full"
                   aria-label="Buscar"
                 />
               </div>
-              <div className="">
-                <ComboboxClubs club={selectedClub} setClub={setSelectedClub} />
+
+              {/* Contenedor secundario para combobox y botón */}
+              <div className="flex flex-1 gap-2 w-full sm:w-auto">
+                <div className="flex-1 min-w-[150px]">
+                  <ComboboxClubs
+                    club={selectedClub}
+                    setClub={setSelectedClub}
+                  />
+                </div>
+
+                <Button
+                  onClick={handleClearFilters}
+                  className="whitespace-nowrap"
+                >
+                  <span className="hidden sm:inline">Borrar filtros</span>
+                  <FilterX className="sm:ml-2" />
+                </Button>
               </div>
-              <Button onClick={() => handleClearFilters()}>
-                <span>Borrar filtros</span>
-                <FilterX />
-              </Button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {/* Filtrar por persona id */}
               {equiposDiferentes
                 .filter((equipo) => {
