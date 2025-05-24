@@ -88,9 +88,9 @@ export default function GestionarEquipoDialog({ teamData }) {
   // Filtrado de jugadores
   const filteredPlayers = availablePlayers?.filter((ep) => {
     const nombre = ep?.nombre?.toLowerCase() + " " + ep?.apellido.toLowerCase();
-    const posicion = ep?.posicion?.toLowerCase();
-    const disponibilidad = ep?.disponibilidad?.toLowerCase();
-    const tel = String(ep?.telefono).toLowerCase();
+    const posicion = (ep?.posicion || "").toLowerCase();
+    const disponibilidad = (ep?.disponibilidad || "").toLowerCase();
+    const tel = String(ep?.telefono || "").toLowerCase();
     const query = searchQuery.toLowerCase().trim();
 
     return (
@@ -98,7 +98,7 @@ export default function GestionarEquipoDialog({ teamData }) {
       posicion.includes(query) ||
       disponibilidad.includes(query) ||
       tel.includes(query) ||
-      String(ep.id).includes(query)
+      String(ep?.id || "").includes(query)
     );
   });
 
@@ -311,10 +311,10 @@ export default function GestionarEquipoDialog({ teamData }) {
             <SelectContent>
               <SelectGroup>
                 {jugadoresAInvitar.map((jugador) => (
-                  <SelectItem key={jugador.id} value={jugador.id.toString()}>
+                  <SelectItem key={jugador?.id} value={jugador?.id.toString()}>
                     <div className="flex items-center w-full justify-between">
-                      <span>{`${jugador.nombre} ${
-                        jugador.apellido || ""
+                      <span>{`${jugador?.nombre} ${
+                        jugador?.apellido || ""
                       }`}</span>
                       <span className="ml-5 text-slate-600">
                         {jugador?.posicion}
