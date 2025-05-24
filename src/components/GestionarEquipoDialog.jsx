@@ -180,7 +180,7 @@ export default function GestionarEquipoDialog({ teamData }) {
               <div className="relative mt-2">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Busca jugadores por id, nombre, posición..."
+                  placeholder="Busca jugadores por nombre, posición, disponibilidad..."
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -192,7 +192,7 @@ export default function GestionarEquipoDialog({ teamData }) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>#</TableHead>
+                      {/* <TableHead>#</TableHead> */}
                       <TableHead>Jugador</TableHead>
                       <TableHead>Posición</TableHead>
                       <TableHead>Disponibilidad</TableHead>
@@ -204,7 +204,7 @@ export default function GestionarEquipoDialog({ teamData }) {
                   <TableBody>
                     {filteredPlayers.map((ep) => (
                       <TableRow key={ep.id}>
-                        <TableCell>{ep?.id}</TableCell>
+                        {/* <TableCell>{ep?.id}</TableCell> */}
                         <TableCell className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage

@@ -828,15 +828,40 @@ export async function getLigas() {
   }
 }
 
+// export async function getJugadoresClub(club_id) {
+//   try {
+//     const { data, error } = await supabase
+//       .from("personas")
+//       .select("*")
+//       .eq("club_id", club_id);
+
+//     if (error) throw error;
+//     return data;
+//   } catch (error) {
+//     console.error(error);
+//     return null;
+//   }
+// }
 export async function getJugadoresClub(club_id) {
   try {
     const { data, error } = await supabase
-      .from("personas")
-      .select("*")
-      .eq("club_id", club_id);
+      .from("equipos_personas")
+      .select(
+        `
+        *,
+        equipos(*),
+        personas(*)
+      `
+      )
+      .eq("estado", "aceptado")
+      .eq("equipos.club_id", club_id);
 
     if (error) throw error;
-    return data;
+
+    const filtered = (data ?? []).filter(
+      (solicitud) => solicitud.equipos && solicitud.equipos.club_id === club_id
+    );
+    return filtered;
   } catch (error) {
     console.error(error);
     return null;
@@ -953,7 +978,7 @@ export async function getSolicitudesClub(clubId) {
 //         `
 //       )
 //       .eq("estado", "solicitado");
-    
+
 //     if (error) throw error;
 
 //     // Filtrar en el cliente por clubId en el objeto equipos

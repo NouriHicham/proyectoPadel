@@ -42,6 +42,7 @@ import { ComboboxEquipos } from "@/components/combobox/Equipos";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import SolicitudesClub from "@/components/SolicitudesClub";
+import { ComboboxClubs } from "@/components/combobox/Clubs";
 // componentes de prueba
 function ClubInfo({ clubData }) {
   return (
@@ -103,7 +104,7 @@ function TeamsManagement({ teams, clubData }) {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-2xl mb-2 font-semibold">Equipos</h2>
         {/* search */}
-        <div className="flex items-center gap-2 min-w-[25rem]">
+        <div className="flex items-center gap-2 min-w-[32rem]">
           <div className="relative w-full">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -119,7 +120,7 @@ function TeamsManagement({ teams, clubData }) {
             />
           </div>
           <CreateTeamDialog />
-          <SolicitudesClub clubId={clubData?.id}/>
+          <SolicitudesClub clubId={clubData?.id} />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -246,29 +247,39 @@ function PlayersManagement({ clubData }) {
   // Filtros
   const [posicion, setPosicion] = useState("all"); // "" para 'todas'
   const [disponibilidad, setDisponibilidad] = useState("all");
+  const [equipoId, setEquipoId] = useState("all");
   const [search, setSearch] = useState("");
 
   // filtrado
   const filteredPlayers = players.filter((player) => {
     const searchLower = search.toLowerCase().trim();
 
-    const matchPosicion = posicion === "all" || player.posicion === posicion;
-    const matchDisponibilidad =
-      disponibilidad === "all" || player.disponibilidad === disponibilidad;
-    const matchSearch =
-      player?.nombre?.toLowerCase().includes(searchLower) ||
-      player?.apellido?.toLowerCase().includes(searchLower) ||
-      player?.email?.toLowerCase().includes(searchLower) ||
-      String(player?.telefono)?.toLowerCase().includes(searchLower) ||
-      String(player?.id)?.toLowerCase().includes(searchLower);
+    const matchEquipo =
+      equipoId === "all" || String(player?.equipos?.id) === equipoId;
 
-    // Si el campo de búsqueda está vacío, ignora el filtro de búsqueda
+    const matchPosicion =
+      posicion === "all" || player?.personas?.posicion === posicion;
+
+    const matchDisponibilidad =
+      disponibilidad === "all" ||
+      player?.personas?.disponibilidad === disponibilidad;
+
+    const matchSearch =
+      player?.personas?.nombre?.toLowerCase().includes(searchLower) ||
+      player?.personas?.apellido?.toLowerCase().includes(searchLower) ||
+      player?.personas?.email?.toLowerCase().includes(searchLower) ||
+      String(player?.personas?.telefono)?.toLowerCase().includes(searchLower) ||
+      String(player?.personas?.id)?.toLowerCase().includes(searchLower);
+
     return (
+      matchEquipo &&
       matchPosicion &&
       matchDisponibilidad &&
       (searchLower === "" || matchSearch)
     );
   });
+
+  // console.log("clubdata:", clubData);
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -282,6 +293,7 @@ function PlayersManagement({ clubData }) {
   const handleClearFilters = () => {
     setPosicion("all");
     setDisponibilidad("all");
+    setEquipoId("all");
     setSearch("");
     setCurrentPage(1);
   };
@@ -290,7 +302,7 @@ function PlayersManagement({ clubData }) {
     try {
       setLoading(true);
       const data = await getJugadoresClub(clubData?.id);
-      console.log(data);
+      console.log("jogadoresclub: ", data);
       setPlayers(data || []);
       setCurrentPage(1); // Reiniciar a la primera página al cambiar de club
     } catch (error) {
@@ -335,6 +347,28 @@ function PlayersManagement({ clubData }) {
         <div className="flex flex-col sm:flex-row gap-3 min-w-[18rem] w-full sm:w-auto">
           {/* <ComboboxClubs club={selectedClub} setClub={setSelectedClub} /> */}
           {/* Equipos */}
+          <div className="flex flex-col w-full sm:w-auto">
+            <label htmlFor="filtro-equipo" className="text-xs font-medium mb-1">
+              Equipos
+            </label>
+            <Select
+              id="filtro-equipo"
+              value={equipoId}
+              onValueChange={setEquipoId}
+            >
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectValue placeholder="Todos los equipos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los equipos</SelectItem>
+                {clubData?.equipos.map((equipo) => (
+                  <SelectItem key={equipo?.id} value={String(equipo?.id)}>
+                    {equipo?.nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Posición */}
           <div className="flex flex-col w-full sm:w-auto">
@@ -429,7 +463,7 @@ function PlayersManagement({ clubData }) {
                 <TableHead>User ID</TableHead>
                 <TableHead>Teléfono</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Club ID</TableHead>
+                <TableHead>Equipo ID</TableHead>
                 <TableHead>Posición</TableHead>
                 <TableHead>Disponibilidad</TableHead>
                 <TableHead>Acciones</TableHead>
@@ -438,26 +472,30 @@ function PlayersManagement({ clubData }) {
             <TableBody>
               {paginatedPlayers.map((player) => (
                 <TableRow key={player.id}>
-                  <TableCell>{player?.id}</TableCell>
-                  <TableCell>{player?.nombre}</TableCell>
-                  <TableCell>{player?.apellido}</TableCell>
+                  <TableCell>{player?.personas?.id}</TableCell>
+                  <TableCell>{player?.personas?.nombre}</TableCell>
+                  <TableCell>{player?.personas?.apellido}</TableCell>
                   <TableCell>
                     {player.avatar ? (
                       <img
-                        src={player.avatar}
-                        alt={`${player.nombre} ${player.apellido}`}
+                        src={player?.personas?.avatar}
+                        alt={`${player?.personas?.nombre} ${player?.personas?.apellido}`}
                         className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
                       <span>Sin avatar</span>
                     )}
                   </TableCell>
-                  <TableCell>{player?.user_id}</TableCell>
-                  <TableCell>{player?.telefono}</TableCell>
-                  <TableCell>{player?.email}</TableCell>
-                  <TableCell>{player?.club_id}</TableCell>
-                  <TableCell>{player?.posicion || "No asignada"}</TableCell>
-                  <TableCell>{player?.disponibilidad}</TableCell>
+                  <TableCell>{player?.personas?.user_id}</TableCell>
+                  <TableCell>{player?.personas?.telefono}</TableCell>
+                  <TableCell>{player?.personas?.email}</TableCell>
+                  <TableCell>{player?.equipo_id}</TableCell>
+                  <TableCell>
+                    {player?.personas?.posicion || "No asignada"}
+                  </TableCell>
+                  <TableCell>
+                    {player?.personas?.disponibilidad || "-"}
+                  </TableCell>
                   <TableCell>
                     <span
                       title="Desvincular jugador del club"
