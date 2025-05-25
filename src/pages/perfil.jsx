@@ -1,13 +1,21 @@
-import { Header } from "@/components/header"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { updatePersona } from "@/lib/database"
-import { Separator } from "@radix-ui/react-dropdown-menu"
-import { Trophy } from "lucide-react"
+import { Header } from "@/components/header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { updatePersona } from "@/lib/database";
+import { Separator } from "@radix-ui/react-dropdown-menu";
+import { Trophy } from "lucide-react";
 import { useState } from "react";
+// subir imágenes
+import { uploadImageToBucket } from "@/supabase/supabase";
 
 export default function Perfil() {
   const user = JSON.parse(localStorage.getItem("user")).persona[0];
@@ -19,14 +27,42 @@ export default function Perfil() {
     telefono: user.telefono || "",
     posicion: user.posicion || "",
     disponibilidad: user.disponibilidad || "",
+    foto: user.foto || "",
   });
+  const [fotoFile, setFotoFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
+  // Manejar cambio de archivo de foto
+  const handleFotoChange = (e) => {
+    const file = e.target.files[0];
+    setFotoFile(file);
+    if (file) {
+      // Mostrar preview local
+      setFormData((prev) => ({
+        ...prev,
+        foto: URL.createObjectURL(file),
+      }));
+    }
+  };
+
   const handleUpdate = async () => {
+    let fotoUrl = formData.foto;
+    if (fotoFile) {
+      setUploading(true);
+      // Subir la imagen al bucket "images"
+      const ext = fotoFile.name.split(".").pop();
+      const path = `avatars/${user.id}.${ext}`;
+      const url = await uploadImageToBucket(fotoFile, path);
+      if (url) {
+        fotoUrl = url;
+      }
+      setUploading(false);
+    }
     const datos = {
       nombre: formData.nombre,
       apellido: formData.apellido,
@@ -34,9 +70,11 @@ export default function Perfil() {
       telefono: formData.telefono,
       posicion: formData.posicion,
       disponibilidad: formData.disponibilidad,
+      foto: fotoUrl,
     };
 
     await updatePersona(user.id, datos);
+    // Opcional: recargar la página o actualizar localStorage
   };
 
   return (
@@ -53,6 +91,20 @@ export default function Perfil() {
                 <CardTitle>Información Personal</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Foto de perfil */}
+                <div className="space-y-2 flex flex-col items-center">
+                  <Label>Foto de perfil</Label>
+                  <img
+                    src={formData.foto || "/placeholder.svg?text=Foto"}
+                    alt="Foto de perfil"
+                    className="w-24 h-24 rounded-full object-cover border mb-2"
+                  />
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFotoChange}
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="nombre">Nombre</Label>
                   <Input
@@ -114,22 +166,31 @@ export default function Perfil() {
                   <Select
                     value={formData.disponibilidad}
                     onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, disponibilidad: value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        disponibilidad: value,
+                      }))
                     }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecciona tu disponibilidad" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Fines de semana">Fines de semana</SelectItem>
+                      <SelectItem value="Fines de semana">
+                        Fines de semana
+                      </SelectItem>
                       <SelectItem value="Tardes">Tardes</SelectItem>
                       <SelectItem value="Mañanas">Mañanas</SelectItem>
                       <SelectItem value="Flexible">Flexible</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <Button className="w-full" onClick={handleUpdate}>
-                  Guardar Cambios
+                <Button
+                  className="w-full"
+                  onClick={handleUpdate}
+                  disabled={uploading}
+                >
+                  {uploading ? "Guardando..." : "Guardar Cambios"}
                 </Button>
               </CardContent>
             </Card>
