@@ -12,9 +12,13 @@ import {
   PaginationPrevious,
   PaginationNext,
 } from "@/components/ui/pagination";
-import { getJugadoresClub, updatePersona } from "@/lib/database";
-import { useContext, useEffect, useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import {
+  getJugadoresClub,
+  getPartidosPorClub,
+  updatePersona,
+} from "@/lib/database";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -24,7 +28,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 // import { ComboboxClubs } from "@/components/combobox/Clubs";
-import { Calendar, FilterX, Search, UserMinus2 } from "lucide-react";
+import {
+  Calendar,
+  FilterX,
+  PlusCircle,
+  Search,
+  UserMinus2,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -37,8 +47,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PartidosList } from "@/components/PartidosList";
-import { mockData } from "@/lib/dataPartidos";
-import { ComboboxEquipos } from "@/components/combobox/Equipos";
+// import { mockData } from "@/lib/dataPartidos";
+// import { ComboboxEquipos } from "@/components/combobox/Equipos";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import SolicitudesClub from "@/components/SolicitudesClub";
@@ -146,9 +156,17 @@ function TeamsManagement({ teams, clubData }) {
 }
 function MatchesManagement({ matches }) {
   console.log("partidos", matches);
+
   return (
     <div className="">
-      <h2 className="text-2xl mb-2">Partidos</h2>
+      <div className="flex items-center justify-between my-3">
+        <h2 className="text-2xl mb-2">Partidos</h2>
+        <Button>
+          <span>Crear Partido</span>
+          <PlusCircle className="" size={30} />
+        </Button>
+      </div>
+
       <div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
@@ -159,10 +177,9 @@ function MatchesManagement({ matches }) {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {/* <div className="text-2xl font-bold">{mockData.length}</div> */}
-              {/* <p className="text-xs text-muted-foreground">
-                +2 desde la semana pasada
-              </p> */}
+              <div className="text-2xl font-bold">
+                {matches?.resumen?.total_partidos}
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -172,11 +189,8 @@ function MatchesManagement({ matches }) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {/* {mockData.filter((p) => p.estado === "programado").length} */}
+                {matches?.resumen?.partidos_programados}
               </div>
-              {/* <p className="text-xs text-muted-foreground">
-                +1 desde la semana pasada
-              </p> */}
             </CardContent>
           </Card>
           <Card>
@@ -186,9 +200,8 @@ function MatchesManagement({ matches }) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {/* {mockData.filter((p) => p.estado === "en juego").length} */}
+                {matches?.resumen?.partidos_enJuego}
               </div>
-              {/* <p className="text-xs text-muted-foreground">Ahora mismo</p> */}
             </CardContent>
           </Card>
           <Card>
@@ -198,11 +211,8 @@ function MatchesManagement({ matches }) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {/* {mockData.filter((p) => p.estado === "finalizado").length} */}
+                {matches?.resumen?.partidos_finalizados}
               </div>
-              {/* <p className="text-xs text-muted-foreground">
-                +3 desde el mes pasado
-              </p> */}
             </CardContent>
           </Card>
         </div>
@@ -217,26 +227,38 @@ function MatchesManagement({ matches }) {
               </TabsList>
             </div>
             <TabsContent value="todos" className="space-y-4">
-              <PartidosList partidos={mockData} />
+              {Array.isArray(matches?.partidos) && (
+                <PartidosList partidos={matches.partidos} />
+              )}
             </TabsContent>
             <TabsContent value="programados" className="space-y-4">
-              <PartidosList
-                partidos={mockData.filter((p) => p.estado === "programado")}
-              />
+              {Array.isArray(matches?.partidos) && (
+                <PartidosList
+                  partidos={matches.partidos.filter(
+                    (p) => p.estado === "programado"
+                  )}
+                />
+              )}
             </TabsContent>
             <TabsContent value="en-juego" className="space-y-4">
-              <PartidosList
-                partidos={mockData.filter((p) => p.estado === "en juego")}
-              />
+              {Array.isArray(matches?.partidos) && (
+                <PartidosList
+                  partidos={matches.partidos.filter(
+                    (p) => p.estado === "en juego"
+                  )}
+                />
+              )}
             </TabsContent>
             <TabsContent value="finalizados" className="space-y-4">
-              <PartidosList
-                partidos={mockData.filter((p) => p.estado === "finalizado")}
-              />
+              {Array.isArray(matches?.partidos) && (
+                <PartidosList
+                  partidos={matches.partidos.filter(
+                    (p) => p.estado === "finalizado"
+                  )}
+                />
+              )}
             </TabsContent>
           </Tabs>
-          {/* Filtro por equipo, y mostrar partidos agrupados en parejas/equipo */}
-          <ComboboxEquipos />
         </div>
       </div>
     </div>
@@ -563,10 +585,26 @@ export default function AdminPage() {
   const { id } = useParams();
   const { clubData, getClubData } = useClubData();
   const [activeTab, setActiveTab] = useState("club");
+  const [partidosData, setPartidosData] = useState([]);
 
   useEffect(() => {
     if (id) getClubData(id);
   }, [id]);
+
+  useEffect(() => {
+    const getPartidosClub = async () => {
+      try {
+        if (!id) return;
+        const data = await getPartidosPorClub(id);
+        setPartidosData(data);
+      } catch (error) {
+        console.error("Error fetching matches for club:", error);
+      }
+    };
+
+    getPartidosClub();
+  }, [id]);
+  console.log(partidosData);
 
   return (
     <div className="container mx-auto p-2 my-4 flex flex-col lg:flex-row">
@@ -590,7 +628,7 @@ export default function AdminPage() {
           )}
           {activeTab == "players" && <PlayersManagement clubData={clubData} />}
           {activeTab === "matches" && (
-            <MatchesManagement matches={clubData?.partidos || []} />
+            <MatchesManagement matches={partidosData || []} />
           )}
         </div>
       </div>
