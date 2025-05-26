@@ -15,7 +15,8 @@ import { Separator } from "@radix-ui/react-dropdown-menu";
 import { Trophy } from "lucide-react";
 import { useState } from "react";
 // subir imágenes
-import { uploadImageToBucket } from "@/supabase/supabase";
+import { uploadImageToBucket } from "@/lib/images";
+import { supabase } from "@/supabase/supabase";
 
 export default function Perfil() {
   const user = JSON.parse(localStorage.getItem("user")).persona[0];
@@ -52,11 +53,13 @@ export default function Perfil() {
 
   const handleUpdate = async () => {
     let fotoUrl = formData.foto;
-    if (fotoFile) {
+    if (fotoFile && fotoFile instanceof File && fotoFile.size > 0) {
       setUploading(true);
-      // Subir la imagen al bucket "images"
       const ext = fotoFile.name.split(".").pop();
       const path = `avatars/${user.id}.${ext}`;
+      console.log("Archivo:", fotoFile);
+      console.log("Tipo:", fotoFile?.type);
+      console.log("Tamaño:", fotoFile?.size);
       const url = await uploadImageToBucket(fotoFile, path);
       if (url) {
         fotoUrl = url;
@@ -74,7 +77,6 @@ export default function Perfil() {
     };
 
     await updatePersona(user.id, datos);
-    // Opcional: recargar la página o actualizar localStorage
   };
 
   return (
@@ -95,7 +97,12 @@ export default function Perfil() {
                 <div className="space-y-2 flex flex-col items-center">
                   <Label>Foto de perfil</Label>
                   <img
-                    src={formData.foto || "/placeholder.svg?text=Foto"}
+                    src={
+                      // Si la URL es temporal (blob:), úsala; si no, usa la pública guardada
+                      formData.foto?.startsWith("blob:")
+                        ? formData.foto
+                        : (formData.foto || user.foto || "/placeholder.svg?text=Foto")
+                    }
                     alt="Foto de perfil"
                     className="w-24 h-24 rounded-full object-cover border mb-2"
                   />
