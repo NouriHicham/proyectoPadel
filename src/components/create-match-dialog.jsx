@@ -61,7 +61,7 @@ const formSchema = z.object({
   equipoVisitante: z.string().min(1, "El equipo visitante es requerido."),
 });
 
-export function CreateMatchDialog({ admin = null, club_id = null }) {
+export function CreateMatchDialog({ admin = null, club_id = null, getPartidosClub }) {
   const [open, setOpen] = useState(false);
   // const savedInfo = JSON.parse(localStorage.getItem("personaGuardada"));
   const [savedInfo, setSavedInfo] = useState(() =>
@@ -179,6 +179,7 @@ export function CreateMatchDialog({ admin = null, club_id = null }) {
       const res = await insertarPartido(datos);
       console.log("res", res);
       if (res) {
+        await getPartidosClub()
         toast.success("¡Partido creado correctamente!");
         setOpen(false);
         form.reset();

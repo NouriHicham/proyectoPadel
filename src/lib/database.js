@@ -395,7 +395,7 @@ export async function insertarPartido(partido) {
       .insert([partido])
       .select()
       .single();
-    
+
     if (error) throw error;
 
     return data;
@@ -411,6 +411,7 @@ export async function insertarSede(sede) {
     const { data, error } = await supabase
       .from("sedes")
       .insert([sede])
+      .select()
       .single();
 
     if (error) throw error;
@@ -418,6 +419,22 @@ export async function insertarSede(sede) {
     return data;
   } catch (error) {
     console.error("Error al insertar sede:", error.message);
+    return null;
+  }
+}
+export async function insertarLiga(liga) {
+  try {
+    const { data, error } = await supabase
+      .from("ligas")
+      .insert([liga])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al insertar liga:", error.message);
     return null;
   }
 }
@@ -468,6 +485,40 @@ export async function updatePersona(id, datos) {
     return data;
   } catch (error) {
     console.error("Error al actualizar la persona:", error.message);
+    return null;
+  }
+}
+export async function updateLigas(id, datos) {
+  try {
+    const { data, error } = await supabase
+      .from("ligas")
+      .update(datos)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al actualizar la liga:", error.message);
+    return null;
+  }
+}
+export async function updateSedes(id, datos) {
+  try {
+    const { data, error } = await supabase
+      .from("sedes")
+      .update(datos)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al actualizar la sede:", error.message);
     return null;
   }
 }
@@ -639,6 +690,18 @@ export async function eliminarEquipo(equipoId) {
       .from("equipos")
       .delete()
       .eq("id", equipoId);
+
+    if (error) throw error;
+
+    return true;
+  } catch (error) {
+    console.error("Error al eliminar equipo:", error.message);
+    return false;
+  }
+}
+export async function eliminarLiga(liga_id) {
+  try {
+    const { error } = await supabase.from("ligas").delete().eq("id", liga_id);
 
     if (error) throw error;
 
