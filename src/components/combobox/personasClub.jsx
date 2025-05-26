@@ -26,7 +26,7 @@ export function ComboboxPersonas({ value, onChange }) {
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
-        console.log(clubData)
+        console.log(clubData);
         const data = await getJugadoresClub(clubData?.id);
         setPersonas(data || []);
       } catch (error) {
@@ -35,6 +35,8 @@ export function ComboboxPersonas({ value, onChange }) {
     };
     fetchPersonas();
   }, []);
+
+  console.log("personas club: ", personas);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -62,23 +64,23 @@ export function ComboboxPersonas({ value, onChange }) {
             <CommandGroup>
               {personas.map((persona) => (
                 <CommandItem
-                  key={persona.id}
-                  value={String(persona.id)}
+                  key={persona?.personas.id}
+                  value={String(persona?.personas.id)}
                   onSelect={(currentValue) => {
                     onChange(currentValue);
                     setOpen(false);
                   }}
                 >
                   <span className="font-medium">
-                    {persona.nombre + " " + persona.apellido}
+                    {persona?.personas.nombre + " " + persona?.personas.apellido}
                   </span>
                   <span className="ml-2 text-xs text-gray-500">
-                    {persona.posicion}
+                    {persona?.personas.posicion}
                   </span>
                   <Check
                     className={cn(
                       "ml-auto",
-                      String(value) === String(persona.id)
+                      String(value) === String(persona?.personas.id)
                         ? "opacity-100"
                         : "opacity-0"
                     )}

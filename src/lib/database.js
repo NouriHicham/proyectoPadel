@@ -32,6 +32,20 @@ export async function getEquipos(id, campos = "*") {
     return null;
   }
 }
+export async function getEquiposPorLiga(liga_id) {
+  try {
+    const { data, error } = await supabase
+      .from("equipos")
+      .select("*")
+      .eq("liga_id", liga_id);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error al obtener equipos:", error.message);
+    return null;
+  }
+}
 
 // contar los miembros de un equipo
 export async function getMiembrosEquipo(equipo_id) {
@@ -379,8 +393,9 @@ export async function insertarPartido(partido) {
     const { data, error } = await supabase
       .from("partidos")
       .insert([partido])
+      .select()
       .single();
-
+    
     if (error) throw error;
 
     return data;
@@ -1038,7 +1053,6 @@ export async function getPartidosPorClub(clubId) {
       .order("fecha", { ascending: false });
 
     if (errorPartidos) throw errorPartidos;
-
 
     // añadir datos de las personas de las pistas, de forma manual
 

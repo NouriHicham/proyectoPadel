@@ -52,6 +52,7 @@ import { PartidosList } from "@/components/PartidosList";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import SolicitudesClub from "@/components/SolicitudesClub";
+import { CreateMatchDialog } from "@/components/create-match-dialog";
 // componentes de prueba
 function ClubInfo({ clubData }) {
   return (
@@ -154,17 +155,18 @@ function TeamsManagement({ teams, clubData }) {
     </div>
   );
 }
-function MatchesManagement({ matches }) {
+function MatchesManagement({ matches, clubData}) {
   console.log("partidos", matches);
 
   return (
     <div className="">
       <div className="flex items-center justify-between my-3">
         <h2 className="text-2xl mb-2">Partidos</h2>
-        <Button>
+        {/* <Button>
           <span>Crear Partido</span>
           <PlusCircle className="" size={30} />
-        </Button>
+        </Button> */}
+        <CreateMatchDialog admin={true} club_id={clubData?.id}/>
       </div>
 
       <div>
@@ -628,7 +630,7 @@ export default function AdminPage() {
           )}
           {activeTab == "players" && <PlayersManagement clubData={clubData} />}
           {activeTab === "matches" && (
-            <MatchesManagement matches={partidosData || []} />
+            <MatchesManagement matches={partidosData || []} clubData={clubData} />
           )}
         </div>
       </div>
