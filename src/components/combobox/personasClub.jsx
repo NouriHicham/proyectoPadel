@@ -28,7 +28,13 @@ export function ComboboxPersonas({ value, onChange }) {
       try {
         console.log(clubData);
         const data = await getJugadoresClub(clubData?.id);
-        setPersonas(data || []);
+
+        // puede q tengamos personas duplicadas, que pertenecen a mas de un equipo, por eso se filtra
+        const uniquePersonas = Array.from(
+          new Map(data.map((item) => [item.personas.id, item])).values()
+        );
+
+        setPersonas(uniquePersonas || []);
       } catch (error) {
         console.error("Error fetching ligas:", error);
       }
@@ -50,8 +56,13 @@ export function ComboboxPersonas({ value, onChange }) {
           onClick={() => setOpen((prev) => !prev)}
         >
           {value
-            ? personas.find((persona) => String(persona.id) === String(value))
-                ?.nombre
+            ? personas.find(
+                (persona) => String(persona?.personas.id) === String(value)
+              )?.personas?.nombre +
+              " " +
+              personas.find(
+                (persona) => String(persona?.personas.id) === String(value)
+              )?.personas?.apellido
             : "Selecciona una persona de tu club..."}
           <ChevronsUpDown className="ml-2 opacity-50 h-4 w-4" />
         </Button>
@@ -72,7 +83,9 @@ export function ComboboxPersonas({ value, onChange }) {
                   }}
                 >
                   <span className="font-medium">
-                    {persona?.personas.nombre + " " + persona?.personas.apellido}
+                    {persona?.personas.nombre +
+                      " " +
+                      persona?.personas.apellido}
                   </span>
                   <span className="ml-2 text-xs text-gray-500">
                     {persona?.personas.posicion}

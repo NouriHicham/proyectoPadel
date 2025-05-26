@@ -192,7 +192,7 @@ function MatchesManagement({ clubData }) {
   return (
     <div className="">
       <div className="flex items-center justify-between my-3">
-        <h2 className="text-2xl mb-2">Partidos</h2>
+        <h2 className="text-2xl mb-2 font-bold">Partidos</h2>
         {/* <Button>
           <span>Crear Partido</span>
           <PlusCircle className="" size={30} />
@@ -704,7 +704,7 @@ function SedesManegement() {
     <div className="p-4">
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
         <h2 className="text-2xl font-bold">Gestión de Sedes</h2>
-        <CreateSedeDialog />
+        <CreateSedeDialog fetchSedes={fetchSedes}/>
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">

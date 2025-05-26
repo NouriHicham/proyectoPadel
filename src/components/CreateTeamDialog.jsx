@@ -142,6 +142,7 @@ export default function CreateTeamDialog({
   }, [isEditing, teamData, open]);
 
   console.log(clubData);
+  console.log("teamdata: ", teamData);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

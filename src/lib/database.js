@@ -707,7 +707,19 @@ export async function eliminarLiga(liga_id) {
 
     return true;
   } catch (error) {
-    console.error("Error al eliminar equipo:", error.message);
+    console.error("Error al eliminar la liga:", error.message);
+    return false;
+  }
+}
+export async function eliminarSede(sede_id) {
+  try {
+    const { error } = await supabase.from("sedes").delete().eq("id", sede_id);
+
+    if (error) throw error;
+
+    return true;
+  } catch (error) {
+    console.error("Error al eliminar la sede:", error.message);
     return false;
   }
 }
@@ -1184,6 +1196,33 @@ export async function getPartidosPorClub(clubId) {
     };
   } catch (error) {
     console.error(error);
+    return null;
+  }
+}
+
+export async function insertarPistas(partido_id) {
+  try {
+    const inserts = [1, 2, 3].map((num) => ({
+      partido_id,
+      pista_numero: num,
+      pareja_1_jugador_1_id: null,
+      pareja_1_jugador_2_id: null,
+      pareja_2_jugador_1_id: null,
+      pareja_2_jugador_2_id: null,
+      resultados: null,
+      duracion: null,
+    }));
+
+    const { data, error } = await supabase
+      .from("partidos_pistas")
+      .insert(inserts)
+      .select();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al insertar pistas:", error.message);
     return null;
   }
 }

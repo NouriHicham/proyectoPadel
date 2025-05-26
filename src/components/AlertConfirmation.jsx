@@ -11,7 +11,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "./ui/button";
 import { Trash2 } from "lucide-react";
-import { eliminarClub, eliminarEquipo, eliminarLiga } from "@/lib/database";
+import {
+  eliminarClub,
+  eliminarEquipo,
+  eliminarLiga,
+  eliminarSede,
+} from "@/lib/database";
 import toast from "react-hot-toast";
 import { useClubData } from "@/hooks/useEquipos";
 import { useNavigate } from "react-router-dom";
@@ -42,8 +47,13 @@ export default function AlertConfirmation({ id, type }) {
         const success = await eliminarLiga(id);
 
         if (success) {
-          functionSubmit();
           toast.success("Liga eliminada correctamente.");
+        }
+      } else if (type === "sede") {
+        const success = await eliminarSede(id);
+
+        if (success) {
+          toast.success("Sede eliminada correctamente.");
         }
       }
     } catch (error) {
@@ -78,6 +88,9 @@ export default function AlertConfirmation({ id, type }) {
 
             {type === "liga" &&
               "¿Estás seguro de eliminar esta liga? Esta acción no se puede deshacer."}
+
+            {type === "sede" &&
+              "¿Estás seguro de eliminar esta sede? Esta acción no se puede deshacer."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

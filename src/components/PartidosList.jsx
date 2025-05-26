@@ -75,6 +75,7 @@ function EquipoPartidos({ equipoNombre, partidos }) {
 }
 
 function PartidoCard({ partido }) {
+  console.log("Partido:",partido)
   const getEstadoBadge = (estado) => {
     switch (estado) {
       case "programado":

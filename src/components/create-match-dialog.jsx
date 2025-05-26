@@ -49,6 +49,7 @@ import {
   insertarPartido,
   getLigas,
   getEquiposPorLiga,
+  insertarPistas,
 } from "@/lib/database";
 import toast from "react-hot-toast";
 
@@ -61,7 +62,11 @@ const formSchema = z.object({
   equipoVisitante: z.string().min(1, "El equipo visitante es requerido."),
 });
 
-export function CreateMatchDialog({ admin = null, club_id = null, getPartidosClub }) {
+export function CreateMatchDialog({
+  admin = null,
+  club_id = null,
+  getPartidosClub,
+}) {
   const [open, setOpen] = useState(false);
   // const savedInfo = JSON.parse(localStorage.getItem("personaGuardada"));
   const [savedInfo, setSavedInfo] = useState(() =>
@@ -179,7 +184,14 @@ export function CreateMatchDialog({ admin = null, club_id = null, getPartidosClu
       const res = await insertarPartido(datos);
       console.log("res", res);
       if (res) {
-        await getPartidosClub()
+        // crear 3 pistas para el partido
+        const dataPistas = await insertarPistas(res?.id);
+
+        if (!dataPistas) {
+          toast.error("No se pudieron crear las pistas del partido.");
+        }
+
+        await getPartidosClub();
         toast.success("¡Partido creado correctamente!");
         setOpen(false);
         form.reset();
