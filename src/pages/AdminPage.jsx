@@ -14,7 +14,9 @@ import {
 } from "@/components/ui/pagination";
 import {
   getJugadoresClub,
+  getLigas,
   getPartidosPorClub,
+  getSedes,
   updatePersona,
 } from "@/lib/database";
 import { useEffect, useState } from "react";
@@ -53,6 +55,18 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import SolicitudesClub from "@/components/SolicitudesClub";
 import { CreateMatchDialog } from "@/components/create-match-dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import CreateLigaDialog from "@/components/CreateLigaDialog";
+import { CreateSedeDialog } from "@/components/create-sede-dialog";
 // componentes de prueba
 function ClubInfo({ clubData }) {
   return (
@@ -155,8 +169,25 @@ function TeamsManagement({ teams, clubData }) {
     </div>
   );
 }
-function MatchesManagement({ matches, clubData}) {
-  console.log("partidos", matches);
+function MatchesManagement({ clubData }) {
+  // console.log("partidos", matches);
+
+  const [matches, setMatches] = useState([]);
+
+  const getPartidosClub = async () => {
+    try {
+      const id = clubData?.id;
+      if (!id) return;
+      const data = await getPartidosPorClub(id);
+      setMatches(data);
+    } catch (error) {
+      console.error("Error fetching matches for club:", error);
+    }
+  };
+
+  useEffect(() => {
+    getPartidosClub();
+  }, []);
 
   return (
     <div className="">
@@ -166,7 +197,11 @@ function MatchesManagement({ matches, clubData}) {
           <span>Crear Partido</span>
           <PlusCircle className="" size={30} />
         </Button> */}
-        <CreateMatchDialog admin={true} club_id={clubData?.id}/>
+        <CreateMatchDialog
+          admin={true}
+          club_id={clubData?.id}
+          getPartidosClub={getPartidosClub}
+        />
       </div>
 
       <div>
@@ -583,30 +618,155 @@ function PlayersManagement({ clubData }) {
   );
 }
 
+function LigasManagement() {
+  const [ligas, setLigas] = useState([]);
+
+  const fetchLigas = async () => {
+    try {
+      const ligasData = await getLigas();
+      setLigas(ligasData || []);
+    } catch (error) {
+      console.error("Error fetching ligas: ", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLigas();
+  }, []);
+
+  return (
+    <div className="p-4">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
+        <h2 className="text-2xl font-bold">Gestión de Ligas</h2>
+        {/* Modal para Crear/Editar */}
+        <CreateLigaDialog fetchLigas={fetchLigas} />
+      </div>
+
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        {ligas.map((liga) => (
+          <div
+            key={liga.id}
+            className="bg-white rounded-lg shadow p-5 flex flex-col justify-between min-h-[180px] border hover:shadow-lg transition"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              {liga.foto ? (
+                <img
+                  src={liga.foto}
+                  alt={liga.nombre}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-lg font-bold">
+                  {liga.nombre[0]}
+                </div>
+              )}
+              <div>
+                <div className="font-semibold text-lg">{liga.nombre}</div>
+                <div className="text-sm text-gray-500 capitalize">
+                  {liga.tipo}
+                </div>
+              </div>
+            </div>
+            <p className="text-gray-700 flex-1">{liga.descripcion}</p>
+            <div className="flex gap-2 mt-4">
+              {/* Editar */}
+              <CreateLigaDialog
+                isEditing={true}
+                editingLiga={liga}
+                fetchLigas={fetchLigas}
+              />
+              {/* eliminar */}
+              <AlertConfirmation id={liga?.id} type={"liga"} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function SedesManegement() {
+  const [sedes, setSedes] = useState([]);
+
+  const fetchSedes = async () => {
+    try {
+      const sedesData = await getSedes();
+      setSedes(sedesData || []);
+    } catch (error) {
+      console.error("Error fetching sedes: ", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSedes();
+  }, []);
+
+  return (
+    <div className="p-4">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
+        <h2 className="text-2xl font-bold">Gestión de Sedes</h2>
+        <CreateSedeDialog />
+      </div>
+
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        {sedes.map((sede) => (
+          <div
+            key={sede.id}
+            className="bg-white rounded-lg shadow p-5 flex flex-col justify-between min-h-[180px] border hover:shadow-lg transition"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center text-lg font-bold">
+                {sede.nombre[0]}
+              </div>
+              <div>
+                <div className="font-semibold text-lg">{sede.nombre}</div>
+                <div className="text-sm text-gray-500 capitalize">
+                  {sede.tipo}
+                </div>
+              </div>
+            </div>
+            <p className="text-gray-700 mb-1">{sede.ubicacion}</p>
+            <p className="text-gray-500 text-sm">Pistas: {sede.numpistas}</p>
+            <div className="flex gap-2 mt-4">
+              {/* Editar */}
+              <CreateSedeDialog
+                isEditing={true}
+                sedeEditing={sede}
+                fetchSedes={fetchSedes}
+              />
+              {/* Eliminar */}
+              <AlertConfirmation id={sede?.id} type={"sede"} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { id } = useParams();
   const { clubData, getClubData } = useClubData();
   const [activeTab, setActiveTab] = useState("club");
-  const [partidosData, setPartidosData] = useState([]);
+  // const [partidosData, setPartidosData] = useState([]);
 
   useEffect(() => {
     if (id) getClubData(id);
   }, [id]);
 
-  useEffect(() => {
-    const getPartidosClub = async () => {
-      try {
-        if (!id) return;
-        const data = await getPartidosPorClub(id);
-        setPartidosData(data);
-      } catch (error) {
-        console.error("Error fetching matches for club:", error);
-      }
-    };
+  // useEffect(() => {
+  //   const getPartidosClub = async () => {
+  //     try {
+  //       if (!id) return;
+  //       const data = await getPartidosPorClub(id);
+  //       setPartidosData(data);
+  //     } catch (error) {
+  //       console.error("Error fetching matches for club:", error);
+  //     }
+  //   };
 
-    getPartidosClub();
-  }, [id]);
-  console.log(partidosData);
+  //   getPartidosClub();
+  // }, [id]);
+  // console.log(partidosData);
 
   return (
     <div className="container mx-auto p-2 my-4 flex flex-col lg:flex-row">
@@ -630,8 +790,13 @@ export default function AdminPage() {
           )}
           {activeTab == "players" && <PlayersManagement clubData={clubData} />}
           {activeTab === "matches" && (
-            <MatchesManagement matches={partidosData || []} clubData={clubData} />
+            <MatchesManagement
+              // matches={partidosData || []}
+              clubData={clubData}
+            />
           )}
+          {activeTab === "ligas" && <LigasManagement />}
+          {activeTab === "sedes" && <SedesManegement />}
         </div>
       </div>
     </div>

@@ -7,6 +7,7 @@ import {
   User,
   Menu as MenuIcon,
   X as CloseIcon,
+  MapIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -90,6 +91,36 @@ export default function AdminSidebar({ clubData, activeTab, setActiveTab }) {
         >
           <Calendar className="h-5 w-5" />
           <span>Partidos</span>
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab("ligas");
+            setOpen(false);
+          }}
+          className={cn(
+            "flex items-center px-4 py-2 rounded-md space-x-2 transition-colors cursor-pointer w-full",
+            activeTab === "ligas"
+              ? "bg-primary text-primary-foreground"
+              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          )}
+        >
+          <Trophy className="h-5 w-5" />
+          <span>Ligas</span>
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab("sedes");
+            setOpen(false);
+          }}
+          className={cn(
+            "flex items-center px-4 py-2 rounded-md space-x-2 transition-colors cursor-pointer w-full",
+            activeTab === "sedes"
+              ? "bg-primary text-primary-foreground"
+              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          )}
+        >
+          <MapIcon className="h-5 w-5" />
+          <span>Sedes</span>
         </button>
       </nav>
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">

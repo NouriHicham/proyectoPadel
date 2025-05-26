@@ -1,5 +1,10 @@
 import { useAuth } from "@/context/AuthContext";
-import { getClub, getClubs, getJugadoresEquipo } from "@/lib/database";
+import {
+  getClub,
+  getClubs,
+  getJugadoresEquipo,
+  getLigas,
+} from "@/lib/database";
 
 export function useClubData() {
   const {
@@ -9,6 +14,7 @@ export function useClubData() {
     user,
     availablePlayers,
     setAvailablePlayers,
+    // setLigas,
   } = useAuth();
 
   const getClubData = async (id) => {
@@ -36,14 +42,23 @@ export function useClubData() {
   // equipos
   const getAvailablePlayers = async (teamData) => {
     try {
-      console.log("clubboff: ", teamData);
+      console.log("teamdata", teamData);
       const data = await getJugadoresEquipo(teamData?.id);
-      console.log("databoff: ", data);
+      console.log("data: ", data);
       setAvailablePlayers(data || []);
     } catch (error) {
       console.error(("Error fetching available players:", error));
     }
   };
+
+  // const fetchLigas = async () => {
+  //   try {
+  //     const ligasData = await getLigas();
+  //     setLigas(ligasData || []);
+  //   } catch (error) {
+  //     console.error("Error fetching ligas: ", error);
+  //   }
+  // };
 
   return {
     clubData,

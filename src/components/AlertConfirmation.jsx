@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "./ui/button";
 import { Trash2 } from "lucide-react";
-import { eliminarClub, eliminarEquipo } from "@/lib/database";
+import { eliminarClub, eliminarEquipo, eliminarLiga } from "@/lib/database";
 import toast from "react-hot-toast";
 import { useClubData } from "@/hooks/useEquipos";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +37,13 @@ export default function AlertConfirmation({ id, type }) {
         if (success) {
           toast.success("Club eliminado correctamente.");
           navigate("/");
+        }
+      } else if (type === "liga") {
+        const success = await eliminarLiga(id);
+
+        if (success) {
+          functionSubmit();
+          toast.success("Liga eliminada correctamente.");
         }
       }
     } catch (error) {
@@ -68,6 +75,9 @@ export default function AlertConfirmation({ id, type }) {
 
             {type === "jugadorEquipo" &&
               "¿Estás seguro de que deseas desvincular este jugador de este equipo? Esta acción eliminará al jugador de este equipo."}
+
+            {type === "liga" &&
+              "¿Estás seguro de eliminar esta liga? Esta acción no se puede deshacer."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
