@@ -32,6 +32,20 @@ export async function getEquipos(id, campos = "*") {
     return null;
   }
 }
+export async function getEquiposPorLiga(liga_id) {
+  try {
+    const { data, error } = await supabase
+      .from("equipos")
+      .select("*")
+      .eq("liga_id", liga_id);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error al obtener equipos:", error.message);
+    return null;
+  }
+}
 
 // contar los miembros de un equipo
 export async function getMiembrosEquipo(equipo_id) {
@@ -379,8 +393,9 @@ export async function insertarPartido(partido) {
     const { data, error } = await supabase
       .from("partidos")
       .insert([partido])
+      .select()
       .single();
-
+    
     if (error) throw error;
 
     return data;
@@ -828,15 +843,40 @@ export async function getLigas() {
   }
 }
 
+// export async function getJugadoresClub(club_id) {
+//   try {
+//     const { data, error } = await supabase
+//       .from("personas")
+//       .select("*")
+//       .eq("club_id", club_id);
+
+//     if (error) throw error;
+//     return data;
+//   } catch (error) {
+//     console.error(error);
+//     return null;
+//   }
+// }
 export async function getJugadoresClub(club_id) {
   try {
     const { data, error } = await supabase
-      .from("personas")
-      .select("*")
-      .eq("club_id", club_id);
+      .from("equipos_personas")
+      .select(
+        `
+        *,
+        equipos(*),
+        personas(*)
+      `
+      )
+      .eq("estado", "aceptado")
+      .eq("equipos.club_id", club_id);
 
     if (error) throw error;
-    return data;
+
+    const filtered = (data ?? []).filter(
+      (solicitud) => solicitud.equipos && solicitud.equipos.club_id === club_id
+    );
+    return filtered;
   } catch (error) {
     console.error(error);
     return null;
@@ -953,7 +993,7 @@ export async function getSolicitudesClub(clubId) {
 //         `
 //       )
 //       .eq("estado", "solicitado");
-    
+
 //     if (error) throw error;
 
 //     // Filtrar en el cliente por clubId en el objeto equipos
@@ -973,6 +1013,112 @@ export async function getResultados(id) {
 
     if (error) throw error;
     return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function getPartidosPorClub(clubId) {
+  try {
+    // 1. Obtener equipos del club
+    const { data: equipos, error: errorEquipos } = await supabase
+      .from("equipos")
+      .select("id")
+      .eq("club_id", clubId);
+
+    if (errorEquipos) throw errorEquipos;
+    const equiposDelClub = equipos.map((e) => e.id);
+
+    // 2. Obtener partidos relacionados con el club (equipo1 o equipo2)
+    const { data: partidos, error: errorPartidos } = await supabase
+      .from("partidos")
+      .select(
+        `
+        id,
+        fecha,
+        estado,
+        liga:ligas(*),
+        sede:sedes(*),
+        equipo1:equipos!partidos_equipo1_id_fkey(*),
+        equipo2:equipos!partidos_equipo2_id_fkey(*),
+        partidos_pistas(*)
+      `
+      )
+      .or(
+        `equipo1_id.in.(${equiposDelClub.join(
+          ","
+        )}),equipo2_id.in.(${equiposDelClub.join(",")})`
+      )
+      .order("fecha", { ascending: false });
+
+    if (errorPartidos) throw errorPartidos;
+
+    // añadir datos de las personas de las pistas, de forma manual
+
+    // 3. Recopilar todos los IDs de personas de las pistas
+    const personasIds = [];
+    partidos.forEach((partido) => {
+      partido.partidos_pistas.forEach((pista) => {
+        [
+          pista.pareja_1_jugador_1_id,
+          pista.pareja_1_jugador_2_id,
+          pista.pareja_2_jugador_1_id,
+          pista.pareja_2_jugador_2_id,
+        ].forEach((id) => {
+          if (id && !personasIds.includes(id)) personasIds.push(id);
+        });
+      });
+    });
+
+    // 4. Obtener los datos de las personas
+    let personasMap = {};
+    if (personasIds.length) {
+      const { data: personas, error: errorPersonas } = await supabase
+        .from("personas")
+        .select("*")
+        .in("id", personasIds);
+
+      if (errorPersonas) throw errorPersonas;
+      personasMap = Object.fromEntries(personas.map((p) => [p.id, p]));
+    }
+
+    // 5. Asignar los datos de persona a cada posición de la pista
+    partidos.forEach((partido) => {
+      partido.partidos_pistas.forEach((pista) => {
+        pista.pareja_1_jugador_1 =
+          personasMap[pista.pareja_1_jugador_1_id] || null;
+        pista.pareja_1_jugador_2 =
+          personasMap[pista.pareja_1_jugador_2_id] || null;
+        pista.pareja_2_jugador_1 =
+          personasMap[pista.pareja_2_jugador_1_id] || null;
+        pista.pareja_2_jugador_2 =
+          personasMap[pista.pareja_2_jugador_2_id] || null;
+      });
+    });
+
+    // 6. Calcular el resumen
+    const total = partidos.length;
+    const finalizados = partidos.filter(
+      (p) => p.estado === "finalizado"
+    ).length;
+    const programados = partidos.filter(
+      (p) => p.estado === "programado"
+    ).length;
+    const enJuego = partidos.filter((p) => p.estado === "en juego").length;
+
+    const resumen = {
+      total_partidos: total,
+      partidos_finalizados: finalizados,
+      partidos_programados: programados,
+      partidos_enJuego: enJuego,
+    };
+
+    // 7. Devolver ambos resultados juntos
+    return {
+      resumen,
+      partidos,
+    };
   } catch (error) {
     console.error(error);
     return null;

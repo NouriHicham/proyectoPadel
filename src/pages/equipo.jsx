@@ -172,7 +172,7 @@ export default function EquipoPage() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto">
+      <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto p-2">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-3xl font-bold">Equipo</h1>
           <div className="flex items-center gap-4 w-full sm:w-auto flex-wrap">

@@ -21,7 +21,7 @@ export default function SolicitudesClub({ clubId }) {
     setLoading(true);
     try {
       const data = await getSolicitudesClub(clubId);
-      setSolicitudes(data);
+      setSolicitudes(data || []);
     } catch (error) {
       console.error(error);
     } finally {
@@ -68,11 +68,9 @@ export default function SolicitudesClub({ clubId }) {
       <DialogTrigger asChild>
         <Button className="relative">
           <span>Solicitudes</span>
-          {solicitudes.length > 0 && (
-            <span className="absolute -top-1 -right-1 flex items-center justify-center size-5 rounded-full bg-red-600 text-xs text-white">
-              {solicitudes.length}
-            </span>
-          )}
+          <span className="absolute -top-1 -right-1 flex items-center justify-center size-5 rounded-full bg-red-600 text-xs text-white">
+            {solicitudes.length}
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md w-full">

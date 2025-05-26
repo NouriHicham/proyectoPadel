@@ -12,7 +12,11 @@ import {
   PaginationPrevious,
   PaginationNext,
 } from "@/components/ui/pagination";
-import { getJugadoresClub, updatePersona } from "@/lib/database";
+import {
+  getJugadoresClub,
+  getPartidosPorClub,
+  updatePersona,
+} from "@/lib/database";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -24,7 +28,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 // import { ComboboxClubs } from "@/components/combobox/Clubs";
-import { Calendar, FilterX, Search, UserMinus2 } from "lucide-react";
+import {
+  Calendar,
+  FilterX,
+  PlusCircle,
+  Search,
+  UserMinus2,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -37,11 +47,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PartidosList } from "@/components/PartidosList";
-import { mockData } from "@/lib/dataPartidos";
-import { ComboboxEquipos } from "@/components/combobox/Equipos";
+// import { mockData } from "@/lib/dataPartidos";
+// import { ComboboxEquipos } from "@/components/combobox/Equipos";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import SolicitudesClub from "@/components/SolicitudesClub";
+import { CreateMatchDialog } from "@/components/create-match-dialog";
 // componentes de prueba
 function ClubInfo({ clubData }) {
   return (
@@ -100,11 +111,15 @@ function TeamsManagement({ teams, clubData }) {
   });
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-2xl mb-2 font-semibold">Equipos</h2>
-        {/* search */}
-        <div className="flex items-center gap-2 min-w-[25rem]">
-          <div className="relative w-full">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-10">
+        {/* Título y añadir */}
+        <div className="flex items-center gap-4 justify-between">
+          <h2 className="text-2xl font-semibold">Equipos</h2>
+          <CreateTeamDialog />
+        </div>
+        {/* Búsqueda y solicitudes */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto mt-5 md:mt-0">
+          <div className="relative w-full sm:w-64">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               size={16}
@@ -118,10 +133,10 @@ function TeamsManagement({ teams, clubData }) {
               aria-label="Buscar"
             />
           </div>
-          <CreateTeamDialog />
-          <SolicitudesClub clubId={clubData?.id}/>
+          <SolicitudesClub clubId={clubData?.id} />
         </div>
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {filteredTeams.length === 0 ? (
           search.trim().length > 0 ? (
@@ -140,11 +155,20 @@ function TeamsManagement({ teams, clubData }) {
     </div>
   );
 }
-function MatchesManagement({ matches }) {
+function MatchesManagement({ matches, clubData}) {
   console.log("partidos", matches);
+
   return (
-    <div>
-      <h2 className="text-2xl mb-2">Partidos</h2>
+    <div className="">
+      <div className="flex items-center justify-between my-3">
+        <h2 className="text-2xl mb-2">Partidos</h2>
+        {/* <Button>
+          <span>Crear Partido</span>
+          <PlusCircle className="" size={30} />
+        </Button> */}
+        <CreateMatchDialog admin={true} club_id={clubData?.id}/>
+      </div>
+
       <div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
@@ -155,10 +179,9 @@ function MatchesManagement({ matches }) {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {/* <div className="text-2xl font-bold">{mockData.length}</div> */}
-              <p className="text-xs text-muted-foreground">
-                +2 desde la semana pasada
-              </p>
+              <div className="text-2xl font-bold">
+                {matches?.resumen?.total_partidos}
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -168,11 +191,8 @@ function MatchesManagement({ matches }) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {/* {mockData.filter((p) => p.estado === "programado").length} */}
+                {matches?.resumen?.partidos_programados}
               </div>
-              <p className="text-xs text-muted-foreground">
-                +1 desde la semana pasada
-              </p>
             </CardContent>
           </Card>
           <Card>
@@ -182,9 +202,8 @@ function MatchesManagement({ matches }) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {/* {mockData.filter((p) => p.estado === "en juego").length} */}
+                {matches?.resumen?.partidos_enJuego}
               </div>
-              <p className="text-xs text-muted-foreground">Ahora mismo</p>
             </CardContent>
           </Card>
           <Card>
@@ -194,11 +213,8 @@ function MatchesManagement({ matches }) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {/* {mockData.filter((p) => p.estado === "finalizado").length} */}
+                {matches?.resumen?.partidos_finalizados}
               </div>
-              <p className="text-xs text-muted-foreground">
-                +3 desde el mes pasado
-              </p>
             </CardContent>
           </Card>
         </div>
@@ -213,26 +229,38 @@ function MatchesManagement({ matches }) {
               </TabsList>
             </div>
             <TabsContent value="todos" className="space-y-4">
-              <PartidosList partidos={mockData} />
+              {Array.isArray(matches?.partidos) && (
+                <PartidosList partidos={matches.partidos} />
+              )}
             </TabsContent>
             <TabsContent value="programados" className="space-y-4">
-              <PartidosList
-                partidos={mockData.filter((p) => p.estado === "programado")}
-              />
+              {Array.isArray(matches?.partidos) && (
+                <PartidosList
+                  partidos={matches.partidos.filter(
+                    (p) => p.estado === "programado"
+                  )}
+                />
+              )}
             </TabsContent>
             <TabsContent value="en-juego" className="space-y-4">
-              <PartidosList
-                partidos={mockData.filter((p) => p.estado === "en juego")}
-              />
+              {Array.isArray(matches?.partidos) && (
+                <PartidosList
+                  partidos={matches.partidos.filter(
+                    (p) => p.estado === "en juego"
+                  )}
+                />
+              )}
             </TabsContent>
             <TabsContent value="finalizados" className="space-y-4">
-              <PartidosList
-                partidos={mockData.filter((p) => p.estado === "finalizado")}
-              />
+              {Array.isArray(matches?.partidos) && (
+                <PartidosList
+                  partidos={matches.partidos.filter(
+                    (p) => p.estado === "finalizado"
+                  )}
+                />
+              )}
             </TabsContent>
           </Tabs>
-          {/* Filtro por equipo, y mostrar partidos agrupados en parejas/equipo */}
-          <ComboboxEquipos />
         </div>
       </div>
     </div>
@@ -246,29 +274,39 @@ function PlayersManagement({ clubData }) {
   // Filtros
   const [posicion, setPosicion] = useState("all"); // "" para 'todas'
   const [disponibilidad, setDisponibilidad] = useState("all");
+  const [equipoId, setEquipoId] = useState("all");
   const [search, setSearch] = useState("");
 
   // filtrado
   const filteredPlayers = players.filter((player) => {
     const searchLower = search.toLowerCase().trim();
 
-    const matchPosicion = posicion === "all" || player.posicion === posicion;
-    const matchDisponibilidad =
-      disponibilidad === "all" || player.disponibilidad === disponibilidad;
-    const matchSearch =
-      player?.nombre?.toLowerCase().includes(searchLower) ||
-      player?.apellido?.toLowerCase().includes(searchLower) ||
-      player?.email?.toLowerCase().includes(searchLower) ||
-      String(player?.telefono)?.toLowerCase().includes(searchLower) ||
-      String(player?.id)?.toLowerCase().includes(searchLower);
+    const matchEquipo =
+      equipoId === "all" || String(player?.equipos?.id) === equipoId;
 
-    // Si el campo de búsqueda está vacío, ignora el filtro de búsqueda
+    const matchPosicion =
+      posicion === "all" || player?.personas?.posicion === posicion;
+
+    const matchDisponibilidad =
+      disponibilidad === "all" ||
+      player?.personas?.disponibilidad === disponibilidad;
+
+    const matchSearch =
+      player?.personas?.nombre?.toLowerCase().includes(searchLower) ||
+      player?.personas?.apellido?.toLowerCase().includes(searchLower) ||
+      player?.personas?.email?.toLowerCase().includes(searchLower) ||
+      String(player?.personas?.telefono)?.toLowerCase().includes(searchLower) ||
+      String(player?.personas?.id)?.toLowerCase().includes(searchLower);
+
     return (
+      matchEquipo &&
       matchPosicion &&
       matchDisponibilidad &&
       (searchLower === "" || matchSearch)
     );
   });
+
+  // console.log("clubdata:", clubData);
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -282,6 +320,7 @@ function PlayersManagement({ clubData }) {
   const handleClearFilters = () => {
     setPosicion("all");
     setDisponibilidad("all");
+    setEquipoId("all");
     setSearch("");
     setCurrentPage(1);
   };
@@ -290,7 +329,7 @@ function PlayersManagement({ clubData }) {
     try {
       setLoading(true);
       const data = await getJugadoresClub(clubData?.id);
-      console.log(data);
+      console.log("jogadoresclub: ", data);
       setPlayers(data || []);
       setCurrentPage(1); // Reiniciar a la primera página al cambiar de club
     } catch (error) {
@@ -335,6 +374,28 @@ function PlayersManagement({ clubData }) {
         <div className="flex flex-col sm:flex-row gap-3 min-w-[18rem] w-full sm:w-auto">
           {/* <ComboboxClubs club={selectedClub} setClub={setSelectedClub} /> */}
           {/* Equipos */}
+          <div className="flex flex-col w-full sm:w-auto">
+            <label htmlFor="filtro-equipo" className="text-xs font-medium mb-1">
+              Equipos
+            </label>
+            <Select
+              id="filtro-equipo"
+              value={equipoId}
+              onValueChange={setEquipoId}
+            >
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectValue placeholder="Todos los equipos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los equipos</SelectItem>
+                {clubData?.equipos.map((equipo) => (
+                  <SelectItem key={equipo?.id} value={String(equipo?.id)}>
+                    {equipo?.nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Posición */}
           <div className="flex flex-col w-full sm:w-auto">
@@ -429,7 +490,7 @@ function PlayersManagement({ clubData }) {
                 <TableHead>User ID</TableHead>
                 <TableHead>Teléfono</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Club ID</TableHead>
+                <TableHead>Equipo ID</TableHead>
                 <TableHead>Posición</TableHead>
                 <TableHead>Disponibilidad</TableHead>
                 <TableHead>Acciones</TableHead>
@@ -438,26 +499,30 @@ function PlayersManagement({ clubData }) {
             <TableBody>
               {paginatedPlayers.map((player) => (
                 <TableRow key={player.id}>
-                  <TableCell>{player?.id}</TableCell>
-                  <TableCell>{player?.nombre}</TableCell>
-                  <TableCell>{player?.apellido}</TableCell>
+                  <TableCell>{player?.personas?.id}</TableCell>
+                  <TableCell>{player?.personas?.nombre}</TableCell>
+                  <TableCell>{player?.personas?.apellido}</TableCell>
                   <TableCell>
                     {player.avatar ? (
                       <img
-                        src={player.avatar}
-                        alt={`${player.nombre} ${player.apellido}`}
+                        src={player?.personas?.avatar}
+                        alt={`${player?.personas?.nombre} ${player?.personas?.apellido}`}
                         className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
                       <span>Sin avatar</span>
                     )}
                   </TableCell>
-                  <TableCell>{player?.user_id}</TableCell>
-                  <TableCell>{player?.telefono}</TableCell>
-                  <TableCell>{player?.email}</TableCell>
-                  <TableCell>{player?.club_id}</TableCell>
-                  <TableCell>{player?.posicion || "No asignada"}</TableCell>
-                  <TableCell>{player?.disponibilidad}</TableCell>
+                  <TableCell>{player?.personas?.user_id}</TableCell>
+                  <TableCell>{player?.personas?.telefono}</TableCell>
+                  <TableCell>{player?.personas?.email}</TableCell>
+                  <TableCell>{player?.equipo_id}</TableCell>
+                  <TableCell>
+                    {player?.personas?.posicion || "No asignada"}
+                  </TableCell>
+                  <TableCell>
+                    {player?.personas?.disponibilidad || "-"}
+                  </TableCell>
                   <TableCell>
                     <span
                       title="Desvincular jugador del club"
@@ -522,20 +587,36 @@ export default function AdminPage() {
   const { id } = useParams();
   const { clubData, getClubData } = useClubData();
   const [activeTab, setActiveTab] = useState("club");
+  const [partidosData, setPartidosData] = useState([]);
 
   useEffect(() => {
     if (id) getClubData(id);
   }, [id]);
 
-  console.log(clubData);
+  useEffect(() => {
+    const getPartidosClub = async () => {
+      try {
+        if (!id) return;
+        const data = await getPartidosPorClub(id);
+        setPartidosData(data);
+      } catch (error) {
+        console.error("Error fetching matches for club:", error);
+      }
+    };
+
+    getPartidosClub();
+  }, [id]);
+  console.log(partidosData);
 
   return (
-    <div className="container mx-auto p-2 my-4 flex">
-      <AdminSidebar
-        clubData={clubData}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+    <div className="container mx-auto p-2 my-4 flex flex-col lg:flex-row">
+      <div className="w-full lg:w-64 mb-4 lg:mb-0">
+        <AdminSidebar
+          clubData={clubData}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+      </div>
       <div className="flex-1 ml-4">
         <h1 className="text-4xl">Club #{id}</h1>
         <div className="mt-5">
@@ -549,7 +630,7 @@ export default function AdminPage() {
           )}
           {activeTab == "players" && <PlayersManagement clubData={clubData} />}
           {activeTab === "matches" && (
-            <MatchesManagement matches={clubData?.partidos || []} />
+            <MatchesManagement matches={partidosData || []} clubData={clubData} />
           )}
         </div>
       </div>

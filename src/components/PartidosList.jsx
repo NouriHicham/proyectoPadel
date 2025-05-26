@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
@@ -14,21 +13,20 @@ import {
 } from "@/components/ui/collapsible";
 
 export function PartidosList({ partidos }) {
-  // Agrupar partidos por pareja/equipo
+  // Agrupar por equipos enfrentados (nombre equipo1 vs nombre equipo2)
   const equiposMap = new Map();
-  console.log(partidos);
 
-  partidos.forEach((partido) => {
-    const equipoKey = `${partido.equipo1.jugador1} / ${partido.equipo1.jugador2}`;
+  partidos?.forEach((partido) => {
+    const equipoKey = `${partido.equipo1?.nombre ?? "Equipo 1"} vs ${
+      partido.equipo2?.nombre ?? "Equipo 2"
+    }`;
     if (!equiposMap.has(equipoKey)) {
       equiposMap.set(equipoKey, []);
     }
-    equiposMap.get(equipoKey)?.push(partido);
+    equiposMap.get(equipoKey).push(partido);
   });
 
-  // Convertir el mapa a un array para renderizar
   const equiposArray = Array.from(equiposMap.entries());
-  console.log("equiposarray", equiposArray);
 
   return (
     <div className="grid gap-6">
@@ -48,31 +46,30 @@ function EquipoPartidos({ equipoNombre, partidos }) {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
-      <Card>
-        <CardHeader className="py-4 px-6">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">{equipoNombre}</CardTitle>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm">
-                {isOpen ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
+      <div className="rounded-lg border shadow-sm bg-white">
+        <div className="flex items-center justify-between py-4 px-6 border-b">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 " />
+            <span className="text-xl font-semibold">{equipoNombre}</span>
           </div>
-        </CardHeader>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm">
+              {isOpen ? (
+                <ChevronUp className="h-5 w-5" />
+              ) : (
+                <ChevronDown className="h-5 w-5" />
+              )}
+            </Button>
+          </CollapsibleTrigger>
+        </div>
         <CollapsibleContent>
-          <CardContent className="px-6 pb-4">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {partidos.map((partido) => (
-                <PartidoCard key={partido.id} partido={partido} />
-              ))}
-            </div>
-          </CardContent>
+          <div>
+            {partidos.map((partido) => (
+              <PartidoCard key={partido.id} partido={partido} />
+            ))}
+          </div>
         </CollapsibleContent>
-      </Card>
+      </div>
     </Collapsible>
   );
 }
@@ -82,10 +79,7 @@ function PartidoCard({ partido }) {
     switch (estado) {
       case "programado":
         return (
-          <Badge
-            variant="outline"
-            className="bg-blue-50 text-blue-700 border-blue-200"
-          >
+          <Badge variant="outline" className="bg-blue-50  border-blue-200">
             Programado
           </Badge>
         );
@@ -108,81 +102,135 @@ function PartidoCard({ partido }) {
           </Badge>
         );
       default:
-        return <Badge variant="outline">{estado}</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-slate-100 text-slate-700 border-slate-200"
+          >
+            {estado || "Sin estado"}
+          </Badge>
+        );
     }
   };
 
   return (
-    <Card className="overflow-hidden">
-      <div className="bg-muted p-4">
-        <div className="flex justify-between items-center mb-2">
-          <div className="text-sm text-muted-foreground">
-            {format(new Date(partido.fecha), "d 'de' MMMM, yyyy", {
-              locale: es,
-            })}
-          </div>
-          {getEstadoBadge(partido.estado)}
+    <div className="border-b last:border-b-0">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 bg-slate-50 px-4 py-2">
+        <div className="flex flex-col">
+          <span className="text-sm text-muted-foreground">
+            {partido.fecha
+              ? format(new Date(partido.fecha), "d 'de' MMMM, yyyy", {
+                  locale: es,
+                })
+              : "Sin fecha"}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {partido.fecha
+              ? format(new Date(partido.fecha), "HH:mm", { locale: es })
+              : "--:--"}{" "}
+            - {partido.sede?.nombre || "Sin sede"}
+          </span>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {format(new Date(partido.fecha), "HH:mm", { locale: es })} -{" "}
-          {partido.sede.nombre} (Pista {partido.sede.pista})
+        <div>{getEstadoBadge(partido.estado)}</div>
+        <div className="hidden md:block text-sm font-medium text-right">
+          {partido.liga?.nombre || "Sin liga"}
         </div>
       </div>
-      <CardContent className="p-4">
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div className="text-sm font-medium">{partido.liga.nombre}</div>
-            <div className="text-sm text-muted-foreground">
-              Categoría: {partido.liga.categoria}
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 gap-3 border-t border-b py-3">
-            <div className="flex justify-between items-center">
-              <div className="flex flex-col">
-                <span className="font-medium">{partido.equipo1.jugador1}</span>
-                <span className="font-medium">{partido.equipo1.jugador2}</span>
-              </div>
-
-              {partido.estado !== "programado" && (
-                <div className="text-center font-bold">
-                  {partido.resultado?.sets.map((set, index) => (
-                    <span key={index} className="mx-1">
-                      {set.equipo1}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div className="flex flex-col">
-                <span className="font-medium">{partido.equipo2.jugador1}</span>
-                <span className="font-medium">{partido.equipo2.jugador2}</span>
-              </div>
-
-              {partido.estado !== "programado" && (
-                <div className="text-center font-bold">
-                  {partido.resultado?.sets.map((set, index) => (
-                    <span key={index} className="mx-1">
-                      {set.equipo2}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {partido.estado === "finalizado" && (
-            <div className="text-sm text-center">
-              Ganador:{" "}
-              {partido.resultado?.ganador === 1
-                ? `${partido.equipo1.jugador1} / ${partido.equipo1.jugador2}`
-                : `${partido.equipo2.jugador1} / ${partido.equipo2.jugador2}`}
+      <div className="px-2 pb-4 pt-2">
+        <div className="flex flex-col md:flex-row gap-4">
+          {partido.partidos_pistas?.length > 0 ? (
+            partido.partidos_pistas.map((pista) => (
+              <PistaCard key={pista.id} pista={pista} />
+            ))
+          ) : (
+            <div className="text-center text-muted-foreground w-full py-4">
+              Sin pistas asignadas
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
+  );
+}
+
+function PistaCard({ pista }) {
+  return (
+    <div className="flex-1 min-w-[260px] max-w-md bg-white border rounded-lg shadow-sm p-3 flex flex-col justify-between">
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-semibold">Pista {pista.pista_numero ?? "-"}</span>
+        <span className="text-xs text-muted-foreground">
+          {pista.duracion
+            ? `Duración: ${pista.duracion}`
+            : "Duración desconocida"}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 mb-2">
+        <JugadorInfo
+          jugador={pista.pareja_1_jugador_1}
+          label="Pareja 1 - Jugador 1"
+        />
+        <JugadorInfo
+          jugador={pista.pareja_1_jugador_2}
+          label="Pareja 1 - Jugador 2"
+        />
+        <JugadorInfo
+          jugador={pista.pareja_2_jugador_1}
+          label="Pareja 2 - Jugador 1"
+        />
+        <JugadorInfo
+          jugador={pista.pareja_2_jugador_2}
+          label="Pareja 2 - Jugador 2"
+        />
+      </div>
+      {Array.isArray(pista.resultados) && pista.resultados.length > 0 ? (
+        <div className="mt-2 text-center text-sm">
+          <span className="font-bold ">Resultados:</span>{" "}
+          {pista.resultados.join(" | ")}
+        </div>
+      ) : (
+        <div className="mt-2 text-center text-xs text-muted-foreground">
+          Sin resultados
+        </div>
+      )}
+    </div>
+  );
+}
+
+function JugadorInfo({ jugador, label }) {
+  if (!jugador)
+    return (
+      <div className="text-xs text-muted-foreground border rounded p-2 bg-slate-50">
+        {label}: <span className="italic">Sin asignar</span>
+      </div>
+    );
+  return (
+    <div className="text-xs border rounded p-3 bg-slate-50">
+      <span className="font-semibold">{label}:</span>
+      <div>
+        <span className="text-base">
+          {jugador.nombre || <span className="italic">Sin nombre</span>}{" "}
+          {jugador.apellido || ""}
+        </span>
+        {jugador.posicion && (
+          <span className="ml-1 text-muted-foreground">
+            ({jugador.posicion})
+          </span>
+        )}
+      </div>
+      <div>
+        {/* <span className="text-muted-foreground">
+          {jugador.disponibilidad
+            ? `Disponibilidad: ${jugador.disponibilidad}`
+            : "Sin información de disponibilidad"}
+        </span> */}
+      </div>
+      {jugador.email && (
+        <div className="text-muted-foreground">Email: {jugador.email}</div>
+      )}
+      {jugador.telefono && (
+        <div className="text-muted-foreground">Tel: {jugador.telefono}</div>
+      )}
+    </div>
   );
 }

@@ -88,9 +88,9 @@ export default function GestionarEquipoDialog({ teamData }) {
   // Filtrado de jugadores
   const filteredPlayers = availablePlayers?.filter((ep) => {
     const nombre = ep?.nombre?.toLowerCase() + " " + ep?.apellido.toLowerCase();
-    const posicion = ep?.posicion?.toLowerCase();
-    const disponibilidad = ep?.disponibilidad?.toLowerCase();
-    const tel = String(ep?.telefono).toLowerCase();
+    const posicion = (ep?.posicion || "").toLowerCase();
+    const disponibilidad = (ep?.disponibilidad || "").toLowerCase();
+    const tel = String(ep?.telefono || "").toLowerCase();
     const query = searchQuery.toLowerCase().trim();
 
     return (
@@ -98,7 +98,7 @@ export default function GestionarEquipoDialog({ teamData }) {
       posicion.includes(query) ||
       disponibilidad.includes(query) ||
       tel.includes(query) ||
-      String(ep.id).includes(query)
+      String(ep?.id || "").includes(query)
     );
   });
 
@@ -180,7 +180,7 @@ export default function GestionarEquipoDialog({ teamData }) {
               <div className="relative mt-2">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Busca jugadores por id, nombre, posición..."
+                  placeholder="Busca jugadores por nombre, posición, disponibilidad..."
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -192,7 +192,7 @@ export default function GestionarEquipoDialog({ teamData }) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>#</TableHead>
+                      {/* <TableHead>#</TableHead> */}
                       <TableHead>Jugador</TableHead>
                       <TableHead>Posición</TableHead>
                       <TableHead>Disponibilidad</TableHead>
@@ -204,7 +204,7 @@ export default function GestionarEquipoDialog({ teamData }) {
                   <TableBody>
                     {filteredPlayers.map((ep) => (
                       <TableRow key={ep.id}>
-                        <TableCell>{ep?.id}</TableCell>
+                        {/* <TableCell>{ep?.id}</TableCell> */}
                         <TableCell className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage
@@ -311,10 +311,10 @@ export default function GestionarEquipoDialog({ teamData }) {
             <SelectContent>
               <SelectGroup>
                 {jugadoresAInvitar.map((jugador) => (
-                  <SelectItem key={jugador.id} value={jugador.id.toString()}>
+                  <SelectItem key={jugador?.id} value={jugador?.id.toString()}>
                     <div className="flex items-center w-full justify-between">
-                      <span>{`${jugador.nombre} ${
-                        jugador.apellido || ""
+                      <span>{`${jugador?.nombre} ${
+                        jugador?.apellido || ""
                       }`}</span>
                       <span className="ml-5 text-slate-600">
                         {jugador?.posicion}
