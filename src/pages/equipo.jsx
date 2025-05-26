@@ -431,7 +431,7 @@ export default function EquipoPage() {
                           </div>
                         </div>
                         <div className="mt-4 space-y-2">
-                          <Link to={`/equipo/jugador/${player.id}`}>
+                          <Link to={`/equipo/jugador/${player.persona_id}`}>
                             <Button
                               variant="outline"
                               size="sm"
@@ -487,7 +487,7 @@ export default function EquipoPage() {
                             </div>
                           </div>
                           <div className="mt-4 space-y-2">
-                            <Link to={`/equipo/jugador/${player.id}`}>
+                            <Link to={`/equipo/jugador/${player.persona_id}`}>
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -555,7 +555,7 @@ export default function EquipoPage() {
                           </div>
                         </div>
                         <div className="mt-4 space-y-2">
-                          <Link to={`/equipo/jugador/${player.id}`}>
+                          <Link to={`/equipo/jugador/${player.persona_id}`}>
                             <Button
                               variant="outline"
                               size="sm"

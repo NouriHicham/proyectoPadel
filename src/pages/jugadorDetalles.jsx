@@ -8,22 +8,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getPerfilUsuario } from "@/lib/database";
+import { getEquipos, getPerfilUsuario } from "@/lib/database";
+import {
+  getSkillsByCapitan,
+  getComentariosSkillByJugador,
+  addSkill,
+  addComentarioSkill,
+} from "@/lib/database"; // Debes implementar estos métodos
 import { Mail, Phone } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 export default function JugadorDetalles() {
   // Al cargar pagina, hacer fetch de los datos del usuario, con el id pasado por url
   const { id } = useParams();
-
   const [userData, setUserData] = useState(null);
+  const [equipo, setEquipo] = useState(null);
+  const [skills, setSkills] = useState([]);
+  const [comentariosSkill, setComentariosSkill] = useState([]);
+  const [newSkill, setNewSkill] = useState("");
+  const [newSkillDesc, setNewSkillDesc] = useState("");
+  const [newComentario, setNewComentario] = useState({});
+  const [loadingSkills, setLoadingSkills] = useState(false);
+  const savedInfo = JSON.parse(localStorage.getItem("personaGuardada"));
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const [data] = await getPerfilUsuario(id);
-        console.log(data);
+        const equipo = await getEquipos(
+          savedInfo.equipo_id,
+          "*, equipos_personas(personas(*))"
+        );
         setUserData(data);
+        setEquipo(equipo[0]);
       } catch (error) {
         console.error("Error al obtener los datos del usuario:", error);
       }
@@ -31,6 +48,57 @@ export default function JugadorDetalles() {
 
     fetchUserData();
   }, [id]);
+  console.log(userData);
+  console.log(equipo);
+
+  // Determinar si el usuario logueado es el capitán del equipo
+  const isCapitan = equipo && savedInfo && equipo.capitan_id === savedInfo.persona_id;
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      if (equipo && equipo.capitan_id) {
+        setLoadingSkills(true);
+        const skills = await getSkillsByCapitan(equipo.capitan_id);
+        setSkills(skills || []);
+        const comentarios = await getComentariosSkillByJugador(id);
+        setComentariosSkill(comentarios || []);
+        setLoadingSkills(false);
+      }
+    };
+    fetchSkills();
+  }, [equipo, id]);
+
+  // Handler para crear una nueva skill
+  const handleAddSkill = async (e) => {
+    e.preventDefault();
+    if (!newSkill) return;
+    const skill = await addSkill({
+      capitan_id: equipo.capitan_id,
+      nombre: newSkill,
+      descripcion: newSkillDesc,
+    });
+    if (skill) {
+      setSkills([...skills, skill]);
+      setNewSkill("");
+      setNewSkillDesc("");
+    }
+  };
+
+  // Handler para añadir/editar comentario skill
+  const handleAddComentario = async (skillId) => {
+    if (!newComentario[skillId]) return;
+    const comentario = await addComentarioSkill({
+      skill: skillId,
+      jugador_id: userData.id,
+      comentario: newComentario[skillId],
+    });
+    // Actualizar comentarios en el estado
+    setComentariosSkill((prev) => {
+      const filtered = prev.filter((c) => c.skill !== skillId);
+      return [...filtered, comentario];
+    });
+    setNewComentario((prev) => ({ ...prev, [skillId]: "" }));
+  };
 
   // Por si queremos mostrar un cargando
   if (!userData) {
@@ -59,19 +127,57 @@ export default function JugadorDetalles() {
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center text-center space-y-4">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage src="/placeholder.svg?text=JP" />
-                    <AvatarFallback>JP</AvatarFallback>
+                    <AvatarImage
+                      src={userData?.foto || "/placeholder.svg?text=JP"}
+                    />
+                    <AvatarFallback>
+                      {userData?.nombre?.[0]}
+                      {userData?.apellido?.[0]}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <h1 className="text-2xl font-bold">
                       {userData?.nombre + " " + userData?.apellido}
                     </h1>
-                    <p className="text-muted-foreground">Miembro desde 2025</p>
+                    <p className="text-muted-foreground">
+                      {/* Puedes ajustar la fecha si tienes el dato */}
+                      Miembro desde 2025
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Posición: {userData?.posicion || "No especificada"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Disponibilidad:{" "}
+                      {userData?.disponibilidad || "No especificada"}
+                    </p>
                   </div>
                   <Button variant="outline">Editar perfil</Button>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Mostrar información del equipo si existe */}
+            {equipo && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Equipo</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center gap-4">
+                  <Avatar className="h-14 w-14">
+                    <AvatarImage
+                      src={equipo.foto || "/placeholder.svg?text=EQ"}
+                    />
+                    <AvatarFallback>{equipo.nombre?.[0] || "E"}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="font-semibold">{equipo.nombre}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {equipo.descripcion}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             <Card>
               <CardHeader>
@@ -101,17 +207,24 @@ export default function JugadorDetalles() {
                     <p className="text-sm text-muted-foreground">
                       Partidos Jugados
                     </p>
-                    <p className="text-2xl font-bold">45</p>
+                    <p className="text-2xl font-bold">
+                      {userData?.partidos_pistas?.length || 0}
+                    </p>
                   </div>
+                  {/* Puedes calcular victorias/ratio si tienes info en partidos_pistas */}
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">Victorias</p>
-                    <p className="text-2xl font-bold">32</p>
+                    <p className="text-2xl font-bold">
+                      {/* Si tienes info de victorias, cámbialo aquí */}-
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">
                       Ratio Victoria
                     </p>
-                    <p className="text-2xl font-bold">71%</p>
+                    <p className="text-2xl font-bold">
+                      {/* Si tienes info de ratio, cámbialo aquí */}-
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -166,58 +279,178 @@ export default function JugadorDetalles() {
           <TabsContent value="history">
             <Card>
               <CardContent className="p-4 space-y-4">
-                {[1, 2, 3, 4].map((match) => (
-                  <div
-                    key={match}
-                    className="flex items-center justify-between p-4 bg-muted rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">Partido #{match}</p>
-                      <p className="text-sm text-muted-foreground">
-                        15 Feb 2024
-                      </p>
+                {userData?.partidos_pistas &&
+                userData.partidos_pistas.length > 0 ? (
+                  userData.partidos_pistas.map((p, idx) => (
+                    <div
+                      key={p.id || idx}
+                      className="flex items-center justify-between p-4 bg-muted rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">
+                          Partido #{p.partido_id} - Pista {p.pista_numero}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Duración: {p.duracion || "-"}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium text-green-600">
+                          {/* Puedes mostrar victoria/derrota si tienes info */}
+                          {Array.isArray(p.resultados)
+                            ? p.resultados.join(", ")
+                            : "-"}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-medium text-green-600">Victoria</p>
-                      <p className="text-sm text-muted-foreground">6-4, 6-3</p>
-                    </div>
+                  ))
+                ) : (
+                  <div className="text-muted-foreground">
+                    Sin partidos jugados
                   </div>
-                ))}
+                )}
               </CardContent>
             </Card>
           </TabsContent>
           <TabsContent value="partners">
             <Card>
               <CardContent className="p-4 space-y-4">
-                {[1, 2, 3].map((partner) => (
-                  <div
-                    key={partner}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage
-                          src={`/placeholder.svg?text=P${partner}`}
-                        />
-                        <AvatarFallback>P{partner}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">Compañero {partner}</p>
-                        <p className="text-sm text-muted-foreground">
-                          8 partidos juntos
-                        </p>
+                {equipo &&
+                equipo.equipos_personas &&
+                equipo.equipos_personas.length > 0 ? (
+                  equipo.equipos_personas
+                    .filter(
+                      (ep) => ep.personas && ep.personas.id !== userData.id
+                    )
+                    .map((ep, idx) => (
+                      <div
+                        key={ep.personas.id || idx}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage
+                              src={
+                                ep.personas.foto || "/placeholder.svg?text=CP"
+                              }
+                            />
+                            <AvatarFallback>
+                              {ep.personas.nombre?.[0]}
+                              {ep.personas.apellido?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">
+                              {ep.personas.nombre} {ep.personas.apellido}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Posición: {ep.personas.posicion || "-"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium text-muted-foreground">
+                            {ep.personas.disponibilidad || ""}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {ep.personas.email}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">75%</p>
-                      <p className="text-sm text-muted-foreground">Victorias</p>
-                    </div>
-                  </div>
-                ))}
+                    ))
+                ) : (
+                  <div className="text-muted-foreground">No disponible</div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
+        {/* Sección de Skills solo visible para el capitán */}
+        {isCapitan && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Skills del Jugador</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingSkills ? (
+                <div className="text-muted-foreground">Cargando skills...</div>
+              ) : (
+                <>
+                  {/* Formulario para crear nueva skill */}
+                  <form
+                    onSubmit={handleAddSkill}
+                    className="mb-4 flex gap-2 flex-col"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Nombre de la skill"
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      className="border px-2 py-1 rounded"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Descripción"
+                      value={newSkillDesc}
+                      onChange={(e) => setNewSkillDesc(e.target.value)}
+                      className="border px-2 py-1 rounded"
+                    />
+                    <Button type="submit" size="sm">
+                      Añadir Skill
+                    </Button>
+                  </form>
+                  {/* Listado de skills y comentarios */}
+                  <div className="space-y-4">
+                    {skills.length === 0 && (
+                      <div className="text-muted-foreground">
+                        No hay skills aún.
+                      </div>
+                    )}
+                    {skills.map((skill) => (
+                      <div key={skill.id} className="border rounded p-2">
+                        <div className="font-semibold">{skill.nombre}</div>
+                        <div className="text-sm text-muted-foreground mb-2">
+                          {skill.descripcion}
+                        </div>
+                        <div>
+                          <div className="mb-1 font-medium">Comentario:</div>
+                          <div className="mb-2">
+                            {comentariosSkill.find((c) => c.skill === skill.id)
+                              ?.comentario || (
+                              <span className="text-muted-foreground">
+                                Sin comentario
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Añadir/editar comentario"
+                              value={newComentario[skill.id] || ""}
+                              onChange={(e) =>
+                                setNewComentario((prev) => ({
+                                  ...prev,
+                                  [skill.id]: e.target.value,
+                                }))
+                              }
+                              className="border px-2 py-1 rounded flex-1"
+                            />
+                            <Button
+                              size="sm"
+                              onClick={() => handleAddComentario(skill.id)}
+                            >
+                              Guardar
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );

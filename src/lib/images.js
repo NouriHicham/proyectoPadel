@@ -1,12 +1,6 @@
 import { supabase } from "@/supabase/supabase";
 // --- FUNCIONES PARA USAR EL BUCKET "images" ---
 
-/**
- * Sube una imagen al bucket "images" en Supabase Storage.
- * @param {File} file - Archivo de imagen a subir.
- * @param {string} path - Ruta/nombre de archivo dentro del bucket (ej: "avatars/userid.jpg").
- * @returns {Promise<string|null>} - URL pública de la imagen o null si falla.
- */
 export async function uploadImageToBucket(file, path) {
   try {
     if (!file || !(file instanceof File) || file.size === 0) {
@@ -48,11 +42,6 @@ export async function uploadImageToBucket(file, path) {
   }
 }
 
-/**
- * Obtiene la URL pública de una imagen en el bucket "images".
- * @param {string} path - Ruta/nombre de archivo dentro del bucket.
- * @returns {string} - URL pública.
- */
 export function getImageUrl(path) {
   const { data } = supabase.storage.from("images").getPublicUrl(path);
   return data?.publicUrl || "";

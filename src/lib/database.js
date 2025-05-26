@@ -131,27 +131,27 @@ export const leerPersonas = async (equipoId) => {
 
 export const getPerfilUsuario = async (id) => {
   try {
-    // select * from personas where id = (select persona_id from equipos_personas WHERE id = id)
-    const { data, error } = await supabase
-      .from("equipos_personas")
-      .select("persona_id")
+    // Obtener la persona por id
+    const { data: personaData, error: personaError } = await supabase
+      .from("personas")
+      .select("*")
       .eq("id", id)
-      .single()
-      .then(({ data }) => {
-        if (data) {
-          return supabase
-            .from("personas")
-            .select("*")
-            .eq("id", data.persona_id);
-        }
-      });
+      .single();
 
-    if (error) {
-      throw error;
-    }
+    if (personaError) throw personaError;
 
-    console.log("personas", data);
-    return data;
+    // Buscar partidos_pistas donde el jugador esté en cualquiera de las 4 columnas
+    const { data: partidosPistas, error: pistasError } = await supabase
+      .from("partidos_pistas")
+      .select("*")
+      .or(
+        `pareja_1_jugador_1_id.eq.${id},pareja_1_jugador_2_id.eq.${id},pareja_2_jugador_1_id.eq.${id},pareja_2_jugador_2_id.eq.${id}`
+      );
+
+    if (pistasError) throw pistasError;
+
+    // Puedes devolver ambos datos juntos
+    return [{ ...personaData, partidos_pistas: partidosPistas }];
   } catch (error) {
     console.error("Error al leer personas:", error);
     return [];
@@ -1223,6 +1223,73 @@ export async function insertarPistas(partido_id) {
     return data;
   } catch (error) {
     console.error("Error al insertar pistas:", error.message);
+  }
+}
+// Obtener todas las skills creadas por un capitán
+export async function getSkillsByCapitan(capitan_id) {
+  try {
+    const { data, error } = await supabase
+      .from("skills")
+      .select("*")
+      .eq("capitan_id", capitan_id);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error al obtener skills del capitán:", error.message);
+    return [];
+  }
+}
+
+// Obtener todos los comentarios de skills para un jugador
+export async function getComentariosSkillByJugador(jugador_id) {
+  try {
+    const { data, error } = await supabase
+      .from("comentario_skill")
+      .select("*")
+      .eq("jugador_id", jugador_id);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error al obtener comentarios de skills:", error.message);
+    return [];
+  }
+}
+
+// Añadir una nueva skill (solo para el capitán)
+export async function addSkill({ capitan_id, nombre, descripcion }) {
+  try {
+    const { data, error } = await supabase
+      .from("skills")
+      .insert([{ capitan_id, nombre, descripcion }])
+      .select("*")
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error al añadir skill:", error.message);
+    return null;
+  }
+}
+
+// Añadir o actualizar comentario de skill para un jugador
+export async function addComentarioSkill({ skill, jugador_id, comentario }) {
+  try {
+    // upsert por skill y jugador_id
+    const { data, error } = await supabase
+      .from("comentario_skill")
+      .upsert([{ skill, jugador_id, comentario }], {
+        onConflict: "skill,jugador_id",
+      })
+      .select("*")
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error al añadir comentario de skill:", error.message);
     return null;
   }
 }
