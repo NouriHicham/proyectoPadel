@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { format } from "date-fns";
+import { useEffect, useState } from "react";
+import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   ChevronDown,
@@ -28,6 +28,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "./ui/drawer";
+import { getDisponibilidad } from "@/lib/database";
 
 export function PartidosList({ partidos }) {
   // Agrupar por equipos enfrentados (nombre equipo1 vs nombre equipo2)
@@ -44,6 +46,7 @@ export function PartidosList({ partidos }) {
   });
 
   const equiposArray = Array.from(equiposMap.entries());
+  console.log("equipos agrupados", equiposArray);
 
   return (
     <div className="grid gap-6">
@@ -60,6 +63,13 @@ export function PartidosList({ partidos }) {
 
 function EquipoPartidos({ equipoNombre, partidos }) {
   const [isOpen, setIsOpen] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedPartido, setSelectedPartido] = useState(null);
+
+  const handleOpenDialog = (partido) => {
+    setSelectedPartido(partido);
+    setDialogOpen(true);
+  };
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
@@ -77,7 +87,7 @@ function EquipoPartidos({ equipoNombre, partidos }) {
               <Button variant="ghost" size="icon">
                 <Trash2Icon className="text-red-500" />
               </Button>
-              <JugadoresDisponiblesDialog />
+              {/* <JugadoresDisponiblesDialog /> */}
             </div>
             {/* Popover en movil   */}
             <div className="flex sm:hidden">
@@ -120,9 +130,23 @@ function EquipoPartidos({ equipoNombre, partidos }) {
         <CollapsibleContent>
           <div>
             {partidos.map((partido) => (
-              <PartidoCard key={partido.id} partido={partido} />
+              <div key={partido.id}>
+                <PartidoCard partido={partido} />
+                <Button
+                  className={"w-full"}
+                  onClick={() => handleOpenDialog(partido)}
+                >
+                  <Users />
+                  Gestionar
+                </Button>
+              </div>
             ))}
           </div>
+          <JugadoresDisponiblesDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            partido={selectedPartido}
+          />
         </CollapsibleContent>
       </div>
     </Collapsible>
@@ -292,12 +316,12 @@ function JugadorInfo({ jugador, label }) {
 }
 
 // Simulación de datos
-const jugadores = [
-  { id: 1, nombre: "Ana" },
-  { id: 2, nombre: "Luis" },
-  { id: 3, nombre: "Pablo" },
-  { id: 4, nombre: "Sara" },
-];
+// const jugadores = [
+//   { id: 1, nombre: "Ana" },
+//   { id: 2, nombre: "Luis" },
+//   { id: 3, nombre: "Pablo" },
+//   { id: 4, nombre: "Sara" },
+// ];
 
 const pistas = [
   { id: 1, nombre: "Pista 1" },
@@ -305,12 +329,42 @@ const pistas = [
   { id: 3, nombre: "Pista 3" },
 ];
 
-function JugadoresDisponiblesDialog() {
+function JugadoresDisponiblesDialog({ partido, open, onOpenChange }) {
   const [asignaciones, setAsignaciones] = useState({
     1: { pareja1: [null, null], pareja2: [null, null] },
     2: { pareja1: [null, null], pareja2: [null, null] },
     3: { pareja1: [null, null], pareja2: [null, null] },
   });
+  const [isMobile, setIsMobile] = useState(false);
+
+  console.log("partidodialog", partido);
+
+  const [jugadores, setJugadores] = useState([]);
+
+  useEffect(() => {
+    const fetchJugadoresDisponibles = async () => {
+      try {
+        const partidoId = partido?.id;
+        if (!partidoId) return;
+
+        const data = await getDisponibilidad(partidoId);
+        setJugadores(data || []);
+      } catch (error) {
+        console.error("Error al obtener jugadores disponibles: ", error);
+      }
+    };
+
+    if (open) fetchJugadoresDisponibles();
+  }, [partido, open]);
+
+  console.log("jugadores disponibles", jugadores);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleAsignar = (pistaId, parejaIdx, jugadorIdx, jugadorId) => {
     setAsignaciones((prev) => ({
@@ -324,126 +378,166 @@ function JugadoresDisponiblesDialog() {
     }));
   };
 
+  // función para mostrar si un jugador ya está asignado a alguna pista
   const jugadorYaAsignado = (jugadorId) => {
     return Object.values(asignaciones).some((pista) =>
       Object.values(pista).some((pareja) => pareja.includes(jugadorId))
     );
   };
 
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Users className="text-blue-500" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="w-full max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Asignar jugadores a pistas</DialogTitle>
-          <DialogDescription>
-            Equipo Mixto prueba vs Equipo C <br />
-            <span className="text-xs text-muted-foreground">
-              29 de mayo, 2025 · 20:15 - Sede B
-            </span>
-          </DialogDescription>
-        </DialogHeader>
+  const Content = (
+    <div className="max-h-[80vh] overflow-y-auto p-2 sm:px-0">
+      {/* Header */}
+      <div className="mb-4">
+        <h2 className="text-xl font-bold">Asignar jugadores a pistas</h2>
+        <div className="text-sm text-muted-foreground">
+          {partido?.equipo1?.nombre + " vs " + partido?.equipo2?.nombre}
+          <br />
+          {/* <span className="text-xs">29 de mayo, 2025 · 20:15 - Sede B</span> */}
+          <span className="text-xs">
+            {partido?.fecha
+              ? `${format(
+                  parseISO(partido.fecha),
+                  "dd 'de' MMMM, yyyy · HH:mm",
+                  { locale: es }
+                )} - ${partido.sede?.nombre}`
+              : ""}
+          </span>
+        </div>
+      </div>
 
-        {/* Jugadores disponibles en grid */}
-        <div>
-          <h4 className="font-semibold mb-2">Jugadores disponibles</h4>
+      {/* Jugadores disponibles */}
+      <div>
+        <h4 className="font-semibold mb-2">Jugadores disponibles</h4>
+        {jugadores.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
             {jugadores.map((j) => (
               <div
-                key={j.id}
-                className={`flex flex-col items-center justify-center border rounded p-2 text-sm
-                  ${
-                    jugadorYaAsignado(j.id)
-                      ? "bg-muted text-muted-foreground"
-                      : "bg-background"
-                  }
-                `}
+                key={j?.id}
+                className={`w-full flex flex-col items-center justify-center border rounded p-2 text-sm
+            ${
+              jugadorYaAsignado(j?.id)
+                ? "bg-muted text-muted-foreground"
+                : "bg-background"
+            }
+          `}
               >
                 <div className="rounded-full bg-blue-100 text-blue-700 w-8 h-8 flex items-center justify-center mb-1 font-bold">
-                  {j.nombre[0]}
+                  {j?.persona_id?.nombre?.[0]}
                 </div>
-                <span>{j.nombre}</span>
-                {jugadorYaAsignado(j.id) && (
+                <span>{j?.persona_id?.nombre}</span>
+                {jugadorYaAsignado(j?.id) && (
                   <span className="text-xs mt-1">Asignado</span>
                 )}
               </div>
             ))}
           </div>
-        </div>
+        ) : (
+          <div className="text-center text-muted-foreground mb-4">
+            No hay jugadores disponibles.
+          </div>
+        )}
+      </div>
 
-        {/* Pistas apiladas verticalmente */}
-        <div className="flex flex-col gap-4">
-          {pistas.map((pista) => (
-            <div
-              key={pista.id}
-              className="border rounded-lg p-4 bg-muted/40 flex flex-col"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h5 className="font-bold">{pista.nombre}</h5>
-                <span className="text-xs text-muted-foreground">
-                  Duración desconocida
-                </span>
-              </div>
-              {[0, 1].map((parejaIdx) => (
-                <div
-                  key={parejaIdx}
-                  className="flex flex-col sm:flex-row gap-2 mb-2"
-                >
-                  {[0, 1].map((jugadorIdx) => {
-                    const jugadorId =
-                      asignaciones[pista.id][`pareja${parejaIdx + 1}`][
-                        jugadorIdx
-                      ];
-                    return (
-                      <div key={jugadorIdx} className="flex-1">
-                        <label className="block text-xs text-muted-foreground mb-1">
-                          Pareja {parejaIdx + 1} - Jugador {jugadorIdx + 1}:
-                        </label>
-                        <select
-                          className="w-full border rounded px-2 py-1"
-                          value={jugadorId || ""}
-                          onChange={(e) =>
-                            handleAsignar(
-                              pista.id,
-                              parejaIdx,
-                              jugadorIdx,
-                              e.target.value ? Number(e.target.value) : null
-                            )
-                          }
-                        >
-                          <option value="">Sin asignar</option>
-                          {jugadores.map((j) => (
-                            <option
-                              key={j.id}
-                              value={j.id}
-                              disabled={
-                                jugadorYaAsignado(j.id) && jugadorId !== j.id
-                              }
-                            >
-                              {j.nombre}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-              <div className="text-xs text-muted-foreground mt-2">
-                Sin resultados
-              </div>
+      {/* Pistas */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:flex-wrap">
+        {pistas.map((pista) => (
+          <div
+            key={pista.id}
+            className="border rounded-lg p-4 bg-muted/40 flex flex-col min-w-[220px] flex-1"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h5 className="font-bold">{pista.nombre}</h5>
+              <span className="text-xs text-muted-foreground">
+                Duración desconocida
+              </span>
             </div>
-          ))}
-        </div>
+            {[0, 1].map((parejaIdx) => (
+              <div
+                key={parejaIdx}
+                className="flex flex-col sm:flex-row gap-2 mb-2"
+              >
+                {[0, 1].map((jugadorIdx) => {
+                  const jugadorId =
+                    asignaciones[pista.id][`pareja${parejaIdx + 1}`][
+                      jugadorIdx
+                    ];
+                  return (
+                    <div key={jugadorIdx} className="flex-1">
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Pareja {parejaIdx + 1} - Jugador {jugadorIdx + 1}:
+                      </label>
+                      <select
+                        className="w-full border rounded px-2 py-1"
+                        value={jugadorId || ""}
+                        onChange={(e) =>
+                          handleAsignar(
+                            pista.id,
+                            parejaIdx,
+                            jugadorIdx,
+                            e.target.value ? Number(e.target.value) : null
+                          )
+                        }
+                      >
+                        <option value="">Sin asignar</option>
+                        {jugadores.map((j) => (
+                          <option
+                            key={j.id}
+                            value={j.id}
+                            disabled={
+                              jugadorYaAsignado(j.id) && jugadorId !== j.id
+                            }
+                          >
+                            {j.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+            <div className="text-xs text-muted-foreground mt-2">
+              Sin resultados
+            </div>
+          </div>
+        ))}
+      </div>
 
-        <DialogFooter>
-          <Button>Guardar asignaciones</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      {/* Footer */}
+      <div className="flex justify-end mt-6">
+        <Button onClick={() => onOpenChange(false)}>
+          Guardar asignaciones
+        </Button>
+      </div>
+    </div>
+  );
+
+  // Renderiza Drawer en móvil, Dialog en desktop
+  return (
+    <>
+      {/* <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
+        <Users className="text-blue-500" />
+      </Button> */}
+      {isMobile ? (
+        <Drawer open={open} onOpenChange={onOpenChange}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Asignar jugadores a pistas</DrawerTitle>
+            </DrawerHeader>
+            {Content}
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+          <DialogContent className="max-h-[50rem] lg:min-w-[59rem]">
+            <DialogHeader>
+              <DialogTitle>Asignar jugadores a pistas</DialogTitle>
+            </DialogHeader>
+            {Content}
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 }
