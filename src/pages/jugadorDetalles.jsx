@@ -120,7 +120,7 @@ export default function JugadorDetalles() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto">
+      <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto px-2">
         <div className="grid gap-6 md:grid-cols-[1fr_2fr]">
           <div className="space-y-6">
             <Card>

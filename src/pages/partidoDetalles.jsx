@@ -86,7 +86,7 @@ export default function PartidoDetalles() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto max-w-[65rem]">
+      <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto max-w-[65rem] px-2">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold">Convocatoria #{id}</h1>

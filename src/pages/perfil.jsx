@@ -83,7 +83,7 @@ export default function Perfil() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 items-center mx-auto">
+      <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 items-center mx-auto px-2">
         <h1 className="text-3xl font-bold mb-6 px-6">Mi Perfil</h1>
 
         <div className="grid gap-6 md:grid-cols-[1fr_300px]">

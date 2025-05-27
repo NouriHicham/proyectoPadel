@@ -37,7 +37,7 @@ import toast from "react-hot-toast";
 const formSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido."),
   ubicacion: z.string().min(1, "La ubicación es requerida."),
-  numpistas: z.string().min(1, "Debe haber al menos 1 pista."),
+  numpistas: z.number().int().min(1, "Debe haber al menos 1 pista."),
   tipo: z.enum(["indoor", "outdoor"], "El tipo es requerido."),
 });
 
@@ -105,17 +105,19 @@ export function CreateSedeDialog({
       <DialogTrigger asChild>
         <Button
           className={
-            "rounded-full h-8 w-8 sm:rounded-md sm:h-auto sm:w-auto mr-2"
+            "rounded-full size-8 sm:rounded-md sm:h-auto sm:w-auto mr-2"
           }
         >
-          {/* <Plus /> */}
-          {/* <span className="hidden sm:block">Nueva Sede</span> */}
-          {isEditing ? "Editar" : "Crear sede"}
+          <Plus />
+          <span className="hidden sm:block">
+            {isEditing ? "Editar" : "Nueva sede"}
+          </span>
+          
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Editar liga" : "Crear Liga"}</DialogTitle>
+          <DialogTitle>{isEditing ? "Editar sede" : "Crear sede"}</DialogTitle>
           <DialogDescription>
             Ingresa los detalles de la nueva sede.
           </DialogDescription>

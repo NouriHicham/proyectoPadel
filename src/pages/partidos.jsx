@@ -47,7 +47,7 @@ export default function PartidosPage() {
               </span>
               
             </Button> */}
-            <CreateSedeDialog />
+            <CreateSedeDialog fetchSedes={null}/>
             <CreateMatchDialog getPartidosClub={null}/>
           </div>
           
