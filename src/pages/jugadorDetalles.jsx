@@ -357,29 +357,33 @@ export default function JugadorDetalles() {
                                       {skill.nombre}
                                     </div>
                                     {editSkillsMode && (
-                                <div className="flex gap-2 ml-2">
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    title="Editar"
-                                    onClick={() => {
-                                      setEditingSkillId(skill.id);
-                                      setEditSkillName(skill.nombre);
-                                      setEditSkillDesc(skill.descripcion || "");
-                                    }}
-                                  >
-                                    <Pencil className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    size="icon"
-                                    variant="destructive"
-                                    title="Eliminar"
-                                    onClick={() => handleDeleteSkill(skill.id)}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              )}
+                                      <div className="flex gap-2 ml-2">
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          title="Editar"
+                                          onClick={() => {
+                                            setEditingSkillId(skill.id);
+                                            setEditSkillName(skill.nombre);
+                                            setEditSkillDesc(
+                                              skill.descripcion || ""
+                                            );
+                                          }}
+                                        >
+                                          <Pencil className="w-4 h-4" />
+                                        </Button>
+                                        <Button
+                                          size="icon"
+                                          variant="destructive"
+                                          title="Eliminar"
+                                          onClick={() =>
+                                            handleDeleteSkill(skill.id)
+                                          }
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                                 <div className="text-sm text-muted-foreground mb-2">

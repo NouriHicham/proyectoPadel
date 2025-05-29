@@ -21,6 +21,57 @@ import {
 } from "@/lib/database";
 import { Skeleton } from "@/components/ui/skeleton";
 import { add } from "date-fns";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+// Componente para jugador draggable
+function DraggableJugador({ jugador, id }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    background: isDragging ? "#f1f5f9" : undefined,
+    borderRadius: 6,
+    cursor: "grab",
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="flex items-center gap-3 p-2 border mb-2 bg-white"
+    >
+      <Avatar>
+        <AvatarImage
+          src={`/placeholder.svg?text=${jugador.nombre?.[0] || "J"}`}
+        />
+        <AvatarFallback>{jugador.nombre?.[0] || "J"}</AvatarFallback>
+      </Avatar>
+      <div>
+        <p className="font-medium">
+          {jugador.nombre} {jugador.apellido}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {jugador.posicion || ""}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function PartidoDetalles() {
   const { id } = useParams();
@@ -29,6 +80,13 @@ export default function PartidoDetalles() {
   const [disponibilidad, setDisponibilidad] = useState([]);
   const [haFinalizado, setHaFinalizado] = useState(false);
   const [resultados, setResultados] = useState([]);
+  const [pistas, setPistas] = useState([
+    { id: 1, jugadores: [] },
+    { id: 2, jugadores: [] },
+    { id: 3, jugadores: [] },
+  ]);
+  const [jugadoresDisponibles, setJugadoresDisponibles] = useState([]);
+  const [draggingJugadorId, setDraggingJugadorId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -82,17 +140,98 @@ export default function PartidoDetalles() {
     }
   };
 
+  // Obtener jugadores disponibles de mi equipo
+  useEffect(() => {
+    if (!partidos[0]) return;
+    // Filtrar solo los jugadores de mi equipo que han dicho disponible
+    const equipoId = savedInfo.equipo_id;
+    const jugadores = disponibilidad
+      .filter(
+        (d) =>
+          d.disponible &&
+          d.persona_id &&
+          (partidos[0].equipo1_id.id === equipoId ||
+            partidos[0].equipo2_id.id === equipoId) &&
+          (d.persona_id.equipo_id === equipoId || equipoId)
+      )
+      .map((d) => d.persona_id);
+
+    setJugadoresDisponibles(jugadores);
+  }, [disponibilidad, partidos, savedInfo.equipo_id]);
+
+  // Drag and drop handlers
+  function handleDragEnd(event) {
+    const { active, over } = event;
+    if (!over) return;
+    const activeId = active.id;
+    const overId = over.id;
+
+    // Si se arrastra desde la lista de disponibles a una pista
+    if (overId.startsWith("pista-")) {
+      const pistaIdx = pistas.findIndex((p) => `pista-${p.id}` === overId);
+      if (pistaIdx === -1) return;
+      // Si ya está en alguna pista, no hacer nada
+      if (pistas.some((p) => p.jugadores.some((j) => j.id === activeId)))
+        return;
+      // Buscar jugador en la lista de disponibles
+      const jugador = jugadoresDisponibles.find((j) => j.id === activeId);
+      if (jugador) {
+        setPistas((prev) => {
+          const copy = prev.map((p) => ({ ...p, jugadores: [...p.jugadores] }));
+          copy[pistaIdx].jugadores.push(jugador);
+          return copy;
+        });
+      }
+      return;
+    }
+
+    // Si se arrastra entre pistas
+    const [fromPista, fromIdx] = findJugadorInPistas(activeId);
+    const [toPista, _] = findPistaByDroppableId(overId);
+
+    if (fromPista !== null && toPista !== null && fromPista !== toPista) {
+      setPistas((prev) => {
+        const copy = prev.map((p) => ({ ...p, jugadores: [...p.jugadores] }));
+        const jugador = copy[fromPista].jugadores.splice(fromIdx, 1)[0];
+        copy[toPista].jugadores.push(jugador);
+        return copy;
+      });
+    }
+  }
+
+  function findJugadorInPistas(jugadorId) {
+    for (let i = 0; i < pistas.length; i++) {
+      const idx = pistas[i].jugadores.findIndex((j) => j.id === jugadorId);
+      if (idx !== -1) return [i, idx];
+    }
+    return [null, null];
+  }
+
+  function findPistaByDroppableId(droppableId) {
+    const idx = pistas.findIndex((p) => `pista-${p.id}` === droppableId);
+    return [idx, pistas[idx]];
+  }
+
+  function handleRemoveJugadorFromPista(jugadorId, pistaIdx) {
+    setPistas((prev) => {
+      const copy = prev.map((p) => ({ ...p, jugadores: [...p.jugadores] }));
+      copy[pistaIdx].jugadores = copy[pistaIdx].jugadores.filter(
+        (j) => j.id !== jugadorId
+      );
+      return copy;
+    });
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-
       <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto max-w-[65rem] px-2">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold">Convocatoria #{id}</h1>
             <p className="text-muted-foreground">Partido Amistoso</p>
           </div>
-          {partidos[0]?.estado !== "finalizado" && (
+          {partidos[0]?.estado !== "finalizado" || jugadoresDisponibles.map((j) => j.id).includes(id) && (
             <>
               {disponibilidad.map((d) =>
                 d.persona_id.id === savedInfo.id && d.disponible ? (
@@ -498,12 +637,146 @@ export default function PartidoDetalles() {
                 </TabsContent>
               </Tabs>
             ) : (
-              <p className="text-center mb-5">
-                El resumen del partido estará disponible cuando la jornada
-                finalice.
-              </p>
+              // Drag & Drop de jugadores disponibles a pistas
+              <div className="mb-5">
+                <h3 className="text-lg font-semibold mb-2">
+                  Asignar jugadores a pistas
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Lista de jugadores disponibles */}
+                  <div className="col-span-1">
+                    <h4 className="font-medium mb-2">Jugadores disponibles</h4>
+                    <div className="space-y-2">
+                      {jugadoresDisponibles.length === 0 ? (
+                        <div className="text-muted-foreground text-sm">
+                          No hay jugadores disponibles.
+                        </div>
+                      ) : (
+                        jugadoresDisponibles
+                          .filter(
+                            (j) =>
+                              !pistas.some((p) =>
+                                p.jugadores.some((jp) => jp.id === j.id)
+                              )
+                          )
+                          .map((jugador) => (
+                            <div
+                              key={jugador.id}
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggingJugadorId(jugador.id);
+                                e.dataTransfer.effectAllowed = "move";
+                              }}
+                              onDragEnd={() => setDraggingJugadorId(null)}
+                              className={`p-2 border rounded bg-white flex items-center gap-2 cursor-grab ${
+                                draggingJugadorId === jugador.id ? "opacity-50" : ""
+                              }`}
+                            >
+                              <span className="font-semibold">
+                                {jugador.nombre} {jugador.apellido}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {jugador.posicion}
+                              </span>
+                            </div>
+                          )))
+                      }
+                    </div>
+                  </div>
+                  {/* Pistas */}
+                  {pistas.map((pista, pistaIdx) => (
+                    <div
+                      key={pista.id}
+                      className="bg-muted/40 rounded-lg p-4 flex flex-col gap-2 min-h-[180px]"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        if (draggingJugadorId) {
+                          // Solo añade si no está ya en alguna pista
+                          if (!pista.jugadores.some((j) => j.id === draggingJugadorId)) {
+                            const jugador = jugadoresDisponibles.find((j) => j.id === draggingJugadorId);
+                            if (jugador) {
+                              setPistas((prev) => {
+                                const copy = prev.map((p, idx) =>
+                                  idx === pistaIdx
+                                    ? { ...p, jugadores: [...p.jugadores, jugador] }
+                                    : { ...p }
+                                );
+                                return copy;
+                              });
+                            }
+                          }
+                          setDraggingJugadorId(null);
+                        }
+                      }}
+                    >
+                      <div className="font-bold mb-2">Pista {pista.id}</div>
+                      <div className="space-y-2">
+                        {[0, 1, 2, 3].map((pos) => (
+                          <div
+                            key={pos}
+                            className="flex items-center gap-2 border rounded px-2 py-1 bg-white"
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => {
+                              if (draggingJugadorId) {
+                                // Si la posición está vacía y el jugador no está ya en la pista
+                                if (!pista.jugadores[pos]) {
+                                  const jugador = jugadoresDisponibles.find((j) => j.id === draggingJugadorId);
+                                  if (jugador) {
+                                    setPistas((prev) => {
+                                      const copy = prev.map((p, idx) =>
+                                        idx === pistaIdx
+                                          ? {
+                                              ...p,
+                                              jugadores: [
+                                                ...p.jugadores.slice(0, pos),
+                                                jugador,
+                                                ...p.jugadores.slice(pos + 1),
+                                              ].slice(0, 4),
+                                            }
+                                          : { ...p }
+                                      );
+                                      return copy;
+                                    });
+                                  }
+                                }
+                                setDraggingJugadorId(null);
+                              }
+                            }}
+                          >
+                            {pista.jugadores[pos] ? (
+                              <>
+                                <span className="font-medium">
+                                  {pista.jugadores[pos].nombre}{" "}
+                                  {pista.jugadores[pos].apellido}
+                                </span>
+                                <button
+                                  className="ml-2 text-xs text-red-600"
+                                  onClick={() =>
+                                    handleRemoveJugadorFromPista(
+                                      pista.jugadores[pos].id,
+                                      pistaIdx
+                                    )
+                                  }
+                                >
+                                  Quitar
+                                </button>
+                              </>
+                            ) : (
+                              <span className="text-muted-foreground italic">
+                                Arrastra aquí
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 text-xs text-muted-foreground">
+                  Arrastra jugadores desde la lista a una posición vacía en la pista.
+                </div>
+              </div>
             )}
-          </div>
           {/* Mostrar usuarios disponibles si el usuario es admin y el partido aun no ha comenzado*/}
           {savedInfo.id == partidos[0]?.equipo1_id.capitan_id ||
           savedInfo.id == partidos[0]?.equipo2_id.capitan_id ||
@@ -658,6 +931,7 @@ export default function PartidoDetalles() {
               </TabsContent>
             </Tabs>
           ) : null}
+        </div>
         </div>
       </main>
 
