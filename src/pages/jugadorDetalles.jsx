@@ -14,10 +14,22 @@ import {
   getComentariosSkillByJugador,
   addSkill,
   addComentarioSkill,
+  editSkill,
+  deleteSkill,
 } from "@/lib/database"; // Debes implementar estos métodos
 import { Mail, Phone } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Pencil, Trash2 } from "lucide-react";
+
 export default function JugadorDetalles() {
   // Al cargar pagina, hacer fetch de los datos del usuario, con el id pasado por url
   const { id } = useParams();
@@ -29,6 +41,11 @@ export default function JugadorDetalles() {
   const [newSkillDesc, setNewSkillDesc] = useState("");
   const [newComentario, setNewComentario] = useState({});
   const [loadingSkills, setLoadingSkills] = useState(false);
+  const [openSkillDialog, setOpenSkillDialog] = useState(false);
+  const [editSkillsMode, setEditSkillsMode] = useState(false);
+  const [editingSkillId, setEditingSkillId] = useState(null);
+  const [editSkillName, setEditSkillName] = useState("");
+  const [editSkillDesc, setEditSkillDesc] = useState("");
   const savedInfo = JSON.parse(localStorage.getItem("personaGuardada"));
 
   useEffect(() => {
@@ -52,7 +69,8 @@ export default function JugadorDetalles() {
   console.log(equipo);
 
   // Determinar si el usuario logueado es el capitán del equipo
-  const isCapitan = equipo && savedInfo && equipo.capitan_id === savedInfo.persona_id;
+  const isCapitan =
+    equipo && savedInfo && equipo.capitan_id === savedInfo.persona_id;
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -80,7 +98,6 @@ export default function JugadorDetalles() {
     if (skill) {
       setSkills([...skills, skill]);
       setNewSkill("");
-      setNewSkillDesc("");
     }
   };
 
@@ -89,37 +106,47 @@ export default function JugadorDetalles() {
     if (!newComentario[skillId]) return;
     const comentario = await addComentarioSkill({
       skill: skillId,
-      jugador_id: userData.id,
-      comentario: newComentario[skillId],
+      jugador_id: id,
+      descripcion: newComentario[skillId],
     });
     // Actualizar comentarios en el estado
     setComentariosSkill((prev) => {
-      const filtered = prev.filter((c) => c.skill !== skillId);
+      const filtered = prev.filter((c) => c.skill_id !== skillId);
       return [...filtered, comentario];
     });
     setNewComentario((prev) => ({ ...prev, [skillId]: "" }));
   };
 
-  // Por si queremos mostrar un cargando
-  if (!userData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        {/* <p>Cargando...</p> */}
-        <div className="lex flex-col space-y-3">
-          <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[200px]" />
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Eliminar skill
+  const handleDeleteSkill = async (skillId) => {
+    const ok = await deleteSkill(skillId);
+    if (ok) {
+      setSkills((prev) => prev.filter((s) => s.id !== skillId));
+    }
+  };
+
+  // Guardar edición de skill
+  const handleSaveEditSkill = async (skillId) => {
+    const updated = await editSkill({
+      skill_id: skillId,
+      nombre: editSkillName,
+      descripcion: editSkillDesc,
+    });
+    if (updated) {
+      setSkills((prev) =>
+        prev.map((s) =>
+          s.id === skillId
+            ? { ...s, nombre: editSkillName, descripcion: editSkillDesc }
+            : s
+        )
+      );
+      setEditingSkillId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-
       <main className="flex-1 container py-6 md:py-8 mb-16 lg:mb-0 mx-auto px-2">
         <div className="grid gap-6 md:grid-cols-[1fr_2fr]">
           <div className="space-y-6">
@@ -155,30 +182,6 @@ export default function JugadorDetalles() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Mostrar información del equipo si existe */}
-            {equipo && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Equipo</CardTitle>
-                </CardHeader>
-                <CardContent className="flex items-center gap-4">
-                  <Avatar className="h-14 w-14">
-                    <AvatarImage
-                      src={equipo.foto || "/placeholder.svg?text=EQ"}
-                    />
-                    <AvatarFallback>{equipo.nombre?.[0] || "E"}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-semibold">{equipo.nombre}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {equipo.descripcion}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
             <Card>
               <CardHeader>
                 <CardTitle>Información de Contacto</CardTitle>
@@ -229,42 +232,200 @@ export default function JugadorDetalles() {
                 </div>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Habilidades</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <p className="text-sm font-medium">Derecha</p>
-                    <span className="text-sm text-muted-foreground">85%</span>
+            {/* Sección de Skills solo visible para el capitán */}
+            {isCapitan && (
+              <Card className="mt-6">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Skills del Jugador</CardTitle>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant={editSkillsMode ? "secondary" : "outline"}
+                        onClick={() => setEditSkillsMode((v) => !v)}
+                      >
+                        {editSkillsMode ? "Salir edición" : "Editar skills"}
+                      </Button>
+                      <Dialog
+                        open={openSkillDialog}
+                        onOpenChange={setOpenSkillDialog}
+                      >
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline">
+                            Añadir Skill
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent aria-label="Anadir nueva skill">
+                          <DialogHeader>
+                            <DialogTitle>Añadir nueva skill</DialogTitle>
+                          </DialogHeader>
+                          <form
+                            onSubmit={(e) => {
+                              handleAddSkill(e);
+                              setOpenSkillDialog(false);
+                            }}
+                            className="flex flex-col gap-3"
+                          >
+                            <input
+                              type="text"
+                              placeholder="Nombre de la skill"
+                              value={newSkill}
+                              onChange={(e) => setNewSkill(e.target.value)}
+                              className="border px-2 py-1 rounded"
+                              required
+                            />
+                            <input
+                              type="text"
+                              placeholder="Descripción"
+                              value={newSkillDesc}
+                              onChange={(e) => setNewSkillDesc(e.target.value)}
+                              className="border px-2 py-1 rounded"
+                            />
+                            <DialogFooter>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setOpenSkillDialog(false)}
+                              >
+                                Cancelar
+                              </Button>
+                              <Button type="submit">Guardar</Button>
+                            </DialogFooter>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </div>
-                  <Progress value={85} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <p className="text-sm font-medium">Revés</p>
-                    <span className="text-sm text-muted-foreground">75%</span>
-                  </div>
-                  <Progress value={75} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <p className="text-sm font-medium">Volea</p>
-                    <span className="text-sm text-muted-foreground">90%</span>
-                  </div>
-                  <Progress value={90} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <p className="text-sm font-medium">Saque</p>
-                    <span className="text-sm text-muted-foreground">80%</span>
-                  </div>
-                  <Progress value={80} />
-                </div>
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent>
+                  {loadingSkills ? (
+                    <div className="text-muted-foreground">
+                      Cargando skills...
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {skills.length === 0 && (
+                        <div className="text-muted-foreground">
+                          No hay skills aún.
+                        </div>
+                      )}
+                      {skills.map((skill) => (
+                        <div
+                          key={skill.id}
+                          className="border rounded p-2 flex items-start gap-2"
+                        >
+                          {editingSkillId === skill.id ? (
+                            <div className="flex-1">
+                              <input
+                                type="text"
+                                className="border px-2 py-1 rounded w-full mb-2"
+                                value={editSkillName}
+                                onChange={(e) =>
+                                  setEditSkillName(e.target.value)
+                                }
+                              />
+                              <input
+                                type="text"
+                                className="border px-2 py-1 rounded w-full mb-2"
+                                value={editSkillDesc}
+                                onChange={(e) =>
+                                  setEditSkillDesc(e.target.value)
+                                }
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleSaveEditSkill(skill.id)}
+                                >
+                                  Guardar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setEditingSkillId(null)}
+                                >
+                                  Cancelar
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex-1">
+                                <div>
+                                  <div className="flex justify-between gap-2">
+                                    <div className="font-semibold min-h-[36px] flex items-center">
+                                      {skill.nombre}
+                                    </div>
+                                    {editSkillsMode && (
+                                <div className="flex gap-2 ml-2">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    title="Editar"
+                                    onClick={() => {
+                                      setEditingSkillId(skill.id);
+                                      setEditSkillName(skill.nombre);
+                                      setEditSkillDesc(skill.descripcion || "");
+                                    }}
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="destructive"
+                                    title="Eliminar"
+                                    onClick={() => handleDeleteSkill(skill.id)}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              )}
+                                  </div>
+                                </div>
+                                <div className="text-sm text-muted-foreground mb-2">
+                                  {skill.descripcion}
+                                </div>
+                                <div className="mb-2">
+                                  {comentariosSkill.find(
+                                    (c) => c.skill_id === skill.id
+                                  )?.descripcion || (
+                                    <span className="text-muted-foreground">
+                                      Sin comentario
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Añadir/editar comentario"
+                                    value={newComentario[skill.id] || ""}
+                                    onChange={(e) =>
+                                      setNewComentario((prev) => ({
+                                        ...prev,
+                                        [skill.id]: e.target.value,
+                                      }))
+                                    }
+                                    className="border px-2 py-1 rounded flex-1"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handleAddComentario(skill.id)
+                                    }
+                                  >
+                                    Guardar
+                                  </Button>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
         <Tabs defaultValue="history" className={"mt-5"}>
@@ -365,92 +526,6 @@ export default function JugadorDetalles() {
             </Card>
           </TabsContent>
         </Tabs>
-        {/* Sección de Skills solo visible para el capitán */}
-        {isCapitan && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Skills del Jugador</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingSkills ? (
-                <div className="text-muted-foreground">Cargando skills...</div>
-              ) : (
-                <>
-                  {/* Formulario para crear nueva skill */}
-                  <form
-                    onSubmit={handleAddSkill}
-                    className="mb-4 flex gap-2 flex-col"
-                  >
-                    <input
-                      type="text"
-                      placeholder="Nombre de la skill"
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      className="border px-2 py-1 rounded"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Descripción"
-                      value={newSkillDesc}
-                      onChange={(e) => setNewSkillDesc(e.target.value)}
-                      className="border px-2 py-1 rounded"
-                    />
-                    <Button type="submit" size="sm">
-                      Añadir Skill
-                    </Button>
-                  </form>
-                  {/* Listado de skills y comentarios */}
-                  <div className="space-y-4">
-                    {skills.length === 0 && (
-                      <div className="text-muted-foreground">
-                        No hay skills aún.
-                      </div>
-                    )}
-                    {skills.map((skill) => (
-                      <div key={skill.id} className="border rounded p-2">
-                        <div className="font-semibold">{skill.nombre}</div>
-                        <div className="text-sm text-muted-foreground mb-2">
-                          {skill.descripcion}
-                        </div>
-                        <div>
-                          <div className="mb-1 font-medium">Comentario:</div>
-                          <div className="mb-2">
-                            {comentariosSkill.find((c) => c.skill === skill.id)
-                              ?.comentario || (
-                              <span className="text-muted-foreground">
-                                Sin comentario
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              placeholder="Añadir/editar comentario"
-                              value={newComentario[skill.id] || ""}
-                              onChange={(e) =>
-                                setNewComentario((prev) => ({
-                                  ...prev,
-                                  [skill.id]: e.target.value,
-                                }))
-                              }
-                              className="border px-2 py-1 rounded flex-1"
-                            />
-                            <Button
-                              size="sm"
-                              onClick={() => handleAddComentario(skill.id)}
-                            >
-                              Guardar
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        )}
       </main>
     </div>
   );
