@@ -29,7 +29,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "./ui/drawer";
-import { getDisponibilidad } from "@/lib/database";
+import { getDisponibilidad, updatePistasPartido } from "@/lib/database";
+import toast from "react-hot-toast";
 
 export function PartidosList({ partidos }) {
   // Agrupar por equipos enfrentados (nombre equipo1 vs nombre equipo2)
@@ -81,12 +82,12 @@ function EquipoPartidos({ equipoNombre, partidos }) {
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2">
-              <Button variant="ghost" size="icon">
+              {/* <Button variant="ghost" size="icon">
                 <Edit />
               </Button>
               <Button variant="ghost" size="icon">
                 <Trash2Icon className="text-red-500" />
-              </Button>
+              </Button> */}
               {/* <JugadoresDisponiblesDialog /> */}
             </div>
             {/* Popover en movil   */}
@@ -132,13 +133,31 @@ function EquipoPartidos({ equipoNombre, partidos }) {
             {partidos.map((partido) => (
               <div key={partido.id}>
                 <PartidoCard partido={partido} />
-                <Button
-                  className={"w-full"}
-                  onClick={() => handleOpenDialog(partido)}
-                >
-                  <Users />
-                  Gestionar
-                </Button>
+                <div className="flex items-center w-full justify-center border gap-3">
+                  <Button
+                    className={""}
+                    onClick={() => handleOpenDialog(partido)}
+                  >
+                    <Users />
+                    Gestionar
+                  </Button>
+                  {/* <Button
+                    variant={"ghost"}
+                    className={""}
+                    onClick={() => handleOpenDialog(partido)}
+                  >
+                    <Edit />
+                    Editar
+                  </Button> */}
+                  <Button
+                    variant={"ghost"}
+                    className={"text-red-500"}
+                    onClick={() => handleOpenDialog(partido)}
+                  >
+                    <Trash2Icon />
+                    Eliminar
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -315,14 +334,6 @@ function JugadorInfo({ jugador, label }) {
   );
 }
 
-// Simulación de datos
-// const jugadores = [
-//   { id: 1, nombre: "Ana" },
-//   { id: 2, nombre: "Luis" },
-//   { id: 3, nombre: "Pablo" },
-//   { id: 4, nombre: "Sara" },
-// ];
-
 const pistas = [
   { id: 1, nombre: "Pista 1" },
   { id: 2, nombre: "Pista 2" },
@@ -330,6 +341,7 @@ const pistas = [
 ];
 
 function JugadoresDisponiblesDialog({ partido, open, onOpenChange }) {
+  const [isLoading, setIsLoading] = useState(false);
   const [asignaciones, setAsignaciones] = useState({
     1: { pareja1: [null, null], pareja2: [null, null] },
     2: { pareja1: [null, null], pareja2: [null, null] },
@@ -366,6 +378,7 @@ function JugadoresDisponiblesDialog({ partido, open, onOpenChange }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // funcion para asignar jugador a pista, de forma local, para que se vea en la UI que el usuario está ya asignado, el update se hace al final
   const handleAsignar = (pistaId, parejaIdx, jugadorIdx, jugadorId) => {
     setAsignaciones((prev) => ({
       ...prev,
@@ -385,11 +398,31 @@ function JugadoresDisponiblesDialog({ partido, open, onOpenChange }) {
     );
   };
 
+  const handleGuardarAsignaciones = async (partidoId, asignacionesPistas) => {
+    try {
+      setIsLoading(true);
+
+      const success = await updatePistasPartido(partidoId, asignacionesPistas);
+
+      if (success) {
+        toast.success("Asignaciones guardadas correctamente.");
+        onOpenChange(false); // cerrar el dialog
+      } else {
+        toast.error("Error al guardar las asignaciones");
+      }
+    } catch (error) {
+      toast.error("Error al guardar las asignaciones");
+      console.error("Error al actualizar las pistas del partido", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const Content = (
     <div className="max-h-[80vh] overflow-y-auto p-2 sm:px-0">
       {/* Header */}
       <div className="mb-4">
-        <h2 className="text-xl font-bold">Asignar jugadores a pistas</h2>
+        {/* <h2 className="text-xl font-bold">Asignar jugadores a pistas</h2> */}
         <div className="text-sm text-muted-foreground">
           {partido?.equipo1?.nombre + " vs " + partido?.equipo2?.nombre}
           <br />
@@ -416,7 +449,7 @@ function JugadoresDisponiblesDialog({ partido, open, onOpenChange }) {
                 key={j?.id}
                 className={`w-full flex flex-col items-center justify-center border rounded p-2 text-sm
             ${
-              jugadorYaAsignado(j?.id)
+              jugadorYaAsignado(j?.persona_id?.id)
                 ? "bg-muted text-muted-foreground"
                 : "bg-background"
             }
@@ -426,7 +459,7 @@ function JugadoresDisponiblesDialog({ partido, open, onOpenChange }) {
                   {j?.persona_id?.nombre?.[0]}
                 </div>
                 <span>{j?.persona_id?.nombre}</span>
-                {jugadorYaAsignado(j?.id) && (
+                {jugadorYaAsignado(j?.persona_id?.id) && (
                   <span className="text-xs mt-1">Asignado</span>
                 )}
               </div>
@@ -483,12 +516,15 @@ function JugadoresDisponiblesDialog({ partido, open, onOpenChange }) {
                         {jugadores.map((j) => (
                           <option
                             key={j.id}
-                            value={j.id}
+                            value={j?.persona_id?.id}
                             disabled={
-                              jugadorYaAsignado(j.id) && jugadorId !== j.id
+                              jugadorYaAsignado(j?.persona_id?.id) &&
+                              jugadorId !== j?.persona_id?.id
                             }
                           >
-                            {j.nombre}
+                            {j.persona_id?.nombre +
+                              " " +
+                              j.persona_id?.apellido || "Sin nombre"}
                           </option>
                         ))}
                       </select>
@@ -505,13 +541,24 @@ function JugadoresDisponiblesDialog({ partido, open, onOpenChange }) {
       </div>
 
       {/* Footer */}
+      {/* hacer update con las asignaciones */}
       <div className="flex justify-end mt-6">
-        <Button onClick={() => onOpenChange(false)}>
+        <Button
+          className={"disabled:opacity-50"}
+          onClick={() => handleGuardarAsignaciones(partido?.id, asignaciones)}
+          disabled={isLoading}
+        >
           Guardar asignaciones
         </Button>
       </div>
     </div>
   );
+
+  useEffect(() => {
+    if (open) {
+      console.log("jugadores disponibles array: ", asignaciones);
+    }
+  }, [asignaciones]);
 
   // Renderiza Drawer en móvil, Dialog en desktop
   return (

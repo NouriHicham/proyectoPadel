@@ -76,7 +76,9 @@ export default function PartidoDetalles() {
 
   const aceptarDisponibilidad = () => {
     try {
-      addDisponibilidad(savedInfo.id, id);
+      // console.log("partidoid: ", id);
+      // console.log("idjugador: ", savedInfo);
+      addDisponibilidad(Number(savedInfo?.persona_id), id);
     } catch (error) {
       console.error(error);
     }

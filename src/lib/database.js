@@ -1200,6 +1200,49 @@ export async function getPartidosPorClub(clubId) {
   }
 }
 
+//  recibo esto y quiero hacer un update en la tabla partidos_pistas:
+//  partido_id, --> lo recibo por parametro
+//       pista_numero: num, --> es el 1, 2 y 3,
+//       pareja_1_jugador_1_id: null, --> del objeto "1" el valor pareja1[0]
+//       pareja_1_jugador_2_id: null, --> pareja1[1]
+//       pareja_2_jugador_1_id: null, --> pareja2[0]
+//       pareja_2_jugador_2_id: null, --> pareja2[1]
+//       resultados: null,
+//       duracion: null,, y asi tres veces , cambiando el objeto "1, "2" y "3"
+//  {
+//   "1": {
+//       "pareja1": [
+//           1,
+//           null
+//       ],
+//       "pareja2": [
+//           null,
+//           null
+//       ]
+//   },
+//   "2": {
+//       "pareja1": [
+//           null,
+//           null
+//       ],
+//       "pareja2": [
+//           null,
+//           null
+//       ]
+//   },
+//   "3": {
+//       "pareja1": [
+//           null,
+//           null
+//       ],
+//       "pareja2": [
+//           null,
+//           null
+//       ]
+//   }
+// }
+
+// esta es la funcion para insertar pistas asociadas a un partido,
 export async function insertarPistas(partido_id) {
   try {
     const inserts = [1, 2, 3].map((num) => ({
@@ -1225,6 +1268,41 @@ export async function insertarPistas(partido_id) {
     console.error("Error al insertar pistas:", error.message);
   }
 }
+
+// ademas de este update, en disponibilidad_partidos, hay q setear como convacado = TRUE para el partido seleccionado, persona...(?), por hacer 
+export async function updatePistasPartido(partidoId, asignaciones) {
+  try {
+    // Recorremos cada pista y hacemos un update individual
+    for (const pistaNum of Object.keys(asignaciones)) {
+      const pistaData = asignaciones[pistaNum];
+
+      const updateData = {
+        pareja_1_jugador_1_id: pistaData.pareja1[0] ?? null,
+        pareja_1_jugador_2_id: pistaData.pareja1[1] ?? null,
+        pareja_2_jugador_1_id: pistaData.pareja2[0] ?? null,
+        pareja_2_jugador_2_id: pistaData.pareja2[1] ?? null,
+        resultados: null,
+        duracion: null,
+      };
+
+      const { error } = await supabase
+        .from("partidos_pistas")
+        .update(updateData)
+        .eq("partido_id", partidoId)
+        .eq("pista_numero", Number(pistaNum));
+
+      if (error) {
+        console.error(`Error actualizando pista ${pistaNum}:`, error);
+        return false;
+      }
+    }
+    return true;
+  } catch (error) {
+    console.error("Error al actualizar las pistas del partido:", error.message);
+    return false;
+  }
+}
+
 // Obtener todas las skills creadas por un capitán
 export async function getSkillsByCapitan(capitan_id) {
   try {
