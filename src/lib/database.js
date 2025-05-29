@@ -1336,11 +1336,11 @@ export async function getComentariosSkillByJugador(jugador_id) {
 }
 
 // Añadir una nueva skill (solo para el capitán)
-export async function addSkill({ capitan_id, nombre, descripcion }) {
+export async function addSkill({ capitan_id, nombre }) {
   try {
     const { data, error } = await supabase
       .from("skills")
-      .insert([{ capitan_id, nombre, descripcion }])
+      .insert([{ capitan_id, nombre }])
       .select("*")
       .single();
 
@@ -1353,13 +1353,14 @@ export async function addSkill({ capitan_id, nombre, descripcion }) {
 }
 
 // Añadir o actualizar comentario de skill para un jugador
-export async function addComentarioSkill({ skill, jugador_id, comentario }) {
+export async function addComentarioSkill({ skill, jugador_id, descripcion }) {
   try {
-    // upsert por skill y jugador_id
+    // La tabla tiene UNIQUE (skill_id, jugador_id)
+    // Usar upsert con onConflict: "skill_id,jugador_id"
     const { data, error } = await supabase
       .from("comentario_skill")
-      .upsert([{ skill, jugador_id, comentario }], {
-        onConflict: "skill,jugador_id",
+      .upsert([{ skill_id: skill, jugador_id, descripcion }], {
+        onConflict: "skill_id,jugador_id",
       })
       .select("*")
       .single();
@@ -1369,5 +1370,34 @@ export async function addComentarioSkill({ skill, jugador_id, comentario }) {
   } catch (error) {
     console.error("Error al añadir comentario de skill:", error.message);
     return null;
+  }
+}
+
+// Editar una skill (nombre y descripción)
+export async function editSkill({ skill_id, nombre }) {
+  try {
+    const { data, error } = await supabase
+      .from("skills")
+      .update({ nombre })
+      .eq("id", skill_id)
+      .select("*")
+      .single();
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error al editar skill:", error.message);
+    return null;
+  }
+}
+
+// Borrar una skill
+export async function deleteSkill(skill_id) {
+  try {
+    const { error } = await supabase.from("skills").delete().eq("id", skill_id);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("Error al eliminar skill:", error.message);
+    return false;
   }
 }
