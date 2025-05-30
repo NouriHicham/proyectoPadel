@@ -20,58 +20,6 @@ import {
   getResultados,
 } from "@/lib/database";
 import { Skeleton } from "@/components/ui/skeleton";
-import { add } from "date-fns";
-import { DndContext, closestCenter } from "@dnd-kit/core";
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-
-// Componente para jugador draggable
-function DraggableJugador({ jugador, id }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    background: isDragging ? "#f1f5f9" : undefined,
-    borderRadius: 6,
-    cursor: "grab",
-  };
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className="flex items-center gap-3 p-2 border mb-2 bg-white"
-    >
-      <Avatar>
-        <AvatarImage
-          src={`/placeholder.svg?text=${jugador.nombre?.[0] || "J"}`}
-        />
-        <AvatarFallback>{jugador.nombre?.[0] || "J"}</AvatarFallback>
-      </Avatar>
-      <div>
-        <p className="font-medium">
-          {jugador.nombre} {jugador.apellido}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {jugador.posicion || ""}
-        </p>
-      </div>
-    </div>
-  );
-}
 
 export default function PartidoDetalles() {
   const { id } = useParams();
@@ -160,59 +108,6 @@ export default function PartidoDetalles() {
 
     setJugadoresDisponibles(jugadores);
   }, [disponibilidad, partidos, savedInfo.equipo_id]);
-
-  // Drag and drop handlers
-  function handleDragEnd(event) {
-    const { active, over } = event;
-    if (!over) return;
-    const activeId = active.id;
-    const overId = over.id;
-
-    // Si se arrastra desde la lista de disponibles a una pista
-    if (overId.startsWith("pista-")) {
-      const pistaIdx = pistas.findIndex((p) => `pista-${p.id}` === overId);
-      if (pistaIdx === -1) return;
-      // Si ya está en alguna pista, no hacer nada
-      if (pistas.some((p) => p.jugadores.some((j) => j.id === activeId)))
-        return;
-      // Buscar jugador en la lista de disponibles
-      const jugador = jugadoresDisponibles.find((j) => j.id === activeId);
-      if (jugador) {
-        setPistas((prev) => {
-          const copy = prev.map((p) => ({ ...p, jugadores: [...p.jugadores] }));
-          copy[pistaIdx].jugadores.push(jugador);
-          return copy;
-        });
-      }
-      return;
-    }
-
-    // Si se arrastra entre pistas
-    const [fromPista, fromIdx] = findJugadorInPistas(activeId);
-    const [toPista, _] = findPistaByDroppableId(overId);
-
-    if (fromPista !== null && toPista !== null && fromPista !== toPista) {
-      setPistas((prev) => {
-        const copy = prev.map((p) => ({ ...p, jugadores: [...p.jugadores] }));
-        const jugador = copy[fromPista].jugadores.splice(fromIdx, 1)[0];
-        copy[toPista].jugadores.push(jugador);
-        return copy;
-      });
-    }
-  }
-
-  function findJugadorInPistas(jugadorId) {
-    for (let i = 0; i < pistas.length; i++) {
-      const idx = pistas[i].jugadores.findIndex((j) => j.id === jugadorId);
-      if (idx !== -1) return [i, idx];
-    }
-    return [null, null];
-  }
-
-  function findPistaByDroppableId(droppableId) {
-    const idx = pistas.findIndex((p) => `pista-${p.id}` === droppableId);
-    return [idx, pistas[idx]];
-  }
 
   function handleRemoveJugadorFromPista(jugadorId, pistaIdx) {
     setPistas((prev) => {
@@ -639,7 +534,78 @@ export default function PartidoDetalles() {
                 </TabsContent>
               </Tabs>
             ) : (
-              // Drag & Drop de jugadores disponibles a pistas
+                null
+            )}
+          {/* Mostrar usuarios disponibles si el usuario es admin y el partido aun no ha comenzado*/}
+          {savedInfo.id == partidos[0]?.equipo1_id.capitan_id ||
+          savedInfo.id == partidos[0]?.equipo2_id.capitan_id ||
+          savedInfo.id == partidos[0]?.equipo1_id.subcapitan_id ||
+          savedInfo.id == partidos[0]?.equipo2_id.subcapitan_id ? (
+            <Tabs defaultValue="disponibles">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="disponibles" className={"cursor-pointer"}>
+                  Jugadores
+                </TabsTrigger>
+                <TabsTrigger value="pistas" className={"cursor-pointer"}>
+                  Pistas
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="disponibles">
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Jugadores Disponibles</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {disponibilidad.map((disp) => (
+                        <div
+                          key={disp.id}
+                          className="flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-5">
+                            <Avatar className={""}>
+                              <AvatarImage
+                                src={`/placeholder.svg?text=${disp.persona_id.id}`}
+                              />
+                              <AvatarFallback>
+                                {disp.persona_id.nombre.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+
+                            <div className="flex items-center gap-3">
+                              <div>
+                                <p className="font-medium">
+                                  {disp.persona_id.nombre}{" "}
+                                  {disp.persona_id.apellido}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {disp.persona_id.posicion}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <Link to={`/equipo/jugador/${disp.persona_id.id}`}>
+                              <Button variant="secondary" size="sm">
+                                Ver perfil
+                              </Button>
+                            </Link>
+                            <button className="cursor-pointer">
+                              <CheckCircle2Icon size={28} color="#166534" />
+                            </button>
+                            <button className="cursor-pointer">
+                              <XCircleIcon size={28} color="#991b1b" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              <TabsContent value="pistas">
+              {/* Drag & Drop de jugadores disponibles a pistas */}
               <div className="mb-5">
                 <h3 className="text-lg font-semibold mb-2">
                   Asignar jugadores a pistas
@@ -698,12 +664,12 @@ export default function PartidoDetalles() {
                             const jugador = jugadoresDisponibles.find((j) => j.id === draggingJugadorId);
                             if (jugador) {
                               setPistas((prev) => {
-                                const copy = prev.map((p, idx) =>
+                                const copia = prev.map((p, idx) =>
                                   idx === pistaIdx
                                     ? { ...p, jugadores: [...p.jugadores, jugador] }
                                     : { ...p }
                                 );
-                                return copy;
+                                return copia;
                               });
                             }
                           }
@@ -713,7 +679,7 @@ export default function PartidoDetalles() {
                     >
                       <div className="font-bold mb-2">Pista {pista.id}</div>
                       <div className="space-y-2">
-                        {[0, 1, 2, 3].map((pos) => (
+                        {[0, 1].map((pos) => (
                           <div
                             key={pos}
                             className="flex items-center gap-2 border rounded px-2 py-1 bg-white"
@@ -733,7 +699,7 @@ export default function PartidoDetalles() {
                                                 ...p.jugadores.slice(0, pos),
                                                 jugador,
                                                 ...p.jugadores.slice(pos + 1),
-                                              ].slice(0, 4),
+                                              ].slice(0, 1),
                                             }
                                           : { ...p }
                                       );
@@ -746,13 +712,18 @@ export default function PartidoDetalles() {
                             }}
                           >
                             {pista.jugadores[pos] ? (
-                              <>
+                              <div className="flex flex-1 items-center justify-between">
                                 <span className="font-medium">
                                   {pista.jugadores[pos].nombre}{" "}
                                   {pista.jugadores[pos].apellido}
+                                  {pista.jugadores[pos].posicion && (
+                                    <span className="text-xs text-muted-foreground">
+                                      &nbsp;{pista.jugadores[pos].posicion}
+                                    </span>
+                                  )}
                                 </span>
                                 <button
-                                  className="ml-2 text-xs text-red-600"
+                                  className="ml-2 text-xs text-red-600 cursor-pointer"
                                   onClick={() =>
                                     handleRemoveJugadorFromPista(
                                       pista.jugadores[pos].id,
@@ -762,7 +733,7 @@ export default function PartidoDetalles() {
                                 >
                                   Quitar
                                 </button>
-                              </>
+                              </div>
                             ) : (
                               <span className="text-muted-foreground italic">
                                 Arrastra aquí
@@ -772,164 +743,13 @@ export default function PartidoDetalles() {
                         ))}
                       </div>
                     </div>
-                  ))}
+                ))}
                 </div>
                 <div className="mt-4 text-xs text-muted-foreground">
                   Arrastra jugadores desde la lista a una posición vacía en la pista.
                 </div>
               </div>
-            )}
-          {/* Mostrar usuarios disponibles si el usuario es admin y el partido aun no ha comenzado*/}
-          {savedInfo.id == partidos[0]?.equipo1_id.capitan_id ||
-          savedInfo.id == partidos[0]?.equipo2_id.capitan_id ||
-          savedInfo.id == partidos[0]?.equipo1_id.subcapitan_id ||
-          savedInfo.id == partidos[0]?.equipo2_id.subcapitan_id ? (
-            <Tabs defaultValue="disponibles">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="disponibles" className={"cursor-pointer"}>
-                  Jugadores
-                </TabsTrigger>
-                <TabsTrigger value="pistas" className={"cursor-pointer"}>
-                  Pistas
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="disponibles">
-                <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Jugadores Disponibles</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {disponibilidad.map((disp) => (
-                        <div
-                          key={disp.id}
-                          className="flex items-center justify-between"
-                        >
-                          <div className="flex items-center gap-5">
-                            <Avatar className={""}>
-                              <AvatarImage
-                                src={`/placeholder.svg?text=${disp.persona_id.id}`}
-                              />
-                              <AvatarFallback>
-                                {disp.persona_id.nombre.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-
-                            <div className="flex items-center gap-3">
-                              <div>
-                                <p className="font-medium">
-                                  {disp.persona_id.nombre}{" "}
-                                  {disp.persona_id.apellido}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  Nivel: Intermedio
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-1">
-                            <Link to={`/equipo/jugador/${disp.persona_id.id}`}>
-                              <Button variant="secondary" size="sm">
-                                Ver perfil
-                              </Button>
-                            </Link>
-                            <button className="cursor-pointer">
-                              <CheckCircle2Icon size={28} color="#166534" />
-                            </button>
-                            <button className="cursor-pointer">
-                              <XCircleIcon size={28} color="#991b1b" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-              <TabsContent value="pistas">
-                {/* Solo mostrar información pistas si el partido ha acabado*/}
-                {[1, 2, 3].map((court) => (
-                  <Card key={court}>
-                    <CardHeader>
-                      <CardTitle>Pista {court}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between text-sm text-muted-foreground">
-                          {/* <span>Tipo: Cristal</span> */}
-                          <span>4 jugadores necesarios</span>
-                        </div>
-                        <div className="grid gap-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-4">
-                              <h4 className="text-sm font-medium">Pareja 1</h4>
-                              {[1, 2].map((player) => (
-                                <div
-                                  key={`court-${court}-team1-${player}`}
-                                  className="flex items-center justify-between"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <Avatar>
-                                      <AvatarImage
-                                        src={`/placeholder.svg?text=${player}`}
-                                      />
-                                      <AvatarFallback>J{player}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="font-medium">
-                                        Jugador {player}
-                                      </p>
-                                      <p className="text-sm text-muted-foreground">
-                                        Nivel: Intermedio
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <Link to={`/equipo/jugador/${player}`}>
-                                    <Button variant="ghost" size="sm">
-                                      Ver perfil
-                                    </Button>
-                                  </Link>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="space-y-4">
-                              <h4 className="text-sm font-medium">Pareja 2</h4>
-                              {[3, 4].map((player) => (
-                                <div
-                                  key={`court-${court}-team2-${player}`}
-                                  className="flex items-center justify-between"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <Avatar>
-                                      <AvatarImage
-                                        src={`/placeholder.svg?text=${player}`}
-                                      />
-                                      <AvatarFallback>J{player}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="font-medium">
-                                        Jugador {player}
-                                      </p>
-                                      <p className="text-sm text-muted-foreground">
-                                        Nivel: Intermedio
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <Link to={`/equipo/jugador/${player}`}>
-                                    <Button variant="ghost" size="sm">
-                                      Ver perfil
-                                    </Button>
-                                  </Link>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+              
               </TabsContent>
             </Tabs>
           ) : null}

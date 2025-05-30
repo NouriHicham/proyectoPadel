@@ -1,5 +1,4 @@
 import { supabase } from "@/supabase/supabase";
-import { addYears } from "date-fns";
 
 // Función para obtener los equipos de un usuario
 export async function getEquiposUsuario(userId) {
