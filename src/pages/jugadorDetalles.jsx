@@ -65,6 +65,7 @@ export default function JugadorDetalles() {
 
     fetchUserData();
   }, [id]);
+  
   console.log(userData);
   console.log(equipo);
 

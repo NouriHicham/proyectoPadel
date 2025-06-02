@@ -1045,10 +1045,11 @@ export async function getDisponibilidad(id) {
 }
 
 export async function addDisponibilidad(persona_id, partido_id) {
+  
   try {
     const { data, error } = await supabase
       .from("disponibilidad_partidos")
-      .insert([
+      .upsert([
         {
           persona_id: persona_id,
           partido_id: partido_id,
