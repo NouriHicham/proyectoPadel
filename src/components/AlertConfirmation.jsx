@@ -15,6 +15,7 @@ import {
   eliminarClub,
   eliminarEquipo,
   eliminarLiga,
+  eliminarPartido,
   eliminarSede,
 } from "@/lib/database";
 import toast from "react-hot-toast";
@@ -55,6 +56,12 @@ export default function AlertConfirmation({ id, type }) {
         if (success) {
           toast.success("Sede eliminada correctamente.");
         }
+      } else if (type === "partido") {
+        const success = await eliminarPartido(id);
+
+        if (success) {
+          toast.success("Partido eliminado correctamente.");
+        }
       }
     } catch (error) {
       toast.error("Ocurrió un error al eliminar.");
@@ -91,6 +98,9 @@ export default function AlertConfirmation({ id, type }) {
 
             {type === "sede" &&
               "¿Estás seguro de eliminar esta sede? Esta acción no se puede deshacer."}
+
+            {type === "partido" &&
+              "¿Estás seguro de eliminar este patido?  Esta acción eliminará el partido y sus datos asociados."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

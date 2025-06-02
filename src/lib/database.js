@@ -404,6 +404,26 @@ export async function insertarPartido(partido) {
   }
 }
 
+export async function actualizarPartido(partido) {
+  try {
+    const { id, ...camposActualizar } = partido;
+
+    const { data, error } = await supabase
+      .from("partidos")
+      .update(camposActualizar)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al actualizar partido:", error.message);
+    return null;
+  }
+}
+
 //funcion para insertar sedes
 export async function insertarSede(sede) {
   try {
@@ -1199,48 +1219,6 @@ export async function getPartidosPorClub(clubId) {
   }
 }
 
-//  recibo esto y quiero hacer un update en la tabla partidos_pistas:
-//  partido_id, --> lo recibo por parametro
-//       pista_numero: num, --> es el 1, 2 y 3,
-//       pareja_1_jugador_1_id: null, --> del objeto "1" el valor pareja1[0]
-//       pareja_1_jugador_2_id: null, --> pareja1[1]
-//       pareja_2_jugador_1_id: null, --> pareja2[0]
-//       pareja_2_jugador_2_id: null, --> pareja2[1]
-//       resultados: null,
-//       duracion: null,, y asi tres veces , cambiando el objeto "1, "2" y "3"
-//  {
-//   "1": {
-//       "pareja1": [
-//           1,
-//           null
-//       ],
-//       "pareja2": [
-//           null,
-//           null
-//       ]
-//   },
-//   "2": {
-//       "pareja1": [
-//           null,
-//           null
-//       ],
-//       "pareja2": [
-//           null,
-//           null
-//       ]
-//   },
-//   "3": {
-//       "pareja1": [
-//           null,
-//           null
-//       ],
-//       "pareja2": [
-//           null,
-//           null
-//       ]
-//   }
-// }
-
 // esta es la funcion para insertar pistas asociadas a un partido,
 export async function insertarPistas(partido_id) {
   try {
@@ -1268,7 +1246,7 @@ export async function insertarPistas(partido_id) {
   }
 }
 
-// ademas de este update, en disponibilidad_partidos, hay q setear como convacado = TRUE para el partido seleccionado, persona...(?), por hacer 
+// ademas de este update, en disponibilidad_partidos, hay q setear como convacado = TRUE para el partido seleccionado, persona...(?), por hacer
 export async function updatePistasPartido(partidoId, asignaciones) {
   try {
     // Recorremos cada pista y hacemos un update individual
@@ -1397,6 +1375,54 @@ export async function deleteSkill(skill_id) {
     return true;
   } catch (error) {
     console.error("Error al eliminar skill:", error.message);
+    return false;
+  }
+}
+// Eliminar partido
+// export async function eliminarPartido(partidoId) {
+//   try {
+//     const { error } = await supabase
+//       .from("partidos")
+//       .delete()
+//       .eq("id", partidoId);
+//     if (error) throw error;
+//     return true;
+//   } catch (error) {
+//     console.error("Error al eliminar partido:", error.message);
+//     return false;
+//   }
+// }
+
+// nota: seria mejor usa una transaccion
+export async function eliminarPartido(partidoId) {
+  try {
+    // Elimina las disponibilidades asociadas
+    let { error: errorDisponibilidad } = await supabase
+      .from("disponibilidad_partidos")
+      .delete()
+      .eq("partido_id", partidoId);
+
+    if (errorDisponibilidad) throw errorDisponibilidad;
+
+    // Elimina las pistas asociadas
+    let { error: errorPistas } = await supabase
+      .from("partidos_pistas")
+      .delete()
+      .eq("partido_id", partidoId);
+
+    if (errorPistas) throw errorPistas;
+
+    // Elimina el partido
+    let { error: errorPartido } = await supabase
+      .from("partidos")
+      .delete()
+      .eq("id", partidoId);
+
+    if (errorPartido) throw errorPartido;
+
+    return true;
+  } catch (error) {
+    console.error("Error al eliminar partido y sus relaciones:", error.message);
     return false;
   }
 }

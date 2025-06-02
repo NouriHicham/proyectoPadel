@@ -31,6 +31,8 @@ import {
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "./ui/drawer";
 import { getDisponibilidad, updatePistasPartido } from "@/lib/database";
 import toast from "react-hot-toast";
+import AlertConfirmation from "./AlertConfirmation";
+import { EditMatchDialog } from "./EditMatchDialog";
 
 export function PartidosList({ partidos }) {
   // Agrupar por equipos enfrentados (nombre equipo1 vs nombre equipo2)
@@ -144,19 +146,24 @@ function EquipoPartidos({ equipoNombre, partidos }) {
                   {/* <Button
                     variant={"ghost"}
                     className={""}
-                    onClick={() => handleOpenDialog(partido)}
+                    // onClick={() => handleOpenDialog(partido)}
                   >
                     <Edit />
                     Editar
                   </Button> */}
-                  <Button
+                  <EditMatchDialog
+                    partido={partido}
+                    // onSave={async (datosActualizados) => {}}
+                  />
+                  {/* <Button
                     variant={"ghost"}
                     className={"text-red-500"}
-                    onClick={() => handleOpenDialog(partido)}
+                    // onClick={() => handleOpenDialog(partido)}
                   >
                     <Trash2Icon />
                     Eliminar
-                  </Button>
+                  </Button> */}
+                  <AlertConfirmation id={partido?.id} type={"partido"} />
                 </div>
               </div>
             ))}
