@@ -8,6 +8,7 @@ import {
   ChevronUp,
   Edit,
   MoreHorizontal,
+  Timer,
   Trash2Icon,
   Users,
 } from "lucide-react";
@@ -33,6 +34,7 @@ import { getDisponibilidad, updatePistasPartido } from "@/lib/database";
 import toast from "react-hot-toast";
 import AlertConfirmation from "./AlertConfirmation";
 import { EditMatchDialog } from "./EditMatchDialog";
+import ActualizarPista from "./ActualizarPista";
 
 export function PartidosList({ partidos }) {
   // Agrupar por equipos enfrentados (nombre equipo1 vs nombre equipo2)
@@ -244,16 +246,18 @@ function PartidoCard({ partido }) {
       </div>
 
       <div className="px-2 pb-4 pt-2">
-        <div className="flex flex-col md:flex-row gap-4">
-          {partido.partidos_pistas?.length > 0 ? (
-            partido.partidos_pistas.map((pista) => (
-              <PistaCard key={pista.id} pista={pista} />
-            ))
-          ) : (
-            <div className="text-center text-muted-foreground w-full py-4">
-              Sin pistas asignadas
-            </div>
-          )}
+        <div className="px-2 pb-4 pt-2">
+          <div className="flex flex-col md:flex-row gap-4">
+            {partido.partidos_pistas?.length > 0 ? (
+              [...partido.partidos_pistas]
+                .sort((a, b) => a.pista_numero - b.pista_numero)
+                .map((pista) => <PistaCard key={pista.id} pista={pista} />)
+            ) : (
+              <div className="text-center text-muted-foreground w-full py-4">
+                Sin pistas asignadas
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -261,8 +265,13 @@ function PartidoCard({ partido }) {
 }
 
 function PistaCard({ pista }) {
+  console.log("pista", pista);
   return (
     <div className="flex-1 min-w-[260px] max-w-md bg-white border rounded-lg shadow-sm p-3 flex flex-col justify-between">
+      {/* <div className="flex items-center justify-end p-1">
+        <Edit size={20} className="cursor-pointer text-blue-600" />
+      </div> */}
+      <ActualizarPista pista={pista} />
       <div className="flex items-center justify-between mb-2">
         <span className="font-semibold">Pista {pista.pista_numero ?? "-"}</span>
         <span className="text-xs text-muted-foreground">

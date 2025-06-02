@@ -181,8 +181,8 @@ export function CreateMatchDialog({
     // console.log("datos enviados: ", datos);
 
     try {
+      console.log("res", datos);
       const res = await insertarPartido(datos);
-      console.log("res", res);
       if (res) {
         // crear 3 pistas para el partido
         // const dataPistas = await insertarPistas(res?.id);
@@ -191,6 +191,7 @@ export function CreateMatchDialog({
         //   toast.error("No se pudieron crear las pistas del partido.");
         // }
 
+        // console.log("partido creado", res);
         await getPartidosClub();
         toast.success("¡Partido creado correctamente!");
         setOpen(false);

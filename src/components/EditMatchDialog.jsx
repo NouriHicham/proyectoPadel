@@ -45,7 +45,14 @@ const formSchema = z.object({
   liga: z.string().min(1, "La liga es requerida."),
   equipoLocal: z.string().min(1, "El equipo local es requerido."),
   equipoVisitante: z.string().min(1, "El equipo visitante es requerido."),
+  estado: z.string().min(1, "El estado es requerido."),
 });
+
+const ESTADOS = [
+  { value: "programado", label: "Programado" },
+  { value: "en juego", label: "En juego" },
+  { value: "finalizado", label: "Finalizado" },
+];
 
 export function EditMatchDialog({ partido, onSave = null }) {
   const [open, setOpen] = useState(false);
@@ -53,6 +60,7 @@ export function EditMatchDialog({ partido, onSave = null }) {
   //   const handleUpdateMatch = async () => {
 
   //   }
+  console.log("partido:", partido);
 
   // Estado para selects
   const [sedes, setSedes] = useState([]);
@@ -99,6 +107,7 @@ export function EditMatchDialog({ partido, onSave = null }) {
       liga: partido?.liga?.id?.toString() || "",
       equipoLocal: partido?.equipo1?.id?.toString() || "",
       equipoVisitante: partido?.equipo2?.id?.toString() || "",
+      estado: partido?.estado || "programado",
     },
   });
 
@@ -111,6 +120,7 @@ export function EditMatchDialog({ partido, onSave = null }) {
         liga: partido.liga?.id?.toString() || "",
         equipoLocal: partido.equipo1?.id?.toString() || "",
         equipoVisitante: partido.equipo2?.id?.toString() || "",
+        estado: partido.estado || "programado",
       });
       setLigaSeleccionada(partido.liga?.id?.toString() || "");
     }
@@ -133,6 +143,7 @@ export function EditMatchDialog({ partido, onSave = null }) {
       liga_id: values.liga,
       equipo1_id: values.equipoLocal,
       equipo2_id: values.equipoVisitante,
+      estado: values.estado,
     };
     console.log("datos:", datos);
     try {
@@ -184,6 +195,31 @@ export function EditMatchDialog({ partido, onSave = null }) {
                       minDate={new Date()}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Estado */}
+            <FormField
+              control={form.control}
+              name="estado"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estado</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona el estado" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {ESTADOS.map((estado) => (
+                        <SelectItem key={estado.value} value={estado.value}>
+                          {estado.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

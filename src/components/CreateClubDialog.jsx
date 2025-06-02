@@ -29,6 +29,7 @@ import { actualizarClub, crearClub } from "@/lib/database";
 import { Pen } from "lucide-react";
 import toast from "react-hot-toast";
 import { useClubData } from "@/hooks/useEquipos";
+import { uploadImageToBucket } from "@/lib/images";
 
 const formSchema = z.object({
   nombre: z.string({
@@ -43,6 +44,8 @@ export default function CreateClubDialog({ edit = false, club = null }) {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
   const { getClubData, getUserClubs } = useClubData();
+  const [fotoFile, setFotoFile] = useState(null);
+  const [preview, setPreview] = useState("");
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -60,26 +63,47 @@ export default function CreateClubDialog({ edit = false, club = null }) {
       form.reset({
         nombre: club.nombre || "",
         descripcion: club.descripcion || "",
-        foto: "", // Los inputs file no pueden tener valor por defecto
+        foto: "",
         ubicacion: club.ubicacion || "",
       });
+      setPreview("");
+      setFotoFile(null);
     }
-    // Limpiar al cerrar si es creación
     if (!open && !edit) {
       form.reset();
+      setPreview("");
+      setFotoFile(null);
     }
   }, [edit, club, open, form]);
 
-  async function onSubmit(values) {
-    let data = {
-      ...values,
-      admin_id: user?.persona[0]?.id,
-    };
+  useEffect(() => {
+    if (fotoFile) {
+      const objectUrl = URL.createObjectURL(fotoFile);
+      setPreview(objectUrl);
 
-    console.log(data);
+      // Limpiar el objeto URL al desmontar el componente
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+  }, [fotoFile]);
+
+  async function onSubmit(values) {
+    let fotoUrl = club?.foto || "";
     try {
+      if (fotoFile && fotoFile instanceof File && fotoFile.size > 0) {
+        const ext = fotoFile.name.split(".").pop();
+        const path = `clubs/${edit && club ? club.id : Date.now()}.${ext}`;
+        const url = await uploadImageToBucket(fotoFile, path);
+        if (url) fotoUrl = url;
+      }
+
+      let data = {
+        ...values,
+        foto: fotoUrl || "",
+        admin_id: user?.persona[0]?.id,
+      };
+
       if (edit && club) {
-        await actualizarClub(club?.id, values);
+        await actualizarClub(club?.id, data);
         toast.success("Club actualizado correctamente.");
       } else {
         await crearClub(data);
@@ -91,6 +115,8 @@ export default function CreateClubDialog({ edit = false, club = null }) {
 
       setOpen(false);
       form.reset();
+      setFotoFile(null);
+      setPreview("");
     } catch (error) {
       console.error("Error al crear el club: ", error);
       toast.error("Hubo un error al guardar el club.");
@@ -169,20 +195,20 @@ export default function CreateClubDialog({ edit = false, club = null }) {
                     <Input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => field.onChange(e.target.files)}
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        setFotoFile(file);
+                        if (file) setPreview(URL.createObjectURL(file));
+                        // Opcional: field.onChange(""); // Para evitar conflicto con RHF
+                      }}
                     />
                   </FormControl>
-                  {edit && club?.foto && (
-                    <div className="mt-2">
-                      <span className="text-xs text-gray-500">
-                        Foto actual:
-                      </span>
-                      <img
-                        src={club.foto}
-                        alt="Foto actual del club"
-                        className="w-16 h-16 object-cover rounded mt-1"
-                      />
-                    </div>
+                  {(preview || (edit && club?.foto)) && (
+                    <img
+                      src={preview || club?.foto}
+                      alt="Preview"
+                      className="w-16 h-16 object-cover rounded mt-2"
+                    />
                   )}
                   <FormMessage />
                 </FormItem>

@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -31,6 +32,7 @@ import {
 } from "./ui/select";
 import toast from "react-hot-toast";
 import { insertarLiga, updateLigas } from "@/lib/database";
+import { uploadImageToBucket } from "@/lib/images";
 
 const ligaFormSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido."),
@@ -45,6 +47,8 @@ export default function CreateLigaDialog({
   fetchLigas = () => {},
 }) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [fotoFile, setFotoFile] = useState(null);
+  const [preview, setPreview] = useState("");
   const form = useForm({
     resolver: zodResolver(ligaFormSchema),
     defaultValues: {
@@ -60,7 +64,7 @@ export default function CreateLigaDialog({
       form.reset({
         nombre: editingLiga.nombre,
         tipo: editingLiga.tipo,
-        foto: editingLiga.foto,
+        foto: editingLiga.foto || "",
         descripcion: editingLiga.descripcion,
       });
     } else {
@@ -75,27 +79,33 @@ export default function CreateLigaDialog({
 
   const onSubmit = async (data) => {
     try {
-      if (editingLiga) {
-        const success = await updateLigas(editingLiga?.id, data);
-        if (success) {
-          fetchLigas();
-          toast.success("Liga actualizada correctamente");
-        }
-      } else {
-        const success = await insertarLiga(data);
-        if (success) {
-          fetchLigas();
-          toast.success("Liga creada correctamente");
-        }
+      let fotoUrl = editingLiga?.foto || "";
+      if (fotoFile && fotoFile instanceof File && fotoFile.size > 0) {
+        const ext = fotoFile.name.split(".").pop();
+        const path = `ligas/${
+          editingLiga ? editingLiga.id : Date.now()
+        }.${ext}`;
+        const url = await uploadImageToBucket(fotoFile, path);
+        if (url) fotoUrl = url;
       }
-    } catch (error) {
-      console.error(("Error al crear o actualizar la liga: ", error));
-      toast.error("Error al crear o actualizar la liga.");
-    }
+      const ligaData = { ...data, foto: fotoUrl || "" };
 
-    setModalOpen(false);
-    // setEditingLiga(null);
-    form.reset();
+      if (isEditing && editingLiga) {
+        await updateLigas(editingLiga.id, ligaData);
+        toast.success("Liga actualizada correctamente");
+      } else {
+        await insertarLiga(ligaData);
+        toast.success("Liga creada correctamente");
+      }
+      fetchLigas();
+      setModalOpen(false);
+      form.reset();
+      setFotoFile(null);
+      setPreview("");
+    } catch (error) {
+      toast.error("Error al crear o actualizar la liga.");
+      console.error(error);
+    }
   };
 
   return (
@@ -108,6 +118,11 @@ export default function CreateLigaDialog({
           <DialogTitle>
             {editingLiga ? "Editar Liga" : "Crear Liga"}
           </DialogTitle>
+          <DialogDescription>
+            {editingLiga
+              ? "Modifica los datos de la liga. Puedes cambiar el logo si lo deseas."
+              : "Crea una nueva liga completando los datos y subiendo un logo."}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -155,10 +170,33 @@ export default function CreateLigaDialog({
               name="foto"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Foto (URL)</FormLabel>
+                  <FormLabel>Foto (Logo)</FormLabel>
                   <FormControl>
-                    <Input placeholder="URL de la foto" {...field} />
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        setFotoFile(file);
+                        if (file) setPreview(URL.createObjectURL(file));
+                      }}
+                    />
                   </FormControl>
+                  {/* Preview de la imagen */}
+                  {(preview || field.value) && (
+                    <img
+                      src={preview || field.value}
+                      alt="Preview"
+                      className="w-16 h-16 object-cover rounded mt-2"
+                    />
+                  )}
+                  {isEditing && editingLiga?.foto && !preview && (
+                    <img
+                      src={editingLiga.foto}
+                      alt="Logo actual"
+                      className="w-16 h-16 object-cover rounded mt-2"
+                    />
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
