@@ -34,6 +34,7 @@ import {
   Calendar,
   FilterX,
   PlusCircle,
+  RefreshCw,
   Search,
   UserMinus2,
 } from "lucide-react";
@@ -255,13 +256,17 @@ function MatchesManagement({ clubData }) {
         </div>
         <div className="mt-5">
           <Tabs defaultValue="todos" className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap">
               <TabsList>
                 <TabsTrigger value="todos">Todos</TabsTrigger>
                 <TabsTrigger value="programados">Programados</TabsTrigger>
                 <TabsTrigger value="en-juego">En Juego</TabsTrigger>
                 <TabsTrigger value="finalizados">Finalizados</TabsTrigger>
               </TabsList>
+              <Button onClick={getPartidosClub}>
+                <RefreshCw />
+                <span>Actualizar</span>
+              </Button>
             </div>
             <TabsContent value="todos" className="space-y-4">
               {Array.isArray(matches?.partidos) && (
@@ -704,7 +709,7 @@ function SedesManegement() {
     <div className="p-4">
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
         <h2 className="text-2xl font-bold">Gestión de Sedes</h2>
-        <CreateSedeDialog fetchSedes={fetchSedes}/>
+        <CreateSedeDialog fetchSedes={fetchSedes} />
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">

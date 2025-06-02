@@ -423,6 +423,25 @@ export async function actualizarPartido(partido) {
     return null;
   }
 }
+export async function actualizarPista(pista) {
+  try {
+    const { id, ...camposActualizar } = pista;
+
+    const { data, error } = await supabase
+      .from("partidos_pistas")
+      .update(camposActualizar)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error("Error al actualizar pista:", error.message);
+    return null;
+  }
+}
 
 //funcion para insertar sedes
 export async function insertarSede(sede) {
